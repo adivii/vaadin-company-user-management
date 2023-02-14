@@ -1,0 +1,80 @@
+package com.adivii.companymanagement.data.entity;
+
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.annotations.Formula;
+
+@Entity
+public class Company {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Enable Auto Increment
+    private Integer companyId;
+
+    @NotNull
+    private String companyName;
+    @NotNull
+    private String address;
+    @NotNull
+    private String sector;
+    @NotNull
+    private String website;
+
+    @OneToMany(mappedBy = "companyId")
+    private List<Department> department = new LinkedList<>();
+
+    @Formula("(SELECT COUNT(user.user_id) FROM user INNER JOIN department ON user.department_id = department.department_id WHERE department.company_id = company_id)")
+    private int userCount;
+    @Formula("(SELECT COUNT(department.department_id) FROM department WHERE department.company_id = company_id)")
+    private int departmentCount;
+
+    public int getDepartmentCount() {
+        return departmentCount;
+    }
+    public Integer getUserCount() {
+        return userCount;
+    }
+    public List<Department> getDepartment() {
+        return department;
+    }
+    public void setDepartment(List<Department> department) {
+        this.department = department;
+    }
+    public String getCompanyName() {
+        return companyName;
+    }
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+    public String getAddress() {
+        return address;
+    }
+    public void setAddress(String address) {
+        this.address = address;
+    }
+    public String getSector() {
+        return sector;
+    }
+    public void setSector(String sector) {
+        this.sector = sector;
+    }
+    public String getWebsite() {
+        return website;
+    }
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+    public Integer getCompanyId() {
+        return companyId;
+    }
+    public void setCompanyId(Integer companyId) {
+        this.companyId = companyId;
+    }
+}
