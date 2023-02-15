@@ -10,13 +10,17 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -102,9 +106,24 @@ public class CompanyList extends HorizontalLayout {
 
         // Text Field
         TextField nameInput = new TextField("Company Name");
-        TextField addressInput = new TextField("Company Address");
+        TextArea addressInput = new TextArea("Company Address");
         TextField sectorInput = new TextField("Company Sector");
         TextField websiteInput = new TextField("Company Website");
+
+        nameInput.setWidthFull();
+        sectorInput.setWidthFull();
+        websiteInput.setWidthFull();
+        addressInput.setWidthFull();
+        addressInput.setMaxLength(255);
+        addressInput.addValueChangeListener(e -> {
+            e.getSource().setHelperText(e.getValue().length() + "/255");
+        });
+        addressInput.setHelperText("0/255");
+        addressInput.setValueChangeMode(ValueChangeMode.EAGER);
+
+        Scroller scroller = new Scroller(new Div(nameInput, addressInput, sectorInput, websiteInput));
+        scroller.setHeightFull();
+        scroller.setWidthFull();
 
         // Save Data
         btnSave.addClickListener(e -> {
@@ -119,7 +138,9 @@ public class CompanyList extends HorizontalLayout {
             UI.getCurrent().getPage().reload();
         });
 
-        dialogLayout.add(title, nameInput, addressInput, sectorInput, websiteInput, buttonLayout);
+        dialogLayout.setWidth("500px");
+        dialogLayout.setHeight("500px");
+        dialogLayout.add(title, scroller, buttonLayout);
         addCompanyDialog.add(dialogLayout);
         
         return addCompanyDialog;
@@ -143,9 +164,24 @@ public class CompanyList extends HorizontalLayout {
 
         // Text Field
         TextField nameInput = new TextField("Company Name");
-        TextField addressInput = new TextField("Company Address");
+        TextArea addressInput = new TextArea("Company Address");
         TextField sectorInput = new TextField("Company Sector");
         TextField websiteInput = new TextField("Company Website");
+
+        nameInput.setWidthFull();
+        sectorInput.setWidthFull();
+        websiteInput.setWidthFull();
+        addressInput.setWidthFull();
+        addressInput.setMaxLength(255);
+        addressInput.addValueChangeListener(e -> {
+            e.getSource().setHelperText(e.getValue().length() + "/255");
+        });
+        addressInput.setHelperText("0/255");
+        addressInput.setValueChangeMode(ValueChangeMode.EAGER);
+
+        Scroller scroller = new Scroller(new Div(nameInput, addressInput, sectorInput, websiteInput));
+        scroller.setHeightFull();
+        scroller.setWidthFull();
 
         // Set Content
         nameInput.setValue(data.getCompanyName());
@@ -166,7 +202,9 @@ public class CompanyList extends HorizontalLayout {
             UI.getCurrent().getPage().reload();
         });
 
-        dialogLayout.add(title, nameInput, addressInput, sectorInput, websiteInput, buttonLayout);
+        dialogLayout.setWidth("500px");
+        dialogLayout.setHeight("500px");
+        dialogLayout.add(title, scroller, buttonLayout);
         editCompanyDialog.add(dialogLayout);
         
         return editCompanyDialog;
