@@ -15,11 +15,13 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Footer;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -134,6 +136,10 @@ public class UserList extends HorizontalLayout {
             inputDepartment.setItems(departmentService.getByCompany(e.getValue()));
         });
 
+        Scroller scroller = new Scroller(new Div(inputName, inputEmail, inputAddress, inputPhone, inputCompDept));
+        scroller.setHeightFull();
+        scroller.setWidthFull();
+
         // Button Layout
         HorizontalLayout buttonLayout = new HorizontalLayout();
         Button btnSave = new Button("Save");
@@ -160,8 +166,9 @@ public class UserList extends HorizontalLayout {
             UI.getCurrent().getPage().reload();
         });
 
-        addDialog.setWidth("500px");
-        dialogLayout.add(title, inputName, inputEmail, inputAddress, inputPhone, inputCompDept, buttonLayout);
+        dialogLayout.add(title, scroller, buttonLayout);
+        dialogLayout.setWidth("500px");
+        dialogLayout.setHeight("500px");
         addDialog.add(dialogLayout);
 
         return addDialog;
