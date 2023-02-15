@@ -15,12 +15,16 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Footer;
+import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -94,17 +98,36 @@ public class UserList extends HorizontalLayout {
         // Input Field
         TextField inputFirst = new TextField("First Name");
         TextField inputLast = new TextField("Last Field");
+        HorizontalLayout inputName = new HorizontalLayout(inputFirst, inputLast);
         EmailField inputEmail = new EmailField("Email");
-        TextField inputAddress = new TextField("Address");
+        TextArea inputAddress = new TextArea("Address");
         TextField inputPhone = new TextField("Phone Number");
         new PhoneI18nFieldFormatter(PhoneI18nFieldFormatter.REGION_ID).extend(inputPhone);
+
+        inputName.setWidthFull();
+        inputFirst.setWidth("50%");
+        inputLast.setWidth("50%");
+        inputEmail.setWidthFull();
+        inputAddress.setWidthFull();
+        inputAddress.setMaxLength(255);
+        inputAddress.setHelperText("0/255");
+        inputAddress.setValueChangeMode(ValueChangeMode.EAGER);
+        inputAddress.addValueChangeListener(e -> {
+            e.getSource().setHelperText(e.getValue().length() + "/255");
+        });
+        inputPhone.setWidthFull();
         
         ComboBox<Company> inputCompany = new ComboBox<>("Company Name");
         inputCompany.setItems(companyService.getAllCompany());
         inputCompany.setItemLabelGenerator(Company::getCompanyName);
+        inputCompany.setWidth("50%");
 
         ComboBox<Department> inputDepartment = new ComboBox<>("Department Name");
         inputDepartment.setItemLabelGenerator(Department::getName);
+        inputDepartment.setWidth("50%");
+
+        HorizontalLayout inputCompDept = new HorizontalLayout(inputCompany, inputDepartment);
+        inputCompDept.setWidthFull();
 
         inputCompany.addValueChangeListener(e -> {
             inputDepartment.clear();
@@ -115,7 +138,12 @@ public class UserList extends HorizontalLayout {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         Button btnSave = new Button("Save");
         Button btnCancel = new Button("Cancel", e -> addDialog.close());
+        
+        btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
         buttonLayout.add(btnSave, btnCancel);
+        buttonLayout.setJustifyContentMode(JustifyContentMode.END);
+        buttonLayout.setWidthFull();
 
         // Save Mechanism
         btnSave.addClickListener(e -> {
@@ -132,7 +160,8 @@ public class UserList extends HorizontalLayout {
             UI.getCurrent().getPage().reload();
         });
 
-        dialogLayout.add(title, inputFirst, inputLast, inputEmail, inputAddress, inputPhone, inputCompany, inputDepartment, buttonLayout);
+        addDialog.setWidth("500px");
+        dialogLayout.add(title, inputName, inputEmail, inputAddress, inputPhone, inputCompDept, buttonLayout);
         addDialog.add(dialogLayout);
 
         return addDialog;
