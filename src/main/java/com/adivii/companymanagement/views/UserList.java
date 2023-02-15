@@ -15,6 +15,8 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
@@ -46,18 +48,18 @@ public class UserList extends HorizontalLayout {
     public Grid<User> getUserTable() {
         Grid<User> userTable = new Grid<>(User.class, false);
 
-        userTable.addColumn(User::getFirstName).setHeader("First Name");
-        userTable.addColumn(User::getLastName).setHeader("Last Name");
-        userTable.addColumn(User::getEmailAddress).setHeader("Email");
-        userTable.addColumn(User::getAddress).setHeader("Address");
-        userTable.addColumn(User::getPhoneNumber).setHeader("Phone");
-        userTable.addColumn(e -> e.getDepartmentId().getCompanyId().getCompanyName()).setHeader("Company Name");
-        userTable.addColumn(e -> e.getDepartmentId().getName()).setHeader("Department Name");
         userTable.addComponentColumn(e -> {
             Button button = getDeleteButton(e);
 
             return button;
-        }).setHeader("Operation");
+        }).setWidth("75px").setFlexGrow(0).setFrozen(true);
+        userTable.addColumn(User::getFirstName).setHeader("First Name").setAutoWidth(true).setResizable(true).setFrozen(true);
+        userTable.addColumn(User::getLastName).setHeader("Last Name").setAutoWidth(true).setResizable(true);
+        userTable.addColumn(User::getEmailAddress).setHeader("Email").setAutoWidth(true).setResizable(true);
+        userTable.addColumn(User::getAddress).setHeader("Address").setAutoWidth(true).setResizable(true);
+        userTable.addColumn(User::getPhoneNumber).setHeader("Phone").setAutoWidth(true).setResizable(true);
+        userTable.addColumn(e -> e.getDepartmentId().getCompanyId().getCompanyName()).setHeader("Company").setAutoWidth(true).setResizable(true);
+        userTable.addColumn(e -> e.getDepartmentId().getName()).setHeader("Department").setAutoWidth(true).setResizable(true);
 
         userTable.addItemClickListener(e -> {
             getEditUserDialog(e.getItem()).open();
@@ -196,8 +198,8 @@ public class UserList extends HorizontalLayout {
     }
 
     public Button getDeleteButton(User user) {
-        Button btnDelete = new Button("Delete");
-        btnDelete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+        Button btnDelete = new Button(new Icon(VaadinIcon.TRASH));
+        btnDelete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
 
         // Create Confirmation Dialog
         Dialog confirmationDialog = new Dialog();

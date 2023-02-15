@@ -12,6 +12,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -41,14 +42,14 @@ public class DepartmentList extends HorizontalLayout {
     public Grid<Department> getDepartmentTable() {
         Grid<Department> departmentTable = new Grid<>(Department.class, false);
 
-        departmentTable.addColumn(Department::getName).setHeader("Department Name");
-        departmentTable.addColumn(e -> e.getCompanyId().getCompanyName()).setHeader("Company Name");
-        departmentTable.addColumn(Department::getUserCount).setHeader("No of Employee");
         departmentTable.addComponentColumn(e -> {
             Button button = getDeleteButton(e);
 
             return button;
-        }).setHeader("Operation");
+        }).setWidth("75px").setFlexGrow(0);
+        departmentTable.addColumn(Department::getName).setHeader("Department").setAutoWidth(true).setResizable(true);
+        departmentTable.addColumn(e -> e.getCompanyId().getCompanyName()).setHeader("Company").setAutoWidth(true).setResizable(true);
+        departmentTable.addColumn(Department::getUserCount).setHeader("No of Employee").setAutoWidth(true).setResizable(true);
 
         departmentTable.addItemClickListener(e -> {
             getEditDialog(e.getItem()).open();
@@ -156,8 +157,8 @@ public class DepartmentList extends HorizontalLayout {
     }
 
     public Button getDeleteButton(Department department) {
-        Button btnDelete = new Button("Delete");
-        btnDelete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+        Button btnDelete = new Button(new Icon(VaadinIcon.TRASH));
+        btnDelete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
 
         // Create Confirmation Dialog
         Dialog confirmationDialog = new Dialog();

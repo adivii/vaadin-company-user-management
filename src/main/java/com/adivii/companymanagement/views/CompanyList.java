@@ -9,7 +9,9 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -17,8 +19,15 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.server.PWA;
 
-@Route("/company")
+// Add alternative Route for this page
+// So, both localhost:8080 and localhost:8080/company will open this page
+// @PWA(name = "Company Management App",
+//      shortName = "cm-app")
+@Route("")
+@RouteAlias("/company")
 @PageTitle("Company List")
 public class CompanyList extends HorizontalLayout {
     CompanyService companyService;
@@ -40,16 +49,20 @@ public class CompanyList extends HorizontalLayout {
     public Grid<Company> getCompanyTable() {
         Grid<Company> companyTable = new Grid<>(Company.class, false);
 
-        companyTable.addColumn(Company::getCompanyName).setHeader("Company Name");
-        companyTable.addColumn(Company::getAddress).setHeader("Address");
-        companyTable.addColumn(Company::getSector).setHeader("Sector");
-        companyTable.addColumn(Company::getUserCount).setHeader("No of Employee");
-        companyTable.addColumn(Company::getWebsite).setHeader("Website");
         companyTable.addComponentColumn(e -> {
             Button button = getDeleteButton(e);
 
             return button;
-        }).setHeader("Operation");
+        }).setWidth("75px").setFlexGrow(0).setFrozen(true);
+        companyTable.addColumn(Company::getCompanyName).setHeader("Company Name").setAutoWidth(true).setResizable(true);
+        companyTable.addColumn(Company::getAddress).setHeader("Address").setAutoWidth(true).setResizable(true);
+        companyTable.addColumn(Company::getSector).setHeader("Sector").setAutoWidth(true).setResizable(true);
+        companyTable.addColumn(Company::getUserCount).setHeader("No of Employee").setAutoWidth(true).setResizable(true);
+        companyTable.addComponentColumn(e -> {
+            Anchor link = new Anchor(e.getWebsite(), e.getWebsite());
+
+            return link;
+        }).setHeader("Website").setAutoWidth(true).setResizable(true);
 
         companyTable.addItemClickListener(e -> {
             getEditCompanyDialog(e.getItem()).open();
@@ -158,8 +171,8 @@ public class CompanyList extends HorizontalLayout {
     }
 
     public Button getDeleteButton(Company company) {
-        Button btnDelete = new Button("Delete");
-        btnDelete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+        Button btnDelete = new Button(new Icon(VaadinIcon.TRASH));
+        btnDelete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
 
         // Create Confirmation Dialog
         Dialog confirmationDialog = new Dialog();
