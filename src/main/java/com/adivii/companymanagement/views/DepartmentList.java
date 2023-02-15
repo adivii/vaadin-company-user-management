@@ -79,6 +79,7 @@ public class DepartmentList extends HorizontalLayout {
     public Dialog getAddDepartmentDialog() {
         Dialog addDepartmentDialog = new Dialog();
         VerticalLayout dialogLayout = new VerticalLayout();
+        Text title = new Text("Add New Department");
 
         // Input Field
         TextField nameInput = new TextField("Department Name");
@@ -103,7 +104,7 @@ public class DepartmentList extends HorizontalLayout {
             UI.getCurrent().getPage().reload();
         });
 
-        dialogLayout.add(nameInput, companyInput, buttonLayout);
+        dialogLayout.add(title, nameInput, companyInput, buttonLayout);
         addDepartmentDialog.add(dialogLayout);
 
         // Disable Close Without Button
@@ -117,6 +118,7 @@ public class DepartmentList extends HorizontalLayout {
     public Dialog getEditDialog(Department department) {
         Dialog editDepartmentDialog = new Dialog();
         VerticalLayout dialogLayout = new VerticalLayout();
+        Text title = new Text("Edit Department");
 
         // Input Field
         TextField nameInput = new TextField("Department Name");
@@ -145,7 +147,7 @@ public class DepartmentList extends HorizontalLayout {
             UI.getCurrent().getPage().reload();
         });
 
-        dialogLayout.add(nameInput, companyInput, buttonLayout);
+        dialogLayout.add(title, nameInput, companyInput, buttonLayout);
         editDepartmentDialog.add(dialogLayout);
 
         // Disable Close Without Button
@@ -184,7 +186,11 @@ public class DepartmentList extends HorizontalLayout {
                 confirmationDialog.close();
             }
         });
-        confirmationLayout.add(confirmationText, confirmationButton);
+        Button cancelButton = new Button("No", e -> confirmationDialog.close());
+        HorizontalLayout buttonLayout = new HorizontalLayout(confirmationButton, cancelButton);
+
+        confirmationLayout.add(confirmationText, buttonLayout);
+        confirmationLayout.setAlignItems(Alignment.CENTER);
         confirmationDialog.add(confirmationLayout);
 
         btnDelete.addClickListener(e -> {

@@ -89,6 +89,7 @@ public class UserList extends HorizontalLayout {
     public Dialog getAddUserDialog() {
         Dialog addDialog = new Dialog();
         VerticalLayout dialogLayout = new VerticalLayout();
+        Text title = new Text("Add New User");
 
         // Input Field
         TextField inputFirst = new TextField("First Name");
@@ -131,7 +132,7 @@ public class UserList extends HorizontalLayout {
             UI.getCurrent().getPage().reload();
         });
 
-        dialogLayout.add(inputFirst, inputLast, inputEmail, inputAddress, inputPhone, inputCompany, inputDepartment, buttonLayout);
+        dialogLayout.add(title, inputFirst, inputLast, inputEmail, inputAddress, inputPhone, inputCompany, inputDepartment, buttonLayout);
         addDialog.add(dialogLayout);
 
         return addDialog;
@@ -140,6 +141,7 @@ public class UserList extends HorizontalLayout {
     public Dialog getEditUserDialog(User user) {
         Dialog editDialog = new Dialog();
         VerticalLayout dialogLayout = new VerticalLayout();
+        Text title = new Text("Edit User");
 
         // Input Field
         TextField inputFirst = new TextField("First Name");
@@ -191,7 +193,7 @@ public class UserList extends HorizontalLayout {
             UI.getCurrent().getPage().reload();
         });
 
-        dialogLayout.add(inputFirst, inputLast, inputEmail, inputAddress, inputPhone, inputCompany, inputDepartment, buttonLayout);
+        dialogLayout.add(title, inputFirst, inputLast, inputEmail, inputAddress, inputPhone, inputCompany, inputDepartment, buttonLayout);
         editDialog.add(dialogLayout);
 
         return editDialog;
@@ -211,7 +213,11 @@ public class UserList extends HorizontalLayout {
             confirmationDialog.close();
             UI.getCurrent().getPage().reload();
         });
-        confirmationLayout.add(confirmationText, confirmationButton);
+        Button cancelButton = new Button("No", e -> confirmationDialog.close());
+        HorizontalLayout buttonLayout = new HorizontalLayout(confirmationButton, cancelButton);
+
+        confirmationLayout.add(confirmationText, buttonLayout);
+        confirmationLayout.setAlignItems(Alignment.CENTER);
         confirmationDialog.add(confirmationLayout);
 
         btnDelete.addClickListener(e -> {
