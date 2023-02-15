@@ -182,22 +182,45 @@ public class UserList extends HorizontalLayout {
         // Input Field
         TextField inputFirst = new TextField("First Name");
         TextField inputLast = new TextField("Last Field");
+        HorizontalLayout inputName = new HorizontalLayout(inputFirst, inputLast);
         EmailField inputEmail = new EmailField("Email");
-        TextField inputAddress = new TextField("Address");
+        TextArea inputAddress = new TextArea("Address");
         TextField inputPhone = new TextField("Phone Number");
         new PhoneI18nFieldFormatter(PhoneI18nFieldFormatter.REGION_ID).extend(inputPhone);
+
+        inputName.setWidthFull();
+        inputFirst.setWidth("50%");
+        inputLast.setWidth("50%");
+        inputEmail.setWidthFull();
+        inputAddress.setWidthFull();
+        inputAddress.setMaxLength(255);
+        inputAddress.setHelperText("0/255");
+        inputAddress.setValueChangeMode(ValueChangeMode.EAGER);
+        inputAddress.addValueChangeListener(e -> {
+            e.getSource().setHelperText(e.getValue().length() + "/255");
+        });
+        inputPhone.setWidthFull();
         
         ComboBox<Company> inputCompany = new ComboBox<>("Company Name");
         inputCompany.setItems(companyService.getAllCompany());
         inputCompany.setItemLabelGenerator(Company::getCompanyName);
+        inputCompany.setWidth("50%");
 
         ComboBox<Department> inputDepartment = new ComboBox<>("Department Name");
         inputDepartment.setItemLabelGenerator(Department::getName);
+        inputDepartment.setWidth("50%");
+
+        HorizontalLayout inputCompDept = new HorizontalLayout(inputCompany, inputDepartment);
+        inputCompDept.setWidthFull();
 
         inputCompany.addValueChangeListener(e -> {
             inputDepartment.clear();
             inputDepartment.setItems(departmentService.getByCompany(e.getValue()));
         });
+
+        Scroller scroller = new Scroller(new Div(inputName, inputEmail, inputAddress, inputPhone, inputCompDept));
+        scroller.setHeightFull();
+        scroller.setWidthFull();
 
         // Set Value
         inputFirst.setValue(user.getFirstName());
@@ -212,7 +235,12 @@ public class UserList extends HorizontalLayout {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         Button btnSave = new Button("Save");
         Button btnCancel = new Button("Cancel", e -> editDialog.close());
+        
+        btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
         buttonLayout.add(btnSave, btnCancel);
+        buttonLayout.setJustifyContentMode(JustifyContentMode.END);
+        buttonLayout.setWidthFull();
 
         // Save Mechanism
         btnSave.addClickListener(e -> {
@@ -229,7 +257,9 @@ public class UserList extends HorizontalLayout {
             UI.getCurrent().getPage().reload();
         });
 
-        dialogLayout.add(title, inputFirst, inputLast, inputEmail, inputAddress, inputPhone, inputCompany, inputDepartment, buttonLayout);
+        dialogLayout.add(title, scroller, buttonLayout);
+        dialogLayout.setWidth("500px");
+        dialogLayout.setHeight("500px");
         editDialog.add(dialogLayout);
 
         return editDialog;
