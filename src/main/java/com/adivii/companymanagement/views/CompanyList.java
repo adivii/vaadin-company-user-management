@@ -20,7 +20,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
-import com.vaadin.flow.server.PWA;
 
 // Add alternative Route for this page
 // So, both localhost:8080 and localhost:8080/company will open this page
@@ -187,7 +186,7 @@ public class CompanyList extends HorizontalLayout {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                 Text notificationText = new Text("Can't Delete Record");
-                Button closeButton = new Button(new Icon("lumo", "cross"), i -> notification.close());
+                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
                 closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
                 HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
 

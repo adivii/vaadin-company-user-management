@@ -173,7 +173,7 @@ public class DepartmentList extends HorizontalLayout {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                 Text notificationText = new Text("Can't Delete Record");
-                Button closeButton = new Button(new Icon("lumo", "cross"), i -> notification.close());
+                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
                 closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
                 HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
 
