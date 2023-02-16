@@ -20,6 +20,8 @@ import com.vaadin.flow.component.html.Footer;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -161,9 +163,25 @@ public class UserList extends HorizontalLayout {
             newUser.setAddress(inputAddress.getValue());
             newUser.setDepartmentId(inputDepartment.getValue());
 
-            userService.saveUser(newUser);
-            addDialog.close();
-            UI.getCurrent().getPage().reload();
+            if(userService.getByEmail(newUser.getEmailAddress()).size() == 0){
+                userService.saveUser(newUser);
+
+                addDialog.close();
+                UI.getCurrent().getPage().reload();
+            } else {
+                Notification notification = new Notification();
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                Text notificationText = new Text("Email Already Registered");
+                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
+                closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+                HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
+
+                notification.setDuration(2000);
+                notification.add(notificationLayout);
+                notification.open();
+
+                addDialog.close();
+            }
         });
 
         dialogLayout.add(title, scroller, buttonLayout);

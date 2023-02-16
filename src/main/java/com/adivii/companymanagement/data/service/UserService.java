@@ -22,6 +22,10 @@ public class UserService {
         return this.userRepository.findAll();
     }
 
+    public List<User> getByEmail(String email) {
+        return this.userRepository.findByEmailAddress(email);
+    }
+
     public boolean saveUser(User user) {
         if (user != null) {
             this.userRepository.save(user);
