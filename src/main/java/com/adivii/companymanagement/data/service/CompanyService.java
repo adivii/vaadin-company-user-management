@@ -27,7 +27,7 @@ public class CompanyService {
     }
 
     public boolean addCompany(Company company) {
-        if(company != null && !company.checkEmpty()) {
+        if(company != null && !company.checkEmpty() && this.companyRepository.findByCompanyName(company.getCompanyName()).size() == 0) {
             this.companyRepository.save(company);
             return true;
         } else {
@@ -38,8 +38,15 @@ public class CompanyService {
     public boolean editData(Company company) {
         if(company != null && !company.checkEmpty()){
             if(this.companyRepository.findById(company.getCompanyId()).isPresent()) {
-                this.companyRepository.save(company);
-                return true;
+                // TODO : Make more efficient method
+                Company currentData = this.companyRepository.findById(company.getCompanyId()).get();
+                if(currentData.getCompanyName().equals(company.getCompanyName()) || this.companyRepository.findByCompanyName(company.getCompanyName()).size() == 0) {
+                    this.companyRepository.save(company);
+                    return true;
+                } else {
+                    return false;
+                }
+                
             } else {
                 return false;
             }
