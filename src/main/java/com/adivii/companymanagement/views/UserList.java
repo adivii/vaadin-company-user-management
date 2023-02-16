@@ -68,8 +68,8 @@ public class UserList extends HorizontalLayout {
             "<span title='[[item.email]]' aria-label='[[item.email]]'>[[item.email]]</span>"
         ).withProperty("email", User::getEmailAddress)).setHeader("Email").setAutoWidth(true).setResizable(true).setFrozen(true);
         this.userTable.addColumn(TemplateRenderer.<User> of(
-            "<span title='[[item.last]]' aria-label='[[item.last]]'>[[item.last]]</span>"
-        ).withProperty("last", User::getFirstName)).setHeader("First Name").setAutoWidth(true).setResizable(true);
+            "<span title='[[item.first]]' aria-label='[[item.first]]'>[[item.first]]</span>"
+        ).withProperty("first", User::getFirstName)).setHeader("First Name").setAutoWidth(true).setResizable(true);
         this.userTable.addColumn(TemplateRenderer.<User> of(
             "<span title='[[item.last]]' aria-label='[[item.last]]'>[[item.last]]</span>"
         ).withProperty("last", User::getLastName)).setHeader("Last Name").setAutoWidth(true).setResizable(true);
