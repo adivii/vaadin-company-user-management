@@ -1,6 +1,7 @@
 package com.adivii.companymanagement.data.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -27,7 +28,7 @@ public class UserService {
     }
 
     public boolean saveUser(User user) {
-        if (user != null) {
+        if (user != null && !user.checkEmpty() && getByEmail(user.getEmailAddress()).size() == 0) {
             this.userRepository.save(user);
             
             return true;
@@ -37,10 +38,15 @@ public class UserService {
     }
 
     public boolean editData(User user) {
-        if(user != null){
-            if(this.userRepository.findById(user.getUserId()).isPresent()) {
-                this.userRepository.save(user);
-                return true;
+        if(user != null && !user.checkEmpty()){
+            Optional<User> currentData = this.userRepository.findById(user.getUserId());
+            if(currentData.isPresent()) {
+                if((currentData.get().getEmailAddress() == user.getEmailAddress()) || getByEmail(user.getEmailAddress()).size() == 0){
+                    this.userRepository.save(user);
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
                 return false;
             }

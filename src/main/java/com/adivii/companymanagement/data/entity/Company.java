@@ -77,4 +77,10 @@ public class Company {
     public void setCompanyId(Integer companyId) {
         this.companyId = companyId;
     }
+
+
+    // Custom Function
+    public boolean checkEmpty() {
+        return companyName.isBlank() || address.isBlank() || sector.isBlank() || website.isBlank();
+    }
 }

@@ -25,7 +25,7 @@ public class DepartmentService {
     }
 
     public boolean saveDepartment(Department department) {
-        if(department != null) {
+        if(department != null && !department.checkEmpty()) {
             departmentRepository.save(department);
 
             return true;
@@ -35,7 +35,7 @@ public class DepartmentService {
     }
 
     public boolean editData(Department department) {
-        if(department != null){
+        if(department != null && !department.checkEmpty()){
             if(this.departmentRepository.findById(department.getDepartmentId()).isPresent()) {
                 this.departmentRepository.save(department);
                 return true;

@@ -99,9 +99,21 @@ public class DepartmentList extends HorizontalLayout {
             newDepartment.setName(nameInput.getValue());
             newDepartment.setCompanyId(companyInput.getValue());
 
-            departmentService.saveDepartment(newDepartment);
-            addDepartmentDialog.close();
-            UI.getCurrent().getPage().reload();
+            if(departmentService.saveDepartment(newDepartment)) {
+                addDepartmentDialog.close();
+                UI.getCurrent().getPage().reload();
+            } else {
+                Notification notification = new Notification();
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                Text notificationText = new Text("Can't Save Department");
+                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
+                closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+                HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
+
+                notification.setDuration(2000);
+                notification.add(notificationLayout);
+                notification.open();
+            }  
         });
 
         dialogLayout.add(title, nameInput, companyInput, buttonLayout);
@@ -142,9 +154,21 @@ public class DepartmentList extends HorizontalLayout {
             newDepartment.setName(nameInput.getValue());
             newDepartment.setCompanyId(companyInput.getValue());
 
-            departmentService.saveDepartment(newDepartment);
-            editDepartmentDialog.close();
-            UI.getCurrent().getPage().reload();
+            if(departmentService.editData(newDepartment)) {
+                editDepartmentDialog.close();
+                UI.getCurrent().getPage().reload();
+            } else {
+                Notification notification = new Notification();
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                Text notificationText = new Text("Can't Save Department");
+                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
+                closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+                HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
+
+                notification.setDuration(2000);
+                notification.add(notificationLayout);
+                notification.open();
+            } 
         });
 
         dialogLayout.add(title, nameInput, companyInput, buttonLayout);

@@ -16,8 +16,6 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Footer;
-import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -163,15 +161,13 @@ public class UserList extends HorizontalLayout {
             newUser.setAddress(inputAddress.getValue());
             newUser.setDepartmentId(inputDepartment.getValue());
 
-            if(userService.getByEmail(newUser.getEmailAddress()).size() == 0){
-                userService.saveUser(newUser);
-
+            if(userService.saveUser(newUser)){
                 addDialog.close();
                 UI.getCurrent().getPage().reload();
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                Text notificationText = new Text("Email Already Registered");
+                Text notificationText = new Text("Can't Save User");
                 Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
                 closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
                 HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
@@ -179,8 +175,6 @@ public class UserList extends HorizontalLayout {
                 notification.setDuration(2000);
                 notification.add(notificationLayout);
                 notification.open();
-
-                addDialog.close();
             }
         });
 
@@ -270,9 +264,21 @@ public class UserList extends HorizontalLayout {
             newUser.setAddress(inputAddress.getValue());
             newUser.setDepartmentId(inputDepartment.getValue());
 
-            userService.editData(newUser);
-            editDialog.close();
-            UI.getCurrent().getPage().reload();
+            if(userService.editData(newUser)){
+                editDialog.close();
+                UI.getCurrent().getPage().reload();
+            } else {
+                Notification notification = new Notification();
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                Text notificationText = new Text("Can't Save User");
+                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
+                closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+                HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
+
+                notification.setDuration(2000);
+                notification.add(notificationLayout);
+                notification.open();
+            }
         });
 
         dialogLayout.add(title, scroller, buttonLayout);

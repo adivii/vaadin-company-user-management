@@ -71,4 +71,9 @@ public class User {
     public void setAddress(String address) {
         this.address = address;
     }
+
+    // Custom Function
+    public boolean checkEmpty() {
+        return firstName.isBlank() || lastName.isBlank() || address.isBlank() || emailAddress.isBlank() || phoneNumber.isBlank();
+    }
 }

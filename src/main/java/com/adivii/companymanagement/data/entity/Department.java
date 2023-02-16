@@ -59,5 +59,10 @@ public class Department {
     }
     public void setCompanyId(Company companyId) {
         this.companyId = companyId;
-    }  
+    }
+
+    // Custom Function
+    public boolean checkEmpty() {
+        return name.isBlank() || companyId == null;
+    }
 }

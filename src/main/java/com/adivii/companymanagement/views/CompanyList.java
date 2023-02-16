@@ -132,10 +132,22 @@ public class CompanyList extends HorizontalLayout {
             newCompany.setAddress(addressInput.getValue());
             newCompany.setSector(sectorInput.getValue());
             newCompany.setWebsite(websiteInput.getValue());
+            
+            if(companyService.addCompany(newCompany)) {
+                addCompanyDialog.close();
+                UI.getCurrent().getPage().reload();
+            } else {
+                Notification notification = new Notification();
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                Text notificationText = new Text("Can't Save Company");
+                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
+                closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+                HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
 
-            companyService.addCompany(newCompany);
-            addCompanyDialog.close();
-            UI.getCurrent().getPage().reload();
+                notification.setDuration(2000);
+                notification.add(notificationLayout);
+                notification.open();
+            }
         });
 
         dialogLayout.setWidth("500px");
@@ -197,9 +209,21 @@ public class CompanyList extends HorizontalLayout {
             currentCompany.setSector(sectorInput.getValue());
             currentCompany.setWebsite(websiteInput.getValue());
 
-            companyService.editData(currentCompany);
-            editCompanyDialog.close();
-            UI.getCurrent().getPage().reload();
+            if(companyService.editData(currentCompany)) {
+                editCompanyDialog.close();
+                UI.getCurrent().getPage().reload();
+            } else {
+                Notification notification = new Notification();
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                Text notificationText = new Text("Can't Save Company");
+                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
+                closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+                HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
+
+                notification.setDuration(2000);
+                notification.add(notificationLayout);
+                notification.open();
+            }
         });
 
         dialogLayout.setWidth("500px");

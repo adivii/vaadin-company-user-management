@@ -27,7 +27,7 @@ public class CompanyService {
     }
 
     public boolean addCompany(Company company) {
-        if(company != null) {
+        if(company != null && !company.checkEmpty()) {
             this.companyRepository.save(company);
             return true;
         } else {
@@ -36,7 +36,7 @@ public class CompanyService {
     }
 
     public boolean editData(Company company) {
-        if(company != null){
+        if(company != null && !company.checkEmpty()){
             if(this.companyRepository.findById(company.getCompanyId()).isPresent()) {
                 this.companyRepository.save(company);
                 return true;
