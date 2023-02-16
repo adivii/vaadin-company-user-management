@@ -1,6 +1,7 @@
 package com.adivii.companymanagement.data.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -24,8 +25,12 @@ public class DepartmentService {
         return this.departmentRepository.findByCompanyId(company);
     }
 
+    public List<String> getNameByCompany(List<Department> data) {
+        return data.stream().map(Department::getName).collect(Collectors.toList());
+    }
+
     public boolean saveDepartment(Department department) {
-        if(department != null && !department.checkEmpty()) {
+        if(department != null && !department.checkEmpty() && !getNameByCompany(this.departmentRepository.findByCompanyId(department.getCompanyId())).contains(department.getName())) {
             departmentRepository.save(department);
 
             return true;
@@ -37,8 +42,14 @@ public class DepartmentService {
     public boolean editData(Department department) {
         if(department != null && !department.checkEmpty()){
             if(this.departmentRepository.findById(department.getDepartmentId()).isPresent()) {
-                this.departmentRepository.save(department);
-                return true;
+                // TODO : Make more efficient method to do checking
+                Department currentData = this.departmentRepository.findById(department.getDepartmentId()).get();
+                if((currentData.getName().equals(department.getName()) && currentData.getCompanyId().getCompanyId() == department.getCompanyId().getCompanyId())  || !getNameByCompany(this.departmentRepository.findByCompanyId(department.getCompanyId())).contains(department.getName())){
+                    this.departmentRepository.save(department);
+                    return true;
+                } else {
+                    return false;
+                }
             } else {
                 return false;
             }

@@ -41,7 +41,7 @@ public class UserService {
         if(user != null && !user.checkEmpty()){
             Optional<User> currentData = this.userRepository.findById(user.getUserId());
             if(currentData.isPresent()) {
-                if((currentData.get().getEmailAddress() == user.getEmailAddress()) || getByEmail(user.getEmailAddress()).size() == 0){
+                if((currentData.get().getEmailAddress().equals(user.getEmailAddress())) || getByEmail(user.getEmailAddress()).size() == 0){
                     this.userRepository.save(user);
                     return true;
                 } else {
