@@ -11,6 +11,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -36,6 +37,8 @@ public class CompanyList extends HorizontalLayout {
     CompanyService companyService;
     UserService userService;
 
+    Grid<Company> companyTable;
+
     public CompanyList(CompanyService companyService, UserService userService) {
         this.companyService = companyService;
         this.userService = userService;
@@ -50,32 +53,35 @@ public class CompanyList extends HorizontalLayout {
     }
 
     public Grid<Company> getCompanyTable() {
-        Grid<Company> companyTable = new Grid<>(Company.class, false);
+        this.companyTable = new Grid<>(Company.class, false);
 
-        companyTable.addComponentColumn(e -> {
+        this.companyTable.addComponentColumn(e -> {
             Button button = getDeleteButton(e);
 
             return button;
         }).setWidth("75px").setFlexGrow(0).setFrozen(true);
-        companyTable.addColumn(Company::getCompanyName).setHeader("Company Name").setAutoWidth(true).setResizable(true);
-        companyTable.addColumn(Company::getAddress).setHeader("Address").setAutoWidth(true).setResizable(true);
-        companyTable.addColumn(Company::getSector).setHeader("Sector").setAutoWidth(true).setResizable(true);
-        companyTable.addColumn(Company::getUserCount).setHeader("No of Employee").setAutoWidth(true).setResizable(true);
-        companyTable.addComponentColumn(e -> {
+        this.companyTable.addColumn(Company::getCompanyName).setHeader("Company Name").setAutoWidth(true).setResizable(true);
+        this.companyTable.addColumn(Company::getAddress).setHeader("Address").setAutoWidth(true).setResizable(true);
+        this.companyTable.addColumn(Company::getSector).setHeader("Sector").setAutoWidth(true).setResizable(true);
+        this.companyTable.addColumn(Company::getUserCount).setHeader("No of Employee").setAutoWidth(true).setResizable(true);
+        this.companyTable.addComponentColumn(e -> {
             Anchor link = new Anchor(e.getWebsite(), e.getWebsite());
 
             return link;
         }).setHeader("Website").setAutoWidth(true).setResizable(true);
 
-        companyTable.addItemClickListener(e -> {
+        this.companyTable.addItemClickListener(e -> {
             getEditCompanyDialog(e.getItem()).open();
         });
 
-        companyTable.setHeightFull();
+        updateTable();
+        this.companyTable.setHeightFull();
 
-        companyTable.setItems(companyService.getAllCompany());
+        return this.companyTable;
+    }
 
-        return companyTable;
+    public void updateTable() {
+        this.companyTable.setItems(companyService.getAllCompany());
     }
 
     public VerticalLayout getLayout() {
@@ -96,7 +102,7 @@ public class CompanyList extends HorizontalLayout {
         addCompanyDialog.setCloseOnOutsideClick(false);
 
         VerticalLayout dialogLayout = new VerticalLayout();
-        Text title = new Text("Add New Company");
+        H3 title = new H3("Add New Company");
 
         // Create Button Layout
         HorizontalLayout buttonLayout = new HorizontalLayout();
@@ -135,7 +141,7 @@ public class CompanyList extends HorizontalLayout {
             
             if(companyService.addCompany(newCompany)) {
                 addCompanyDialog.close();
-                UI.getCurrent().getPage().reload();
+                updateTable();
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -166,7 +172,7 @@ public class CompanyList extends HorizontalLayout {
         
 
         VerticalLayout dialogLayout = new VerticalLayout();
-        Text title = new Text("Edit Company");
+        H3 title = new H3("Edit Company");
 
         // Create Button Layout
         HorizontalLayout buttonLayout = new HorizontalLayout();
@@ -211,7 +217,7 @@ public class CompanyList extends HorizontalLayout {
 
             if(companyService.editData(currentCompany)) {
                 editCompanyDialog.close();
-                UI.getCurrent().getPage().reload();
+                updateTable();
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -246,7 +252,7 @@ public class CompanyList extends HorizontalLayout {
         Button confirmationButton = new Button("Yes", e -> {
             if(companyService.deleteCompany(company)) {
                 confirmationDialog.close();
-                UI.getCurrent().getPage().reload();
+                updateTable();
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);

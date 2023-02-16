@@ -16,6 +16,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -38,6 +39,8 @@ public class UserList extends HorizontalLayout {
     CompanyService companyService;
     DepartmentService departmentService;
 
+    Grid<User> userTable;
+
     public UserList(UserService userService, CompanyService companyService, DepartmentService departmentService) {
         this.userService = userService;
         this.companyService = companyService;
@@ -52,30 +55,33 @@ public class UserList extends HorizontalLayout {
     }
     
     public Grid<User> getUserTable() {
-        Grid<User> userTable = new Grid<>(User.class, false);
+        this.userTable = new Grid<>(User.class, false);
 
-        userTable.addComponentColumn(e -> {
+        this.userTable.addComponentColumn(e -> {
             Button button = getDeleteButton(e);
 
             return button;
         }).setWidth("75px").setFlexGrow(0).setFrozen(true);
-        userTable.addColumn(User::getFirstName).setHeader("First Name").setAutoWidth(true).setResizable(true).setFrozen(true);
-        userTable.addColumn(User::getLastName).setHeader("Last Name").setAutoWidth(true).setResizable(true);
-        userTable.addColumn(User::getEmailAddress).setHeader("Email").setAutoWidth(true).setResizable(true);
-        userTable.addColumn(User::getAddress).setHeader("Address").setAutoWidth(true).setResizable(true);
-        userTable.addColumn(User::getPhoneNumber).setHeader("Phone").setAutoWidth(true).setResizable(true);
-        userTable.addColumn(e -> e.getDepartmentId().getCompanyId().getCompanyName()).setHeader("Company").setAutoWidth(true).setResizable(true);
-        userTable.addColumn(e -> e.getDepartmentId().getName()).setHeader("Department").setAutoWidth(true).setResizable(true);
+        this.userTable.addColumn(User::getEmailAddress).setHeader("Email").setAutoWidth(true).setResizable(true).setFrozen(true);
+        this.userTable.addColumn(User::getFirstName).setHeader("First Name").setAutoWidth(true).setResizable(true);
+        this.userTable.addColumn(User::getLastName).setHeader("Last Name").setAutoWidth(true).setResizable(true);
+        this.userTable.addColumn(User::getAddress).setHeader("Address").setAutoWidth(true).setResizable(true);
+        this.userTable.addColumn(User::getPhoneNumber).setHeader("Phone").setAutoWidth(true).setResizable(true);
+        this.userTable.addColumn(e -> e.getDepartmentId().getCompanyId().getCompanyName()).setHeader("Company").setAutoWidth(true).setResizable(true);
+        this.userTable.addColumn(e -> e.getDepartmentId().getName()).setHeader("Department").setAutoWidth(true).setResizable(true);
 
-        userTable.addItemClickListener(e -> {
+        this.userTable.addItemClickListener(e -> {
             getEditUserDialog(e.getItem()).open();
         });
 
-        userTable.setHeightFull();
+        updateTable();
+        this.userTable.setHeightFull();
 
-        userTable.setItems(this.userService.getAllUser());
+        return this.userTable;
+    }
 
-        return userTable;
+    public void updateTable() {
+        this.userTable.setItems(this.userService.getAllUser());
     }
 
     public VerticalLayout getLayout() {
@@ -95,7 +101,7 @@ public class UserList extends HorizontalLayout {
     public Dialog getAddUserDialog() {
         Dialog addDialog = new Dialog();
         VerticalLayout dialogLayout = new VerticalLayout();
-        Text title = new Text("Add New User");
+        H3 title = new H3("Add New User");
 
         // Input Field
         TextField inputFirst = new TextField("First Name");
@@ -163,7 +169,7 @@ public class UserList extends HorizontalLayout {
 
             if(userService.saveUser(newUser)){
                 addDialog.close();
-                UI.getCurrent().getPage().reload();
+                updateTable();
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -189,7 +195,7 @@ public class UserList extends HorizontalLayout {
     public Dialog getEditUserDialog(User user) {
         Dialog editDialog = new Dialog();
         VerticalLayout dialogLayout = new VerticalLayout();
-        Text title = new Text("Edit User");
+        H3 title = new H3("Edit User");
 
         // Input Field
         TextField inputFirst = new TextField("First Name");
@@ -266,7 +272,7 @@ public class UserList extends HorizontalLayout {
 
             if(userService.editData(newUser)){
                 editDialog.close();
-                UI.getCurrent().getPage().reload();
+                updateTable();
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -301,7 +307,7 @@ public class UserList extends HorizontalLayout {
         Button confirmationButton = new Button("Yes", e -> {
             userService.deleteUser(user);;
             confirmationDialog.close();
-            UI.getCurrent().getPage().reload();
+            updateTable();
         });
         Button cancelButton = new Button("No", e -> confirmationDialog.close());
         HorizontalLayout buttonLayout = new HorizontalLayout(confirmationButton, cancelButton);
