@@ -17,6 +17,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -102,6 +103,10 @@ public class UserList extends HorizontalLayout {
         Dialog addDialog = new Dialog();
         VerticalLayout dialogLayout = new VerticalLayout();
         H3 title = new H3("Add New User");
+        Hr divider = new Hr();
+
+        divider.setWidthFull();
+        divider.setHeight("3px");
 
         // Input Field
         TextField inputFirst = new TextField("First Name");
@@ -145,6 +150,8 @@ public class UserList extends HorizontalLayout {
         Scroller scroller = new Scroller(new Div(inputName, inputEmail, inputAddress, inputPhone, inputCompDept));
         scroller.setHeightFull();
         scroller.setWidthFull();
+        scroller.getStyle()
+            .set("padding", "var(--lumo-space-s)");
 
         // Button Layout
         HorizontalLayout buttonLayout = new HorizontalLayout();
@@ -184,7 +191,7 @@ public class UserList extends HorizontalLayout {
             }
         });
 
-        dialogLayout.add(title, scroller, buttonLayout);
+        dialogLayout.add(title, divider, scroller, buttonLayout);
         dialogLayout.setWidth("500px");
         dialogLayout.setHeight("500px");
         addDialog.add(dialogLayout);
@@ -196,6 +203,10 @@ public class UserList extends HorizontalLayout {
         Dialog editDialog = new Dialog();
         VerticalLayout dialogLayout = new VerticalLayout();
         H3 title = new H3("Edit User");
+        Hr divider = new Hr();
+
+        divider.setWidthFull();
+        divider.setHeight("3px");
 
         // Input Field
         TextField inputFirst = new TextField("First Name");
@@ -239,6 +250,8 @@ public class UserList extends HorizontalLayout {
         Scroller scroller = new Scroller(new Div(inputName, inputEmail, inputAddress, inputPhone, inputCompDept));
         scroller.setHeightFull();
         scroller.setWidthFull();
+        scroller.getStyle()
+            .set("padding", "var(--lumo-space-s)");
 
         // Set Value
         inputFirst.setValue(user.getFirstName());
@@ -287,7 +300,7 @@ public class UserList extends HorizontalLayout {
             }
         });
 
-        dialogLayout.add(title, scroller, buttonLayout);
+        dialogLayout.add(title, divider, scroller, buttonLayout);
         dialogLayout.setWidth("500px");
         dialogLayout.setHeight("500px");
         editDialog.add(dialogLayout);

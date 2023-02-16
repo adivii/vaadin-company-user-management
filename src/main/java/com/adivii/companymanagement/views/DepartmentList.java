@@ -1,5 +1,7 @@
 package com.adivii.companymanagement.views;
 
+import javax.swing.text.html.parser.ContentModel;
+
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.Department;
 import com.adivii.companymanagement.data.service.CompanyService;
@@ -12,6 +14,8 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -87,6 +91,10 @@ public class DepartmentList extends HorizontalLayout {
         Dialog addDepartmentDialog = new Dialog();
         VerticalLayout dialogLayout = new VerticalLayout();
         H3 title = new H3("Add New Department");
+        Hr divider = new Hr();
+
+        divider.setWidthFull();
+        divider.setHeight("3px");
 
         // Input Field
         TextField nameInput = new TextField("Department Name");
@@ -94,11 +102,18 @@ public class DepartmentList extends HorizontalLayout {
         companyInput.setItems(companyService.getAllCompany());
         companyInput.setItemLabelGenerator(Company::getCompanyName);
 
+        nameInput.setWidthFull();
+        companyInput.setWidthFull();
+
         // Button Layout
         HorizontalLayout buttonLayout = new HorizontalLayout();
         Button btnSave = new Button("Save");
         Button btnCancel = new Button("Cancel", e -> addDepartmentDialog.close());
+
+        btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         buttonLayout.add(btnSave, btnCancel);
+        buttonLayout.setJustifyContentMode(JustifyContentMode.END);
+        buttonLayout.setWidthFull();
 
         // Save Mechanism
         btnSave.addClickListener(e -> {
@@ -123,7 +138,7 @@ public class DepartmentList extends HorizontalLayout {
             }  
         });
 
-        dialogLayout.add(title, nameInput, companyInput, buttonLayout);
+        dialogLayout.add(title, divider, nameInput, companyInput, buttonLayout);
         addDepartmentDialog.add(dialogLayout);
 
         // Disable Close Without Button
@@ -138,6 +153,10 @@ public class DepartmentList extends HorizontalLayout {
         Dialog editDepartmentDialog = new Dialog();
         VerticalLayout dialogLayout = new VerticalLayout();
         H3 title = new H3("Edit Department");
+        Hr divider = new Hr();
+
+        divider.setWidthFull();
+        divider.setHeight("3px");
 
         // Input Field
         TextField nameInput = new TextField("Department Name");
@@ -149,7 +168,11 @@ public class DepartmentList extends HorizontalLayout {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         Button btnSave = new Button("Save");
         Button btnCancel = new Button("Cancel", e -> editDepartmentDialog.close());
+        
+        btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         buttonLayout.add(btnSave, btnCancel);
+        buttonLayout.setJustifyContentMode(JustifyContentMode.END);
+        buttonLayout.setWidthFull();
 
         // Set Value
         nameInput.setValue(department.getName());
@@ -178,7 +201,7 @@ public class DepartmentList extends HorizontalLayout {
             } 
         });
 
-        dialogLayout.add(title, nameInput, companyInput, buttonLayout);
+        dialogLayout.add(title, divider, nameInput, companyInput, buttonLayout);
         editDepartmentDialog.add(dialogLayout);
 
         // Disable Close Without Button

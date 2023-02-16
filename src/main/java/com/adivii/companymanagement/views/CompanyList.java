@@ -12,6 +12,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -103,12 +104,20 @@ public class CompanyList extends HorizontalLayout {
 
         VerticalLayout dialogLayout = new VerticalLayout();
         H3 title = new H3("Add New Company");
+        Hr divider = new Hr();
+
+        divider.setWidthFull();
+        divider.setHeight("3px");
 
         // Create Button Layout
         HorizontalLayout buttonLayout = new HorizontalLayout();
         Button btnSave = new Button("Save");
         Button btnCancel = new Button("Cancel", e -> addCompanyDialog.close());
+        
+        btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         buttonLayout.add(btnSave, btnCancel);
+        buttonLayout.setJustifyContentMode(JustifyContentMode.END);
+        buttonLayout.setWidthFull();
 
         // Text Field
         TextField nameInput = new TextField("Company Name");
@@ -130,6 +139,8 @@ public class CompanyList extends HorizontalLayout {
         Scroller scroller = new Scroller(new Div(nameInput, addressInput, sectorInput, websiteInput));
         scroller.setHeightFull();
         scroller.setWidthFull();
+        scroller.getStyle()
+            .set("padding", "var(--lumo-space-s)");
 
         // Save Data
         btnSave.addClickListener(e -> {
@@ -158,7 +169,7 @@ public class CompanyList extends HorizontalLayout {
 
         dialogLayout.setWidth("500px");
         dialogLayout.setHeight("500px");
-        dialogLayout.add(title, scroller, buttonLayout);
+        dialogLayout.add(title, divider, scroller, buttonLayout);
         addCompanyDialog.add(dialogLayout);
         
         return addCompanyDialog;
@@ -173,12 +184,20 @@ public class CompanyList extends HorizontalLayout {
 
         VerticalLayout dialogLayout = new VerticalLayout();
         H3 title = new H3("Edit Company");
+        Hr divider = new Hr();
+
+        divider.setWidthFull();
+        divider.setHeight("3px");
 
         // Create Button Layout
         HorizontalLayout buttonLayout = new HorizontalLayout();
         Button btnSave = new Button("Save");
         Button btnCancel = new Button("Cancel", e -> editCompanyDialog.close());
+       
+        btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         buttonLayout.add(btnSave, btnCancel);
+        buttonLayout.setJustifyContentMode(JustifyContentMode.END);
+        buttonLayout.setWidthFull();
 
         // Text Field
         TextField nameInput = new TextField("Company Name");
@@ -200,6 +219,8 @@ public class CompanyList extends HorizontalLayout {
         Scroller scroller = new Scroller(new Div(nameInput, addressInput, sectorInput, websiteInput));
         scroller.setHeightFull();
         scroller.setWidthFull();
+        scroller.getStyle()
+            .set("padding", "var(--lumo-space-s)");
 
         // Set Content
         nameInput.setValue(data.getCompanyName());
@@ -234,7 +255,7 @@ public class CompanyList extends HorizontalLayout {
 
         dialogLayout.setWidth("500px");
         dialogLayout.setHeight("500px");
-        dialogLayout.add(title, scroller, buttonLayout);
+        dialogLayout.add(title, divider, scroller, buttonLayout);
         editCompanyDialog.add(dialogLayout);
         
         return editCompanyDialog;
