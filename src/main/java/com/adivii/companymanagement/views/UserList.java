@@ -27,6 +27,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -62,13 +63,28 @@ public class UserList extends HorizontalLayout {
 
             return button;
         }).setWidth("75px").setFlexGrow(0).setFrozen(true);
-        this.userTable.addColumn(User::getEmailAddress).setHeader("Email").setAutoWidth(true).setResizable(true).setFrozen(true);
-        this.userTable.addColumn(User::getFirstName).setHeader("First Name").setAutoWidth(true).setResizable(true);
-        this.userTable.addColumn(User::getLastName).setHeader("Last Name").setAutoWidth(true).setResizable(true);
-        this.userTable.addColumn(User::getAddress).setHeader("Address").setAutoWidth(true).setResizable(true);
-        this.userTable.addColumn(User::getPhoneNumber).setHeader("Phone").setAutoWidth(true).setResizable(true);
-        this.userTable.addColumn(e -> e.getDepartmentId().getCompanyId().getCompanyName()).setHeader("Company").setAutoWidth(true).setResizable(true);
-        this.userTable.addColumn(e -> e.getDepartmentId().getName()).setHeader("Department").setAutoWidth(true).setResizable(true);
+        // TODO : Implement TemplateRenderer, check Department for example
+        this.userTable.addColumn(TemplateRenderer.<User> of(
+            "<span title='[[item.email]]' aria-label='[[item.email]]'>[[item.email]]</span>"
+        ).withProperty("email", User::getEmailAddress)).setHeader("Email").setAutoWidth(true).setResizable(true).setFrozen(true);
+        this.userTable.addColumn(TemplateRenderer.<User> of(
+            "<span title='[[item.last]]' aria-label='[[item.last]]'>[[item.last]]</span>"
+        ).withProperty("last", User::getFirstName)).setHeader("First Name").setAutoWidth(true).setResizable(true);
+        this.userTable.addColumn(TemplateRenderer.<User> of(
+            "<span title='[[item.last]]' aria-label='[[item.last]]'>[[item.last]]</span>"
+        ).withProperty("last", User::getLastName)).setHeader("Last Name").setAutoWidth(true).setResizable(true);
+        this.userTable.addColumn(TemplateRenderer.<User> of(
+            "<span title='[[item.address]]' aria-label='[[item.address]]'>[[item.address]]</span>"
+        ).withProperty("address", User::getAddress)).setHeader("Address").setAutoWidth(true).setResizable(true);
+        this.userTable.addColumn(TemplateRenderer.<User> of(
+            "<span title='[[item.phone]]' aria-label='[[item.phone]]'>[[item.phone]]</span>"
+        ).withProperty("phone", User::getPhoneNumber)).setHeader("Phone").setAutoWidth(true).setResizable(true);
+        this.userTable.addColumn(TemplateRenderer.<User> of(
+            "<span title='[[item.company]]' aria-label='[[item.company]]'>[[item.company]]</span>"
+        ).withProperty("company", e -> e.getDepartmentId().getCompanyId().getCompanyName())).setHeader("Company").setAutoWidth(true).setResizable(true);
+        this.userTable.addColumn(TemplateRenderer.<User> of(
+            "<span title='[[item.department]]' aria-label='[[item.department]]'>[[item.department]]</span>"
+        ).withProperty("department", e -> e.getDepartmentId().getName())).setHeader("Department").setAutoWidth(true).setResizable(true);
 
         this.userTable.addItemClickListener(e -> {
             getEditUserDialog(e.getItem()).open();

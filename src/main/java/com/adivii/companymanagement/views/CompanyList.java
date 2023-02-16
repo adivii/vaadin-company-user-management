@@ -21,6 +21,7 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -60,12 +61,22 @@ public class CompanyList extends HorizontalLayout {
 
             return button;
         }).setWidth("75px").setFlexGrow(0).setFrozen(true);
-        this.companyTable.addColumn(Company::getCompanyName).setHeader("Company Name").setAutoWidth(true).setResizable(true);
-        this.companyTable.addColumn(Company::getAddress).setHeader("Address").setAutoWidth(true).setResizable(true);
-        this.companyTable.addColumn(Company::getSector).setHeader("Sector").setAutoWidth(true).setResizable(true);
-        this.companyTable.addColumn(Company::getUserCount).setHeader("No of Employee").setAutoWidth(true).setResizable(true);
+        // TODO : Implement TemplateRenderer, check Department for example
+        this.companyTable.addColumn(TemplateRenderer.<Company> of(
+            "<span title='[[item.name]]' aria-label='[[item.name]]'>[[item.name]]</span>"
+        ).withProperty("name", Company::getCompanyName)).setHeader("Company Name").setAutoWidth(true).setResizable(true);
+        this.companyTable.addColumn(TemplateRenderer.<Company> of(
+            "<span title='[[item.address]]' aria-label='[[item.address]]'>[[item.address]]</span>"
+        ).withProperty("address", Company::getAddress)).setHeader("Address").setAutoWidth(true).setResizable(true);
+        this.companyTable.addColumn(TemplateRenderer.<Company> of(
+            "<span title='[[item.sector]]' aria-label='[[item.sector]]'>[[item.sector]]</span>"
+        ).withProperty("sector", Company::getSector)).setHeader("Sector").setAutoWidth(true).setResizable(true);
+        this.companyTable.addColumn(TemplateRenderer.<Company> of(
+            "<span title='[[item.employee]]' aria-label='[[item.employee]]'>[[item.employee]]</span>"
+        ).withProperty("employee", Company::getUserCount)).setHeader("No of Employee").setAutoWidth(true).setResizable(true);
         this.companyTable.addComponentColumn(e -> {
             Anchor link = new Anchor(e.getWebsite(), e.getWebsite());
+            link.setTitle(e.getWebsite());
 
             return link;
         }).setHeader("Website").setAutoWidth(true).setResizable(true);

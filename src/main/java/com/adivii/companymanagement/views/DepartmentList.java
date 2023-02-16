@@ -19,6 +19,7 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -49,9 +50,15 @@ public class DepartmentList extends HorizontalLayout {
 
             return button;
         }).setWidth("75px").setFlexGrow(0);
-        this.departmentTable.addColumn(Department::getName).setHeader("Department").setAutoWidth(true).setResizable(true);
-        this.departmentTable.addColumn(e -> e.getCompanyId().getCompanyName()).setHeader("Company").setAutoWidth(true).setResizable(true);
-        this.departmentTable.addColumn(Department::getUserCount).setHeader("No of Employee").setAutoWidth(true).setResizable(true);
+        this.departmentTable.addColumn(TemplateRenderer.<Department> of(
+            "<span title='[[item.name]]' aria-label='[[item.name]]'>[[item.name]]</span>"
+        ).withProperty("name", Department::getName)).setHeader("Department").setAutoWidth(true).setResizable(true);
+        this.departmentTable.addColumn(TemplateRenderer.<Department> of(
+            "<span title='[[item.company]]' aria-label='[[item.company]]'>[[item.company]]</span>"
+        ).withProperty("company", e -> e.getCompanyId().getCompanyName())).setHeader("Company").setAutoWidth(true).setResizable(true);
+        this.departmentTable.addColumn(TemplateRenderer.<Department> of(
+            "<span title='[[item.employee]]' aria-label='[[item.employee]]'>[[item.employee]]</span>"
+        ).withProperty("employee", Department::getUserCount)).setHeader("No of Employee").setAutoWidth(true).setResizable(true);
 
         this.departmentTable.addItemClickListener(e -> {
             getEditDialog(e.getItem()).open();
