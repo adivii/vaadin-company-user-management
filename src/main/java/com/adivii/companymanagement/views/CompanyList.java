@@ -100,7 +100,7 @@ public class CompanyList extends HorizontalLayout {
 
         updateTable();
         this.companyTable.setHeightFull();
-
+        
         return this.companyTable;
     }
 
@@ -164,7 +164,7 @@ public class CompanyList extends HorizontalLayout {
         addressInput.setHelperText("0/255");
         addressInput.setValueChangeMode(ValueChangeMode.EAGER);
         holdingInput.setWidthFull();
-        holdingInput.setItems(this.companyService.getAllCompany());
+        holdingInput.setItems(this.companyService.getHoldingCompany());
         holdingInput.setItemLabelGenerator(Company::getCompanyName);
         holdingInput.addValueChangeListener(e -> {
             holdingInput.setClearButtonVisible(holdingInput.getValue() != null);
@@ -252,9 +252,8 @@ public class CompanyList extends HorizontalLayout {
         addressInput.setHelperText("0/255");
         addressInput.setValueChangeMode(ValueChangeMode.EAGER);
         holdingInput.setWidthFull();
-        holdingInput.setItems(this.companyService.getAllCompany());
+        holdingInput.setItems(this.companyService.getHoldingCompany());
         holdingInput.setItemLabelGenerator(Company::getCompanyName);
-        // holdingInput.setEnabled(false);
 
         Scroller scroller = new Scroller(new Div(nameInput, addressInput, sectorInput, websiteInput, holdingInput));
         scroller.setHeightFull();

@@ -54,7 +54,7 @@ public class CompanyService {
     }
 
     public boolean editData(Company company) {
-        if(company != null && !company.checkEmpty()){
+        if(company != null && !company.checkEmpty() && (company.getChildCompanyCount() == 0 || company.getHoldingCompany() != null)){
             if(this.companyRepository.findById(company.getCompanyId()).isPresent()) {
                 // TODO : Make more efficient method
                 Company currentData = this.companyRepository.findById(company.getCompanyId()).get();
