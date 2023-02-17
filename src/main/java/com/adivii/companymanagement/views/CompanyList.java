@@ -1,17 +1,21 @@
 package com.adivii.companymanagement.views;
 
+import java.util.List;
+
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -21,6 +25,7 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
@@ -38,7 +43,7 @@ public class CompanyList extends HorizontalLayout {
     CompanyService companyService;
     UserService userService;
 
-    Grid<Company> companyTable;
+    TreeGrid<Company> companyTable;
 
     public CompanyList(CompanyService companyService, UserService userService) {
         this.companyService = companyService;
@@ -54,26 +59,34 @@ public class CompanyList extends HorizontalLayout {
     }
 
     public Grid<Company> getCompanyTable() {
-        this.companyTable = new Grid<>(Company.class, false);
+        this.companyTable = new TreeGrid<>();
 
+        // TODO : Implement TemplateRenderer, check Department for example
         this.companyTable.addComponentColumn(e -> {
             Button button = getDeleteButton(e);
 
             return button;
         }).setWidth("75px").setFlexGrow(0).setFrozen(true);
-        // TODO : Implement TemplateRenderer, check Department for example
-        this.companyTable.addColumn(TemplateRenderer.<Company> of(
-            "<span title='[[item.name]]' aria-label='[[item.name]]'>[[item.name]]</span>"
-        ).withProperty("name", Company::getCompanyName)).setHeader("Company Name").setAutoWidth(true).setResizable(true);
+        this.companyTable.addComponentHierarchyColumn(e -> {
+            Label text = new Label(e.getCompanyName());
+            text.setTitle(e.getCompanyName());
+
+            return text;
+        }).setHeader("Company Name").setAutoWidth(true).setResizable(true);
         this.companyTable.addColumn(TemplateRenderer.<Company> of(
             "<span title='[[item.address]]' aria-label='[[item.address]]'>[[item.address]]</span>"
         ).withProperty("address", Company::getAddress)).setHeader("Address").setAutoWidth(true).setResizable(true);
         this.companyTable.addColumn(TemplateRenderer.<Company> of(
             "<span title='[[item.sector]]' aria-label='[[item.sector]]'>[[item.sector]]</span>"
         ).withProperty("sector", Company::getSector)).setHeader("Sector").setAutoWidth(true).setResizable(true);
-        this.companyTable.addColumn(TemplateRenderer.<Company> of(
-            "<span title='[[item.employee]]' aria-label='[[item.employee]]'>[[item.employee]]</span>"
-        ).withProperty("employee", Company::getUserCount)).setHeader("No of Employee").setAutoWidth(true).setResizable(true);
+        this.companyTable.addComponentColumn(e -> {
+            Label count = new Label();
+
+            count.setText(Integer.toString(this.companyService.getEmployeeCount(e)));
+            count.setTitle(Integer.toString(this.companyService.getEmployeeCount(e)));
+
+            return count;
+        }).setHeader("No of Employee").setAutoWidth(true).setResizable(true);
         this.companyTable.addComponentColumn(e -> {
             Anchor link = new Anchor(e.getWebsite(), e.getWebsite());
             link.setTitle(e.getWebsite());
@@ -81,7 +94,7 @@ public class CompanyList extends HorizontalLayout {
             return link;
         }).setHeader("Website").setAutoWidth(true).setResizable(true);
 
-        this.companyTable.addItemClickListener(e -> {
+        this.companyTable.addItemDoubleClickListener(e -> {
             getEditCompanyDialog(e.getItem()).open();
         });
 
@@ -92,7 +105,11 @@ public class CompanyList extends HorizontalLayout {
     }
 
     public void updateTable() {
-        this.companyTable.setItems(companyService.getAllCompany());
+        this.companyTable.setItems(companyService.getHoldingCompany(), this::getChild);
+    }
+
+    public List<Company> getChild(Company holdingCompany) {
+        return companyService.getChildCompany(holdingCompany);
     }
 
     public VerticalLayout getLayout() {
@@ -134,6 +151,7 @@ public class CompanyList extends HorizontalLayout {
         TextArea addressInput = new TextArea("Company Address");
         TextField sectorInput = new TextField("Company Sector");
         TextField websiteInput = new TextField("Company Website");
+        ComboBox<Company> holdingInput = new ComboBox<>("Holding Company");
 
         nameInput.setWidthFull();
         sectorInput.setWidthFull();
@@ -145,8 +163,14 @@ public class CompanyList extends HorizontalLayout {
         });
         addressInput.setHelperText("0/255");
         addressInput.setValueChangeMode(ValueChangeMode.EAGER);
+        holdingInput.setWidthFull();
+        holdingInput.setItems(this.companyService.getAllCompany());
+        holdingInput.setItemLabelGenerator(Company::getCompanyName);
+        holdingInput.addValueChangeListener(e -> {
+            holdingInput.setClearButtonVisible(holdingInput.getValue() != null);
+        });
 
-        Scroller scroller = new Scroller(new Div(nameInput, addressInput, sectorInput, websiteInput));
+        Scroller scroller = new Scroller(new Div(nameInput, addressInput, sectorInput, websiteInput, holdingInput));
         scroller.setHeightFull();
         scroller.setWidthFull();
         scroller.getStyle()
@@ -159,6 +183,7 @@ public class CompanyList extends HorizontalLayout {
             newCompany.setAddress(addressInput.getValue());
             newCompany.setSector(sectorInput.getValue());
             newCompany.setWebsite(websiteInput.getValue());
+            newCompany.setHoldingCompany(holdingInput.getValue());
             
             if(companyService.addCompany(newCompany)) {
                 addCompanyDialog.close();
@@ -214,6 +239,7 @@ public class CompanyList extends HorizontalLayout {
         TextArea addressInput = new TextArea("Company Address");
         TextField sectorInput = new TextField("Company Sector");
         TextField websiteInput = new TextField("Company Website");
+        ComboBox<Company> holdingInput = new ComboBox<>("Holding Company");
 
         nameInput.setWidthFull();
         sectorInput.setWidthFull();
@@ -225,8 +251,12 @@ public class CompanyList extends HorizontalLayout {
         });
         addressInput.setHelperText("0/255");
         addressInput.setValueChangeMode(ValueChangeMode.EAGER);
+        holdingInput.setWidthFull();
+        holdingInput.setItems(this.companyService.getAllCompany());
+        holdingInput.setItemLabelGenerator(Company::getCompanyName);
+        // holdingInput.setEnabled(false);
 
-        Scroller scroller = new Scroller(new Div(nameInput, addressInput, sectorInput, websiteInput));
+        Scroller scroller = new Scroller(new Div(nameInput, addressInput, sectorInput, websiteInput, holdingInput));
         scroller.setHeightFull();
         scroller.setWidthFull();
         scroller.getStyle()
@@ -237,6 +267,7 @@ public class CompanyList extends HorizontalLayout {
         addressInput.setValue(data.getAddress());
         sectorInput.setValue(data.getSector());
         websiteInput.setValue(data.getWebsite());
+        holdingInput.setValue(data.getHoldingCompany());
 
         // Save Data
         btnSave.addClickListener(e -> {
@@ -245,6 +276,7 @@ public class CompanyList extends HorizontalLayout {
             currentCompany.setAddress(addressInput.getValue());
             currentCompany.setSector(sectorInput.getValue());
             currentCompany.setWebsite(websiteInput.getValue());
+            currentCompany.setHoldingCompany(holdingInput.getValue());
 
             if(companyService.editData(currentCompany)) {
                 editCompanyDialog.close();

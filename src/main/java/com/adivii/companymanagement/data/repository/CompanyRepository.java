@@ -7,4 +7,5 @@ import com.adivii.companymanagement.data.entity.Company;
 
 public interface CompanyRepository extends JpaRepository<Company, Integer> {
     public List<Company> findByCompanyName(String companyName);
+    public List<Company> findByHoldingCompany(Company company);
 }

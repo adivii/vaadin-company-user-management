@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 
@@ -29,12 +31,23 @@ public class Company {
 
     @OneToMany(mappedBy = "companyId")
     private List<Department> department = new LinkedList<>();
+    @OneToMany(mappedBy = "holdingCompany")
+    private List<Company> childCompany = new LinkedList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "holdingCompany")
+    private Company holdingCompany;
 
     @Formula("(SELECT COUNT(user.user_id) FROM user INNER JOIN department ON user.department_id = department.department_id WHERE department.company_id = company_id)")
     private int userCount;
     @Formula("(SELECT COUNT(department.department_id) FROM department WHERE department.company_id = company_id)")
     private int departmentCount;
+    @Formula("(SELECT COUNT(company.company_id) FROM company WHERE company.holding_company = company_id)")
+    private int childCompanyCount;
 
+    public int getChildCompanyCount() {
+        return childCompanyCount;
+    }
     public int getDepartmentCount() {
         return departmentCount;
     }
@@ -76,6 +89,18 @@ public class Company {
     }
     public void setCompanyId(Integer companyId) {
         this.companyId = companyId;
+    }
+    public List<Company> getChildCompany() {
+        return childCompany;
+    }
+    public void setChildCompany(List<Company> childCompany) {
+        this.childCompany = childCompany;
+    }
+    public Company getHoldingCompany() {
+        return holdingCompany;
+    }
+    public void setHoldingCompany(Company holdingCompany) {
+        this.holdingCompany = holdingCompany;
     }
 
 

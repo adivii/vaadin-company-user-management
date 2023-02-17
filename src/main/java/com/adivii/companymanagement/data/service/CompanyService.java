@@ -26,6 +26,24 @@ public class CompanyService {
         return this.companyRepository.count();
     }
 
+    public List<Company> getHoldingCompany() {
+        return this.companyRepository.findByHoldingCompany(null);
+    }
+
+    public List<Company> getChildCompany(Company holdingCompany) {
+        return this.companyRepository.findByHoldingCompany(holdingCompany);
+    }
+
+    public int getEmployeeCount(Company company) {
+        int employeeCount = company.getUserCount();
+
+        for (Company childCompany : getChildCompany(company)) {
+            employeeCount += getEmployeeCount(childCompany);
+        }
+
+        return employeeCount;
+    }
+
     public boolean addCompany(Company company) {
         if(company != null && !company.checkEmpty() && this.companyRepository.findByCompanyName(company.getCompanyName()).size() == 0) {
             this.companyRepository.save(company);
@@ -56,7 +74,7 @@ public class CompanyService {
     }
 
     public boolean deleteCompany(Company company) {
-        if(company.getUserCount() == 0 && company.getDepartmentCount() == 0){
+        if(company.getUserCount() == 0 && company.getDepartmentCount() == 0 && company.getChildCompanyCount() == 0){
             this.companyRepository.delete(company);
 
             return true;
