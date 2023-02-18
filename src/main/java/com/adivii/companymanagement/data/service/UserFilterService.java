@@ -14,13 +14,16 @@ public class UserFilterService {
     private String company;
     private String department;
 
+    private String searchTerm;
+
     public UserFilterService(ListDataProvider<User> dataProvider) {
         setDataProvider(dataProvider);
     }
 
     public void setDataProvider(ListDataProvider<User> dataProvider) {
         this.dataProvider = dataProvider;
-        this.dataProvider.addFilter(this::test);
+        this.dataProvider.addFilter(this::filter);
+        this.dataProvider.addFilter(this::search);
     }
 
     public void setEmail(String email) {
@@ -58,12 +61,17 @@ public class UserFilterService {
         this.dataProvider.refreshAll();
     }
 
+    public void setSearchTerm(String searchTerm) {
+        this.searchTerm = searchTerm;
+        this.dataProvider.refreshAll();
+    }
+
     // Custom Function
     private boolean matches(String value, String searchTerm) {
         return searchTerm == null || searchTerm.isBlank() || value.toLowerCase().contains(searchTerm.toLowerCase());
     }
 
-    private boolean test(User user) {
+    private boolean filter(User user) {
         return matches(user.getEmailAddress(), email) &&
                 matches(user.getFirstName(), firstName) &&
                 matches(user.getLastName(), lastName) &&
@@ -71,5 +79,15 @@ public class UserFilterService {
                 matches(user.getPhoneNumber(), phone) &&
                 matches(user.getDepartmentId().getCompanyId().getCompanyName(), company) &&
                 matches(user.getDepartmentId().getName(), department);
+    }
+
+    private boolean search(User user) {
+        return matches(user.getEmailAddress(), searchTerm) ||
+                matches(user.getFirstName(), searchTerm) ||
+                matches(user.getLastName(), searchTerm) ||
+                matches(user.getAddress(), searchTerm) ||
+                matches(user.getPhoneNumber(), searchTerm) ||
+                matches(user.getDepartmentId().getCompanyId().getCompanyName(), searchTerm) ||
+                matches(user.getDepartmentId().getName(), searchTerm);
     }
 }

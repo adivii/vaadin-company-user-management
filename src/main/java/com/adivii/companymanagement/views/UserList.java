@@ -110,6 +110,7 @@ public class UserList extends HorizontalLayout {
 
         this.userTable.setDataProvider(this.dataProvider);
 
+        // TODO: Learn about filtering service
         this.userFilterService = new UserFilterService(this.dataProvider);
 
         this.userTable.getHeaderRows().clear();
@@ -153,9 +154,8 @@ public class UserList extends HorizontalLayout {
         return layout;
     }
 
-    public void updateTable() {
+    public void updateTable(List<User> items) {
         // TODO: Can't update table when add new record (if using only refreshAll)
-        List<User> items = this.userService.getAllUser();
         ListDataProvider<User> provider = new ListDataProvider<>(items);
 
         // userTable.setItems(items);
@@ -166,6 +166,16 @@ public class UserList extends HorizontalLayout {
     public VerticalLayout getLayout() {
         VerticalLayout mainLayout = new VerticalLayout();
         Button btnAdd = new Button("Add New User");
+        TextField searchBox = new TextField();
+        HorizontalLayout searchLayout = new HorizontalLayout(btnAdd, searchBox);
+        
+        searchBox.setPlaceholder("Search");
+        searchBox.setValueChangeMode(ValueChangeMode.EAGER);
+        searchBox.addValueChangeListener(e -> {
+            this.userFilterService.setSearchTerm(e.getValue());
+
+            searchBox.setClearButtonVisible(!searchBox.getValue().isEmpty());
+        });
 
         getUserTable();
 
@@ -173,7 +183,7 @@ public class UserList extends HorizontalLayout {
             getAddUserDialog().open();
         });
 
-        mainLayout.add(btnAdd, this.userTable);
+        mainLayout.add(searchLayout, this.userTable);
         mainLayout.setHeightFull();
 
         return mainLayout;
@@ -257,7 +267,7 @@ public class UserList extends HorizontalLayout {
 
             if (userService.saveUser(newUser)) {
                 addDialog.close();
-                updateTable();
+                updateTable(this.userService.getAllUser());
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -367,7 +377,7 @@ public class UserList extends HorizontalLayout {
 
             if (userService.editData(newUser)) {
                 editDialog.close();
-                updateTable();
+                updateTable(this.userService.getAllUser());
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -401,9 +411,8 @@ public class UserList extends HorizontalLayout {
         Text confirmationText = new Text("Are you sure?");
         Button confirmationButton = new Button("Yes", e -> {
             userService.deleteUser(user);
-            ;
             confirmationDialog.close();
-            updateTable();
+            updateTable(this.userService.getAllUser());
         });
         Button cancelButton = new Button("No", e -> confirmationDialog.close());
         HorizontalLayout buttonLayout = new HorizontalLayout(confirmationButton, cancelButton);
