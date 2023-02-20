@@ -1,17 +1,24 @@
 package com.adivii.companymanagement.views;
 
+import java.util.function.Consumer;
+
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.Department;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
+import com.adivii.companymanagement.data.service.ErrorService;
+import com.adivii.companymanagement.data.service.filter.DepartmentFilterService;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
@@ -19,7 +26,10 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.textfield.TextFieldVariant;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
@@ -30,9 +40,12 @@ public class DepartmentList extends HorizontalLayout {
     private CompanyService companyService;
     private Grid<Department> departmentTable;
 
+    private DepartmentFilterService departmentFilterService;
+
     public DepartmentList(DepartmentService departmentService, CompanyService companyService) {
         this.departmentService = departmentService;
         this.companyService = companyService;
+        this.departmentFilterService = new DepartmentFilterService();
 
         VerticalLayout sidebarLayout = new SidebarLayout();
 
@@ -41,7 +54,7 @@ public class DepartmentList extends HorizontalLayout {
         setSizeFull();
         add(sidebarLayout, getLayout());
     }
-    
+
     public Grid<Department> getDepartmentTable() {
         this.departmentTable = new Grid<>(Department.class, false);
 
@@ -50,40 +63,84 @@ public class DepartmentList extends HorizontalLayout {
 
             return button;
         }).setWidth("75px").setFlexGrow(0);
-        this.departmentTable.addColumn(TemplateRenderer.<Department> of(
-            "<span title='[[item.name]]' aria-label='[[item.name]]'>[[item.name]]</span>"
-        ).withProperty("name", Department::getName)).setHeader("Department").setAutoWidth(true).setResizable(true);
-        this.departmentTable.addColumn(TemplateRenderer.<Department> of(
-            "<span title='[[item.company]]' aria-label='[[item.company]]'>[[item.company]]</span>"
-        ).withProperty("company", e -> e.getCompanyId().getCompanyName())).setHeader("Company").setAutoWidth(true).setResizable(true);
-        this.departmentTable.addColumn(TemplateRenderer.<Department> of(
-            "<span title='[[item.employee]]' aria-label='[[item.employee]]'>[[item.employee]]</span>"
-        ).withProperty("employee", Department::getUserCount)).setHeader("No of Employee").setAutoWidth(true).setResizable(true);
+        Grid.Column<Department> nameColumn = this.departmentTable.addColumn(TemplateRenderer.<Department>of(
+                "<span title='[[item.name]]' aria-label='[[item.name]]'>[[item.name]]</span>")
+                .withProperty("name", Department::getName)).setAutoWidth(true)
+                .setResizable(true);
+        Grid.Column<Department> companyColumn = this.departmentTable.addColumn(TemplateRenderer.<Department>of(
+                "<span title='[[item.company]]' aria-label='[[item.company]]'>[[item.company]]</span>")
+                .withProperty("company", e -> e.getCompanyId().getCompanyName()))
+                .setAutoWidth(true).setResizable(true);
+        Grid.Column<Department> employeeColumn = this.departmentTable.addColumn(TemplateRenderer.<Department>of(
+                "<span title='[[item.employee]]' aria-label='[[item.employee]]'>[[item.employee]]</span>")
+                .withProperty("employee", Department::getUserCount)).setAutoWidth(true)
+                .setResizable(true);
 
         this.departmentTable.addItemDoubleClickListener(e -> {
             getEditDialog(e.getItem()).open();
         });
 
         this.departmentTable.setHeightFull();
-
         updateTable();
+
+        this.departmentTable.getHeaderRows().clear();
+        HeaderRow header = this.departmentTable.appendHeaderRow();
+
+        header.getCell(nameColumn).setComponent(
+                createFilterHeader("Department Name", this.departmentFilterService::setDepartmentName));
+        header.getCell(companyColumn).setComponent(
+                createFilterHeader("Department Name", this.departmentFilterService::setCompanyName));
+        header.getCell(employeeColumn).setComponent(
+                createFilterHeader("Department Name", this.departmentFilterService::setCompanyName));
 
         return this.departmentTable;
     }
 
+    private static Component createFilterHeader(String labelText,
+            Consumer<String> filterChangeConsumer) {
+        Label label = new Label(labelText);
+        label.getStyle().set("padding-top", "var(--lumo-space-m)")
+                .set("font-size", "var(--lumo-font-size-xs)");
+        TextField textField = new TextField();
+        textField.setValueChangeMode(ValueChangeMode.EAGER);
+        textField.setClearButtonVisible(true);
+        textField.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+        textField.setWidthFull();
+        textField.getStyle().set("max-width", "100%");
+        textField.addValueChangeListener(
+                e -> filterChangeConsumer.accept(e.getValue()));
+        VerticalLayout layout = new VerticalLayout(label, textField);
+        layout.getThemeList().clear();
+        layout.getThemeList().add("spacing-xs");
+
+        return layout;
+    }
+
     public void updateTable() {
-        this.departmentTable.setItems(departmentService.getAllDepartment());
+        ListDataProvider<Department> dataProvider = new ListDataProvider<>(departmentService.getAllDepartment());
+
+        this.departmentTable.setDataProvider(dataProvider);
+        this.departmentFilterService.setDataProvider(dataProvider);
     }
 
     public VerticalLayout getLayout() {
         VerticalLayout mainLayout = new VerticalLayout();
         Button btnAdd = new Button("Add New Department");
-        
+        TextField searchField = new TextField();
+        searchField.setPlaceholder("Search");
+        HorizontalLayout searchLayout = new HorizontalLayout(btnAdd, searchField);
+
+        searchField.setValueChangeMode(ValueChangeMode.EAGER);
+        searchField.addValueChangeListener(e -> {
+            this.departmentFilterService.setSearchTerm(e.getValue());
+            searchField.setClearButtonVisible(e.getValue() != null);
+        });
+
         btnAdd.addClickListener(e -> {
             getAddDepartmentDialog().open();
         });
 
-        mainLayout.add(btnAdd, getDepartmentTable());
+        mainLayout.add(searchLayout, getDepartmentTable());
         mainLayout.setHeightFull();
 
         return mainLayout;
@@ -123,13 +180,14 @@ public class DepartmentList extends HorizontalLayout {
             newDepartment.setName(nameInput.getValue());
             newDepartment.setCompanyId(companyInput.getValue());
 
-            if(departmentService.saveDepartment(newDepartment)) {
+            ErrorService errorService = departmentService.saveDepartment(newDepartment);
+            if (!errorService.isErrorStatus()) {
                 addDepartmentDialog.close();
                 updateTable();
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                Text notificationText = new Text("Can't Save Department");
+                Text notificationText = new Text(errorService.getErrorMessage());
                 Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
                 closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
                 HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
@@ -137,7 +195,7 @@ public class DepartmentList extends HorizontalLayout {
                 notification.setDuration(2000);
                 notification.add(notificationLayout);
                 notification.open();
-            }  
+            }
         });
 
         dialogLayout.add(title, divider, nameInput, companyInput, buttonLayout);
@@ -170,7 +228,7 @@ public class DepartmentList extends HorizontalLayout {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         Button btnSave = new Button("Save");
         Button btnCancel = new Button("Cancel", e -> editDepartmentDialog.close());
-        
+
         btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         buttonLayout.add(btnSave, btnCancel);
         buttonLayout.setJustifyContentMode(JustifyContentMode.END);
@@ -186,13 +244,14 @@ public class DepartmentList extends HorizontalLayout {
             newDepartment.setName(nameInput.getValue());
             newDepartment.setCompanyId(companyInput.getValue());
 
-            if(departmentService.editData(newDepartment)) {
+            ErrorService errorService = departmentService.editData(newDepartment);
+            if (!errorService.isErrorStatus()) {
                 editDepartmentDialog.close();
                 updateTable();
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                Text notificationText = new Text("Can't Save Department");
+                Text notificationText = new Text(errorService.getErrorMessage());
                 Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
                 closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
                 HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
@@ -200,7 +259,7 @@ public class DepartmentList extends HorizontalLayout {
                 notification.setDuration(2000);
                 notification.add(notificationLayout);
                 notification.open();
-            } 
+            }
         });
 
         dialogLayout.add(title, divider, nameInput, companyInput, buttonLayout);
@@ -224,7 +283,7 @@ public class DepartmentList extends HorizontalLayout {
 
         Text confirmationText = new Text("Are you sure?");
         Button confirmationButton = new Button("Yes", e -> {
-            if(departmentService.deleteDepartment(department)) {
+            if (departmentService.deleteDepartment(department)) {
                 confirmationDialog.close();
                 updateTable();
             } else {

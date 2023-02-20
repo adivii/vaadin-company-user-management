@@ -58,15 +58,18 @@ public class CompanyFilterService {
         return searchTerm == null || searchTerm.isBlank() || value.toLowerCase().contains(searchTerm.toLowerCase());
     }
 
+    // TODO: Set Filter for User Count
     private boolean filter(Company company) {
         return matches(company.getCompanyName(), this.companyName) &&
                 matches(company.getAddress(), this.address) &&
                 matches(company.getSector(), this.sector) &&
-                matches(company.getWebsite(), this.website) &&
-                matches(Integer.toString(company.getUserCount()), Integer.toString(this.employee));
+                matches(company.getWebsite(), this.website);
     }
 
     private boolean search(Company company) {
-        return true;
+        return matches(company.getCompanyName(), this.searchTerm) ||
+                matches(company.getAddress(), this.searchTerm) ||
+                matches(company.getSector(), this.searchTerm) ||
+                matches(company.getWebsite(), this.searchTerm);
     }
 }

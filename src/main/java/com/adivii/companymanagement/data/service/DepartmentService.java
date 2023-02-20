@@ -29,32 +29,36 @@ public class DepartmentService {
         return data.stream().map(Department::getName).collect(Collectors.toList());
     }
 
-    public boolean saveDepartment(Department department) {
-        if(department != null && !department.checkEmpty() && !getNameByCompany(this.departmentRepository.findByCompanyId(department.getCompanyId())).contains(department.getName())) {
-            departmentRepository.save(department);
+    public ErrorService saveDepartment(Department department) {
+        if(department != null && !department.checkEmpty()) {
+            if (!getNameByCompany(this.departmentRepository.findByCompanyId(department.getCompanyId())).contains(department.getName())) {
+                departmentRepository.save(department);
 
-            return true;
+                return new ErrorService(false, null);
+            } else {
+                return new ErrorService(true, "Name Already Registered");
+            }
         } else {
-            return false;
+            return new ErrorService(true, "Field Can't Be Empty");
         }
     }
 
-    public boolean editData(Department department) {
+    public ErrorService editData(Department department) {
         if(department != null && !department.checkEmpty()){
             if(this.departmentRepository.findById(department.getDepartmentId()).isPresent()) {
                 // TODO : Make more efficient method to do checking
                 Department currentData = this.departmentRepository.findById(department.getDepartmentId()).get();
                 if((currentData.getName().equals(department.getName()) && currentData.getCompanyId().getCompanyId() == department.getCompanyId().getCompanyId())  || !getNameByCompany(this.departmentRepository.findByCompanyId(department.getCompanyId())).contains(department.getName())){
                     this.departmentRepository.save(department);
-                    return true;
+                    return new ErrorService(false, null);
                 } else {
-                    return false;
+                    return new ErrorService(true, "Company Already Have Department with That Name");
                 }
             } else {
-                return false;
+                return new ErrorService(true, "Can't Find Record");
             }
         } else {
-            return false;
+            return new ErrorService(true, "Field Can't Be Empty");
         }
     }
 

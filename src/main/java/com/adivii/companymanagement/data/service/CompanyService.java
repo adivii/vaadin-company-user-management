@@ -44,32 +44,40 @@ public class CompanyService {
         return employeeCount;
     }
 
-    public boolean addCompany(Company company) {
-        if(company != null && !company.checkEmpty() && this.companyRepository.findByCompanyName(company.getCompanyName()).size() == 0) {
-            this.companyRepository.save(company);
-            return true;
+    public ErrorService addCompany(Company company) {
+        if(company != null && !company.checkEmpty()) {
+            if(this.companyRepository.findByCompanyName(company.getCompanyName()).size() == 0) {
+                this.companyRepository.save(company);
+                return new ErrorService(false, null);
+            } else {
+                return new ErrorService(true, "Name Already Used");
+            }
         } else {
-            return false;
+            return new ErrorService(true, "Field Can't Be Empty");
         }
     }
 
-    public boolean editData(Company company) {
-        if(company != null && !company.checkEmpty() && (company.getChildCompanyCount() == 0 || company.getHoldingCompany() != null)){
+    public ErrorService editData(Company company) {
+        if(company != null && !company.checkEmpty()){
             if(this.companyRepository.findById(company.getCompanyId()).isPresent()) {
                 // TODO : Make more efficient method
                 Company currentData = this.companyRepository.findById(company.getCompanyId()).get();
                 if(currentData.getCompanyName().equals(company.getCompanyName()) || this.companyRepository.findByCompanyName(company.getCompanyName()).size() == 0) {
-                    this.companyRepository.save(company);
-                    return true;
+                    if (company.getChildCompanyCount() == 0 || company.getHoldingCompany() != null) {
+                        this.companyRepository.save(company);
+                        return new ErrorService(false, null);   
+                    } else {
+                        return new ErrorService(true, "Child Company Can't Have Another Child Company");
+                    }
                 } else {
-                    return false;
+                    return new ErrorService(true, "Name Already Registered");
                 }
                 
             } else {
-                return false;
+                return new ErrorService(true, "Can't Find Record");
             }
         } else {
-            return false;
+            return new ErrorService(true, "Field Can't Be Empty");
         }
     }
 

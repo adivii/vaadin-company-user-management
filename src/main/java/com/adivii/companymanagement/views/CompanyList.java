@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.service.CompanyService;
+import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.filter.CompanyFilterService;
 import com.vaadin.flow.component.Component;
@@ -171,9 +172,19 @@ public class CompanyList extends HorizontalLayout {
     public VerticalLayout getLayout() {
         VerticalLayout mainLayout = new VerticalLayout();
         Button btnAdd = new Button("Add New Company", e -> getAddCompanyDialog().open());
+        TextField searchField = new TextField();
+        searchField.setPlaceholder("Search");
+        HorizontalLayout searchLayout = new HorizontalLayout(btnAdd, searchField);
         Grid<Company> companyTable = getCompanyTable();
 
-        mainLayout.add(btnAdd, companyTable);
+        searchField.setValueChangeMode(ValueChangeMode.EAGER);
+        searchField.addValueChangeListener(e -> {
+            this.companyFilterService.setSearchTerm(e.getValue());
+            
+            searchField.setClearButtonVisible(e.getValue() != null);
+        });
+
+        mainLayout.add(searchLayout, companyTable);
         mainLayout.setHeightFull();
 
         return mainLayout;
@@ -241,13 +252,14 @@ public class CompanyList extends HorizontalLayout {
             newCompany.setWebsite(websiteInput.getValue());
             newCompany.setHoldingCompany(holdingInput.getValue());
 
-            if (companyService.addCompany(newCompany)) {
+            ErrorService errorService = companyService.addCompany(newCompany);
+            if (!errorService.isErrorStatus()) {
                 addCompanyDialog.close();
                 updateTable();
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                Text notificationText = new Text("Can't Save Company");
+                Text notificationText = new Text(errorService.getErrorMessage());
                 Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
                 closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
                 HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
@@ -332,13 +344,14 @@ public class CompanyList extends HorizontalLayout {
             currentCompany.setWebsite(websiteInput.getValue());
             currentCompany.setHoldingCompany(holdingInput.getValue());
 
-            if (companyService.editData(currentCompany)) {
+            ErrorService errorService = companyService.editData(currentCompany);
+            if (!errorService.isErrorStatus()) {
                 editCompanyDialog.close();
                 updateTable();
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                Text notificationText = new Text("Can't Save Company");
+                Text notificationText = new Text(errorService.getErrorMessage());
                 Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
                 closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
                 HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
