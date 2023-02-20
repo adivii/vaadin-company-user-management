@@ -1,4 +1,4 @@
-package com.adivii.companymanagement.data.service;
+package com.adivii.companymanagement.data.service.filter;
 
 import com.adivii.companymanagement.data.entity.User;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -15,10 +15,6 @@ public class UserFilterService {
     private String department;
 
     private String searchTerm;
-
-    public UserFilterService(ListDataProvider<User> dataProvider) {
-        setDataProvider(dataProvider);
-    }
 
     public void setDataProvider(ListDataProvider<User> dataProvider) {
         this.dataProvider = dataProvider;

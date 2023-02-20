@@ -60,7 +60,7 @@ public class DepartmentList extends HorizontalLayout {
             "<span title='[[item.employee]]' aria-label='[[item.employee]]'>[[item.employee]]</span>"
         ).withProperty("employee", Department::getUserCount)).setHeader("No of Employee").setAutoWidth(true).setResizable(true);
 
-        this.departmentTable.addItemClickListener(e -> {
+        this.departmentTable.addItemDoubleClickListener(e -> {
             getEditDialog(e.getItem()).open();
         });
 

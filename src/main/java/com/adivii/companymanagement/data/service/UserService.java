@@ -28,39 +28,34 @@ public class UserService {
     }
 
     public ErrorService saveUser(User user) {
-        ErrorService errorService = new ErrorService();
         if (user != null && !user.checkEmpty()) {
             if(getByEmail(user.getEmailAddress()).size() == 0){
                 this.userRepository.save(user);
             
-                errorService.setErrorStatus(false);
+                return new ErrorService(false, null);
             } else {
-                errorService.setErrorStatus(true);
-                errorService.setErrorMessage("Email Already Registered");
+                return new ErrorService(true, "Email Already Registered");
             }
         } else {
-            errorService.setErrorStatus(true);
-            errorService.setErrorMessage("Field Can't Be Empty");
+            return new ErrorService(true, "Field Can't Be Empty");
         }
-
-        return errorService;
     }
 
-    public boolean editData(User user) {
+    public ErrorService editData(User user) {
         if(user != null && !user.checkEmpty()){
             Optional<User> currentData = this.userRepository.findById(user.getUserId());
             if(currentData.isPresent()) {
                 if((currentData.get().getEmailAddress().equals(user.getEmailAddress())) || getByEmail(user.getEmailAddress()).size() == 0){
                     this.userRepository.save(user);
-                    return true;
+                    return new ErrorService(false, null);
                 } else {
-                    return false;
+                    return new ErrorService(true, "Email Already Registered");
                 }
             } else {
-                return false;
+                return new ErrorService(true, "Can't Find Record");
             }
         } else {
-            return false;
+            return new ErrorService(true, "Field Can't Be Empty");
         }
     }
 

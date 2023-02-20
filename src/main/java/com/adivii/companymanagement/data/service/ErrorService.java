@@ -3,6 +3,11 @@ package com.adivii.companymanagement.data.service;
 public class ErrorService {
     private boolean errorStatus;
     private String errorMessage;
+
+    public ErrorService(boolean errorStatus, String errorMessage) {
+        this.errorStatus = errorStatus;
+        this.errorMessage = errorMessage;
+    }
     
     public boolean isErrorStatus() {
         return errorStatus;

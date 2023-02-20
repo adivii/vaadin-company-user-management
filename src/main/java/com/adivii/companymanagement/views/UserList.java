@@ -11,8 +11,8 @@ import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
-import com.adivii.companymanagement.data.service.UserFilterService;
 import com.adivii.companymanagement.data.service.UserService;
+import com.adivii.companymanagement.data.service.filter.UserFilterService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
@@ -53,13 +53,12 @@ public class UserList extends HorizontalLayout {
     UserFilterService userFilterService;
 
     Grid<User> userTable;
-    final ListDataProvider<User> dataProvider;
 
     public UserList(UserService userService, CompanyService companyService, DepartmentService departmentService) {
         this.userService = userService;
         this.companyService = companyService;
         this.departmentService = departmentService;
-        this.dataProvider = new ListDataProvider<>(this.userService.getAllUser());
+        this.userFilterService = new UserFilterService();
 
         VerticalLayout sidebar = new SidebarLayout();
 
@@ -103,16 +102,13 @@ public class UserList extends HorizontalLayout {
                 .withProperty("department", e -> e.getDepartmentId().getName()))
                 .setAutoWidth(true).setResizable(true);
 
-        this.userTable.addItemClickListener(e -> {
+        this.userTable.addItemDoubleClickListener(e -> {
             getEditUserDialog(e.getItem()).open();
         });
 
         this.userTable.setHeightFull();
 
-        this.userTable.setDataProvider(this.dataProvider);
-
-        // TODO: Learn about filtering service
-        this.userFilterService = new UserFilterService(this.dataProvider);
+        updateTable();
 
         this.userTable.getHeaderRows().clear();
         HeaderRow headerRow = this.userTable.appendHeaderRow();
@@ -155,9 +151,9 @@ public class UserList extends HorizontalLayout {
         return layout;
     }
 
-    public void updateTable(List<User> items) {
+    public void updateTable() {
         // TODO: Can't update table when add new record (if using only refreshAll)
-        ListDataProvider<User> provider = new ListDataProvider<>(items);
+        ListDataProvider<User> provider = new ListDataProvider<>(userService.getAllUser());
 
         // userTable.setItems(items);
         userTable.setDataProvider(provider);
@@ -269,7 +265,7 @@ public class UserList extends HorizontalLayout {
             ErrorService errorService = userService.saveUser(newUser);
             if (!errorService.isErrorStatus()) {
                 addDialog.close();
-                updateTable(this.userService.getAllUser());
+                updateTable();
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -377,13 +373,14 @@ public class UserList extends HorizontalLayout {
             newUser.setAddress(inputAddress.getValue());
             newUser.setDepartmentId(inputDepartment.getValue());
 
-            if (userService.editData(newUser)) {
+            ErrorService errorService = userService.editData(newUser);
+            if (!errorService.isErrorStatus()) {
                 editDialog.close();
-                updateTable(this.userService.getAllUser());
+                updateTable();
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                Text notificationText = new Text("Can't Save User");
+                Text notificationText = new Text(errorService.getErrorMessage());
                 Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
                 closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
                 HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
@@ -414,7 +411,7 @@ public class UserList extends HorizontalLayout {
         Button confirmationButton = new Button("Yes", e -> {
             userService.deleteUser(user);
             confirmationDialog.close();
-            updateTable(this.userService.getAllUser());
+            updateTable();
         });
         Button cancelButton = new Button("No", e -> confirmationDialog.close());
         HorizontalLayout buttonLayout = new HorizontalLayout(confirmationButton, cancelButton);
