@@ -10,6 +10,7 @@ import com.adivii.companymanagement.data.entity.Department;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
+import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.UserFilterService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.vaadin.flow.component.Component;
@@ -265,13 +266,14 @@ public class UserList extends HorizontalLayout {
             newUser.setAddress(inputAddress.getValue());
             newUser.setDepartmentId(inputDepartment.getValue());
 
-            if (userService.saveUser(newUser)) {
+            ErrorService errorService = userService.saveUser(newUser);
+            if (!errorService.isErrorStatus()) {
                 addDialog.close();
                 updateTable(this.userService.getAllUser());
             } else {
                 Notification notification = new Notification();
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                Text notificationText = new Text("Can't Save User");
+                Text notificationText = new Text(errorService.getErrorMessage());
                 Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
                 closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
                 HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);

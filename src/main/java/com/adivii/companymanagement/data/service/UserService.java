@@ -27,14 +27,23 @@ public class UserService {
         return this.userRepository.findByEmailAddress(email);
     }
 
-    public boolean saveUser(User user) {
-        if (user != null && !user.checkEmpty() && getByEmail(user.getEmailAddress()).size() == 0) {
-            this.userRepository.save(user);
+    public ErrorService saveUser(User user) {
+        ErrorService errorService = new ErrorService();
+        if (user != null && !user.checkEmpty()) {
+            if(getByEmail(user.getEmailAddress()).size() == 0){
+                this.userRepository.save(user);
             
-            return true;
+                errorService.setErrorStatus(false);
+            } else {
+                errorService.setErrorStatus(true);
+                errorService.setErrorMessage("Email Already Registered");
+            }
         } else {
-            return false;
+            errorService.setErrorStatus(true);
+            errorService.setErrorMessage("Field Can't Be Empty");
         }
+
+        return errorService;
     }
 
     public boolean editData(User user) {
