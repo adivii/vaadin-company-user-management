@@ -8,6 +8,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
+import org.springframework.boot.context.properties.bind.DefaultValue;
+
 @Entity
 public class User {
     @Id
@@ -23,6 +25,12 @@ public class User {
     private String address;
     @NotNull
     private String phoneNumber;
+    @NotNull
+    private String password;
+    @NotNull
+    private String role;
+    @NotNull
+    private boolean enabled;
 
     @ManyToOne
     @JoinColumn(name = "departmentId")
@@ -71,7 +79,25 @@ public class User {
     public void setAddress(String address) {
         this.address = address;
     }
-
+    public String getPassword() {
+        return password;
+    }
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    public String getRole() {
+        return role;
+    }
+    public void setRole(String role) {
+        this.role = role;
+    }
+    public boolean isEnabled() {
+        return enabled;
+    }
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+    
     // Custom Function
     public boolean checkEmpty() {
         return firstName.isBlank() || lastName.isBlank() || address.isBlank() || emailAddress.isBlank() || phoneNumber.isBlank();

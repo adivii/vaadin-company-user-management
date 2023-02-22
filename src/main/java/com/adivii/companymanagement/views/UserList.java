@@ -1,8 +1,9 @@
 package com.adivii.companymanagement.views;
 
-import java.util.List;
+import java.util.Arrays;
 import java.util.function.Consumer;
 
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 
 import com.adivii.companymanagement.data.entity.Company;
@@ -15,6 +16,7 @@ import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.filter.UserFilterService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -36,12 +38,13 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
-import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 
 @Route("/user")
 @PageTitle("User List")
@@ -51,6 +54,7 @@ public class UserList extends HorizontalLayout {
     CompanyService companyService;
     DepartmentService departmentService;
     UserFilterService userFilterService;
+    VaadinSession session;
 
     Grid<User> userTable;
 
@@ -59,6 +63,8 @@ public class UserList extends HorizontalLayout {
         this.companyService = companyService;
         this.departmentService = departmentService;
         this.userFilterService = new UserFilterService();
+
+        this.session = VaadinSession.getCurrent();
 
         VerticalLayout sidebar = new SidebarLayout();
 
@@ -229,12 +235,24 @@ public class UserList extends HorizontalLayout {
         HorizontalLayout inputCompDept = new HorizontalLayout(inputCompany, inputDepartment);
         inputCompDept.setWidthFull();
 
+        ComboBox<String> inputRole = new ComboBox<>("Role");
+        inputRole.setItems(Arrays.asList(new String[]{"superadmin", "companyadmin"}));
+        inputRole.setItemLabelGenerator(e -> {
+            if(e.equals("superadmin")){
+                return "Super Admin";
+            } else if (e.equals("companyadmin")) {
+                return "Company Admin";
+            } else {
+                return "Blank";
+            }
+        });
+
         inputCompany.addValueChangeListener(e -> {
             inputDepartment.clear();
             inputDepartment.setItems(departmentService.getByCompany(e.getValue()));
         });
 
-        Scroller scroller = new Scroller(new Div(inputName, inputEmail, inputAddress, inputPhone, inputCompDept));
+        Scroller scroller = new Scroller(new Div(inputName, inputEmail, inputAddress, inputPhone, inputCompDept, inputRole));
         scroller.setHeightFull();
         scroller.setWidthFull();
         scroller.getStyle()
@@ -256,11 +274,12 @@ public class UserList extends HorizontalLayout {
             User newUser = new User();
             newUser.setFirstName(inputFirst.getValue());
             newUser.setLastName(inputLast.getValue());
-            ;
             newUser.setEmailAddress(inputEmail.getValue());
             newUser.setPhoneNumber(inputPhone.getValue());
             newUser.setAddress(inputAddress.getValue());
             newUser.setDepartmentId(inputDepartment.getValue());
+            newUser.setPassword(BCrypt.hashpw("password", BCrypt.gensalt()));
+            newUser.setRole(inputRole.getValue());
 
             ErrorService errorService = userService.saveUser(newUser);
             if (!errorService.isErrorStatus()) {

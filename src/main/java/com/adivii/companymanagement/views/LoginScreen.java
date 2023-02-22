@@ -27,7 +27,7 @@ public class LoginScreen extends VerticalLayout implements BeforeEnterObserver {
 
         // Redirect if user already login
         if(session.getAttribute("userID") != null) {
-            UI.getCurrent().getPage().setLocation("/company");
+            UI.getCurrent().getPage().setLocation("/");
         }
 
         setSizeFull();
@@ -35,8 +35,7 @@ public class LoginScreen extends VerticalLayout implements BeforeEnterObserver {
         setJustifyContentMode(JustifyContentMode.CENTER);
 
         loginForm.addLoginListener(e -> {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
+            session.setAttribute("userID", userService.getByEmail(e.getUsername()).get(0));
         });
         
         loginForm.setAction("login");

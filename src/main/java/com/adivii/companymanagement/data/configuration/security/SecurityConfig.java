@@ -85,7 +85,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // Allow Vaadin's internal request
                 .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
                 // Allow request by logged-in users
-                .antMatchers("/company").hasAuthority("superadmin")
+                .antMatchers("/company").hasAnyAuthority("superadmin", "companyadmin")
                 .antMatchers("/department").hasAuthority("departmentadmin")
                 .anyRequest().authenticated()
                 // Configure login page

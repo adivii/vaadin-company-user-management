@@ -3,13 +3,17 @@ package com.adivii.companymanagement.views;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 import com.adivii.companymanagement.data.entity.Company;
+import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.filter.CompanyFilterService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -32,22 +36,19 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.component.treegrid.TreeGrid;
-import com.vaadin.flow.data.provider.ListDataProvider;
-import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.server.VaadinSession;
 
 // Add alternative Route for this page
 // So, both localhost:8080 and localhost:8080/company will open this page
 // @PWA(name = "Company Management App",
 //      shortName = "cm-app")
-@Route("")
-@RouteAlias("/company")
+@Route("/company")
 @PageTitle("Company List")
 public class CompanyList extends HorizontalLayout {
     CompanyService companyService;
@@ -55,11 +56,22 @@ public class CompanyList extends HorizontalLayout {
     CompanyFilterService companyFilterService;
 
     TreeGrid<Company> companyTable;
+    VaadinSession session;
 
     public CompanyList(CompanyService companyService, UserService userService) {
         this.companyService = companyService;
         this.userService = userService;
         this.companyFilterService = new CompanyFilterService();
+        session = VaadinSession.getCurrent();
+
+        // Check Session Status
+        // if(session.getAttribute("userID") == null) {
+        //     UI.getCurrent().getPage().setLocation("/");
+        // } else if (!((User) session.getAttribute("userID")).getRole().equals("superadmin") && !((User) session.getAttribute("userID")).getRole().equals("companyadmin")) {
+        //     UI.getCurrent().getPage().setLocation("/");
+        // }
+
+        // UI.getCurrent().setPollInterval(10000); // Set UI refresh interval in Milisecond(s)
 
         VerticalLayout sidebar = new SidebarLayout();
         VerticalLayout mainLayout = getLayout();
@@ -171,7 +183,10 @@ public class CompanyList extends HorizontalLayout {
 
     public VerticalLayout getLayout() {
         VerticalLayout mainLayout = new VerticalLayout();
-        Button btnAdd = new Button("Add New Company", e -> getAddCompanyDialog().open());
+        Button btnAdd = new Button("Add New Company", e -> {
+            getAddCompanyDialog().open();
+            System.out.println(session.getAttribute("userID"));
+        });
         TextField searchField = new TextField();
         searchField.setPlaceholder("Search");
         HorizontalLayout searchLayout = new HorizontalLayout(btnAdd, searchField);

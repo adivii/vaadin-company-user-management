@@ -2,7 +2,6 @@ package com.adivii.companymanagement.data.service.filter;
 
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.service.CompanyService;
-import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 
 public class CompanyFilterService {

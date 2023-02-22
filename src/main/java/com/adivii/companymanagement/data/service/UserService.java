@@ -5,6 +5,9 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.adivii.companymanagement.data.entity.User;
@@ -14,6 +17,9 @@ import com.adivii.companymanagement.data.repository.UserRepository;
 @Transactional
 public class UserService {
     private UserRepository userRepository;
+    
+    // @Autowired
+    // PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -61,5 +67,23 @@ public class UserService {
 
     public void deleteUser(User user) {
         this.userRepository.delete(user);
+    }
+
+    public ErrorService validateUser(User user) {
+        if (user != null && !user.getEmailAddress().isBlank() && !user.getPassword().isBlank()) {
+            List<User> userCheck = getByEmail(user.getEmailAddress());
+
+            if(userCheck.size() == 0) {
+                return new ErrorService(true, "Email Doesn't Registered");
+            } else {
+                if (BCrypt.checkpw(user.getPassword(), userCheck.get(0).getPassword())) {
+                    return new ErrorService(false, null);
+                } else {
+                    return new ErrorService(true, "Password Invalid");
+                }
+            }
+        } else {
+            return new ErrorService(true, "Field Can't Be Empty");
+        } 
     }
 }

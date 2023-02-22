@@ -2,14 +2,18 @@ package com.adivii.companymanagement.views;
 
 import java.util.function.Consumer;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.Department;
+import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.filter.DepartmentFilterService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -32,6 +36,7 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 
 @Route("/department")
 @PageTitle("Department List")
@@ -39,13 +44,15 @@ public class DepartmentList extends HorizontalLayout {
     private DepartmentService departmentService;
     private CompanyService companyService;
     private Grid<Department> departmentTable;
-
+    private VaadinSession session;
     private DepartmentFilterService departmentFilterService;
 
     public DepartmentList(DepartmentService departmentService, CompanyService companyService) {
         this.departmentService = departmentService;
         this.companyService = companyService;
         this.departmentFilterService = new DepartmentFilterService();
+
+        session = VaadinSession.getCurrent();
 
         VerticalLayout sidebarLayout = new SidebarLayout();
 
