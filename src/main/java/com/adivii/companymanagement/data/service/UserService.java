@@ -5,9 +5,7 @@ import java.util.Optional;
 
 import javax.transaction.Transactional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.adivii.companymanagement.data.entity.User;
@@ -36,6 +34,7 @@ public class UserService {
     public ErrorService saveUser(User user) {
         if (user != null && !user.checkEmpty()) {
             if(getByEmail(user.getEmailAddress()).size() == 0){
+                user.setEnabled(true);
                 this.userRepository.save(user);
             
                 return new ErrorService(false, null);

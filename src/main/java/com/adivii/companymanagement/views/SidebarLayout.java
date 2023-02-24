@@ -1,27 +1,29 @@
 package com.adivii.companymanagement.views;
 
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import javax.servlet.http.HttpSession;
 
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import com.adivii.companymanagement.data.entity.User;
+import com.adivii.companymanagement.data.service.SessionService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinSession;
 
 public class SidebarLayout extends VerticalLayout {
-    VaadinSession session;
+    HttpSession session;
 
     public SidebarLayout() {
-        session = VaadinSession.getCurrent();
+        this.session = SessionService.getCurrentSession();
 
+        Button navDashboard = new Button("Dashboard");
         Button navCompanyList = new Button("Company List");
         Button navDepartmentList = new Button("Department List");
         Button navUserList = new Button("User List");
         Button btnLogout = new Button("Logout");
 
-        if (session.getAttribute("userID") != null) {
-            String role = ((User) session.getAttribute("userID")).getRole();
+        if (this.session.getAttribute("userID") != null) {
+            String role = ((User) this.session.getAttribute("userID")).getRole();
 
             if (role.equals("superadmin")) {
                 navCompanyList.setVisible(true);
@@ -31,6 +33,14 @@ public class SidebarLayout extends VerticalLayout {
                 navCompanyList.setVisible(true);
                 navDepartmentList.setVisible(false);
                 navUserList.setVisible(false);
+            } else if (role.equals("departmentadmin")) {
+                navCompanyList.setVisible(false);
+                navDepartmentList.setVisible(true);
+                navUserList.setVisible(false);
+            } else if (role.equals("useradmin")) {
+                navCompanyList.setVisible(false);
+                navDepartmentList.setVisible(false);
+                navUserList.setVisible(true);
             }
         }
 
@@ -40,6 +50,9 @@ public class SidebarLayout extends VerticalLayout {
         btnLogout.setWidthFull();
 
         // Navigasi
+        navDashboard.addClickListener(e -> {
+            UI.getCurrent().getPage().setLocation("/dashboard");
+        });
         navCompanyList.addClickListener(e -> {
             UI.getCurrent().getPage().setLocation("/company");
         });

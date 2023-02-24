@@ -1,5 +1,6 @@
 package com.adivii.companymanagement.data.service;
 
+// TODO: Convert to static method
 public class ErrorService {
     private boolean errorStatus;
     private String errorMessage;

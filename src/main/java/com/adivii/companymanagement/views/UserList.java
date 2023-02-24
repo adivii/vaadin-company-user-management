@@ -3,7 +3,9 @@ package com.adivii.companymanagement.views;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
-import org.springframework.security.crypto.bcrypt.BCrypt;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 
 import com.adivii.companymanagement.data.entity.Company;
@@ -12,11 +14,11 @@ import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
+import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.filter.UserFilterService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -43,8 +45,6 @@ import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 
 @Route("/user")
 @PageTitle("User List")
@@ -54,7 +54,7 @@ public class UserList extends HorizontalLayout {
     CompanyService companyService;
     DepartmentService departmentService;
     UserFilterService userFilterService;
-    VaadinSession session;
+    HttpSession session;
 
     Grid<User> userTable;
 
@@ -64,7 +64,7 @@ public class UserList extends HorizontalLayout {
         this.departmentService = departmentService;
         this.userFilterService = new UserFilterService();
 
-        this.session = VaadinSession.getCurrent();
+        this.session = SessionService.getCurrentSession();
 
         VerticalLayout sidebar = new SidebarLayout();
 
@@ -236,12 +236,16 @@ public class UserList extends HorizontalLayout {
         inputCompDept.setWidthFull();
 
         ComboBox<String> inputRole = new ComboBox<>("Role");
-        inputRole.setItems(Arrays.asList(new String[]{"superadmin", "companyadmin"}));
+        inputRole.setItems(Arrays.asList(new String[]{"superadmin", "companyadmin", "departmentadmin", "useradmin"}));
         inputRole.setItemLabelGenerator(e -> {
             if(e.equals("superadmin")){
                 return "Super Admin";
             } else if (e.equals("companyadmin")) {
                 return "Company Admin";
+            } else if (e.equals("useradmin")) {
+                return "User Admin";
+            } else if (e.equals("departmentadmin")) {
+                return "Department Admin";
             } else {
                 return "Blank";
             }
@@ -278,8 +282,10 @@ public class UserList extends HorizontalLayout {
             newUser.setPhoneNumber(inputPhone.getValue());
             newUser.setAddress(inputAddress.getValue());
             newUser.setDepartmentId(inputDepartment.getValue());
-            newUser.setPassword(BCrypt.hashpw("password", BCrypt.gensalt()));
+            newUser.setPassword((new BCryptPasswordEncoder()).encode("password"));
+            newUser.setActivated(false);
             newUser.setRole(inputRole.getValue());
+            newUser.setEnabled(true);
 
             ErrorService errorService = userService.saveUser(newUser);
             if (!errorService.isErrorStatus()) {

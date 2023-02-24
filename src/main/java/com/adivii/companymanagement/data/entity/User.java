@@ -8,8 +8,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
-import org.springframework.boot.context.properties.bind.DefaultValue;
-
 @Entity
 public class User {
     @Id
@@ -31,6 +29,8 @@ public class User {
     private String role;
     @NotNull
     private boolean enabled;
+    @NotNull
+    private boolean activated;
 
     @ManyToOne
     @JoinColumn(name = "departmentId")
@@ -96,6 +96,12 @@ public class User {
     }
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+    public boolean isActivated() {
+        return activated;
+    }
+    public void setActivated(boolean activated) {
+        this.activated = activated;
     }
     
     // Custom Function

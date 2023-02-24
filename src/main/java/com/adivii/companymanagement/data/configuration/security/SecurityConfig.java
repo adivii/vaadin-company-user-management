@@ -1,8 +1,12 @@
 package com.adivii.companymanagement.data.configuration.security;
 
-import javax.sql.DataSource;
+import java.io.IOException;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -11,13 +15,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 
-import com.adivii.companymanagement.data.entity.User;
+import com.adivii.companymanagement.views.NewPasswordDialog;
 
 @EnableWebSecurity
 @Configuration
@@ -86,18 +91,45 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
                 // Allow request by logged-in users
                 .antMatchers("/company").hasAnyAuthority("superadmin", "companyadmin")
-                .antMatchers("/department").hasAuthority("departmentadmin")
+                .antMatchers("/department").hasAnyAuthority("superadmin", "departmentadmin")
+                .antMatchers("/user").hasAnyAuthority("superadmin", "useradmin")
                 .anyRequest().authenticated()
                 // Configure login page
                 .and().formLogin()
                 .loginPage(LOGIN_URL).permitAll()
                 .loginProcessingUrl(LOGIN_PROCESSING_URL)
                 .failureUrl(LOGIN_FAILURE_URL)
+                .successHandler(new AuthenticationSuccessHandler() {
+
+                    @Override
+                    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                            Authentication authentication) throws IOException, ServletException {
+                        // TODO: Search for different between HttpSession and VaadinSession
+                        HttpSession session = request.getSession();
+                        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+                        
+                        session.setAttribute("userID", userDetails.getUser());
+                        session.setMaxInactiveInterval(1800); // Inactive Interval in Second(s)
+
+                        response.sendRedirect("/");
+                    }
+
+                })
                 // Configure Logout
-                .and().logout().logoutSuccessUrl(LOGOUT_SUCCESS_URL);
+                .and().logout().logoutSuccessUrl(LOGOUT_SUCCESS_URL).addLogoutHandler(new LogoutHandler() {
+
+                    @Override
+                    public void logout(HttpServletRequest request, HttpServletResponse response,
+                            Authentication authentication) {
+                        HttpSession session = request.getSession();
+                        session.invalidate();
+                    }
+                })
+                // Configure 403 Page
+                .and().exceptionHandling().accessDeniedPage("/dashboard");
     }
 
-    @Override
+    /*~~(Migrate manually based on https://spring.io/blog/2022/02/21/spring-security-without-the-websecurityconfigureradapter)~~>*/@Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(authenticationProvider());
     }

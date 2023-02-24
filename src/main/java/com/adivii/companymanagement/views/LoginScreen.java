@@ -1,8 +1,9 @@
 package com.adivii.companymanagement.views;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import javax.servlet.http.HttpSession;
 
+import com.adivii.companymanagement.data.entity.User;
+import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.H1;
@@ -12,18 +13,19 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinSession;
+
+// TODO: Search for better authorization logic
 
 @Route("/login")
 @PageTitle("Login Screen")
 public class LoginScreen extends VerticalLayout implements BeforeEnterObserver {
     private final LoginForm loginForm = new LoginForm();
     private UserService userService;
-    private VaadinSession session;
+    private HttpSession session;
 
     public LoginScreen(UserService userService) {
         this.userService = userService;
-        session = VaadinSession.getCurrent();
+        session = SessionService.getCurrentSession();
 
         // Redirect if user already login
         if(session.getAttribute("userID") != null) {
@@ -33,10 +35,6 @@ public class LoginScreen extends VerticalLayout implements BeforeEnterObserver {
         setSizeFull();
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
-
-        loginForm.addLoginListener(e -> {
-            session.setAttribute("userID", userService.getByEmail(e.getUsername()).get(0));
-        });
         
         loginForm.setAction("login");
         add(new H1("Login Form"), loginForm);
@@ -44,7 +42,6 @@ public class LoginScreen extends VerticalLayout implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent arg0) {
-        // TODO Auto-generated method stub
         if(arg0.getLocation()
                 .getQueryParameters()
                 .getParameters()

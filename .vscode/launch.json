@@ -5,6 +5,13 @@
             "name": "Launch Application",
             "request": "launch",
             "mainClass": "com.adivii.companymanagement.Application",
+            "projectName": "company-management"
+        },
+        {
+            "type": "java",
+            "name": "Launch Application",
+            "request": "launch",
+            "mainClass": "com.adivii.companymanagement.Application",
             "projectName": "spring-skeleton"
         },
         {
