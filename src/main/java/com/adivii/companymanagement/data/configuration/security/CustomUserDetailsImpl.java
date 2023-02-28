@@ -9,10 +9,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.repository.UserRepository;
+import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
 
 public class CustomUserDetailsImpl implements UserDetailsService {
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    CustomPasswordEncoder customPasswordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

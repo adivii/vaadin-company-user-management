@@ -20,6 +20,7 @@ public class SidebarLayout extends VerticalLayout {
         Button navCompanyList = new Button("Company List");
         Button navDepartmentList = new Button("Department List");
         Button navUserList = new Button("User List");
+        Button navUserSetting = new Button("User Setting");
         Button btnLogout = new Button("Logout");
 
         if (this.session.getAttribute("userID") != null) {
@@ -41,12 +42,22 @@ public class SidebarLayout extends VerticalLayout {
                 navCompanyList.setVisible(false);
                 navDepartmentList.setVisible(false);
                 navUserList.setVisible(true);
+            } else {
+                navCompanyList.setVisible(false);
+                navDepartmentList.setVisible(false);
+                navUserList.setVisible(false);
             }
+
+            navDashboard.setVisible(true);
+            navUserSetting.setVisible(true);
+            btnLogout.setVisible(true);
         }
 
+        navDashboard.setWidthFull();
         navCompanyList.setWidthFull();
         navDepartmentList.setWidthFull();
         navUserList.setWidthFull();
+        navUserSetting.setWidthFull();
         btnLogout.setWidthFull();
 
         // Navigasi
@@ -62,6 +73,9 @@ public class SidebarLayout extends VerticalLayout {
         navUserList.addClickListener(e -> {
             UI.getCurrent().getPage().setLocation("/user");
         });
+        navUserSetting.addClickListener(e -> {
+            UI.getCurrent().getPage().setLocation("/setting");
+        });
         btnLogout.addClickListener(e -> {
             UI.getCurrent().getPage().setLocation("/");
             SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
@@ -70,6 +84,6 @@ public class SidebarLayout extends VerticalLayout {
                     null);
         });
 
-        add(navCompanyList, navDepartmentList, navUserList, btnLogout);
+        add(navDashboard, navCompanyList, navDepartmentList, navUserList, navUserSetting, btnLogout);
     }
 }

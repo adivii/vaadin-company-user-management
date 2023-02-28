@@ -1,4 +1,4 @@
-package com.adivii.companymanagement.views;
+package com.adivii.companymanagement.views.dialog;
 
 import javax.servlet.http.HttpSession;
 
@@ -10,6 +10,7 @@ import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
+import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -29,14 +30,19 @@ public class NewPasswordDialog extends Dialog {
         session = SessionService.getCurrentSession();
 
         VerticalLayout dialogLayout = new VerticalLayout();
+        PasswordField inputOld = new PasswordField("Old Password");
         PasswordField inputPass = new PasswordField("New Password");
         PasswordField inputRePass = new PasswordField("Confirm Password");
+        
         Button btnSave = new Button("Save");
+        Button btnCancel = new Button("Cancel");
+        HorizontalLayout btnLayout = new HorizontalLayout(btnSave, btnCancel);
 
         // TODO: Add checker for inputPass and inputRePass similiarity
+        // TODO: Add checker for old pass validity
         btnSave.addClickListener(e -> {
             User user = (User) session.getAttribute("userID");
-            user.setPassword((new BCryptPasswordEncoder()).encode(inputPass.getValue()));
+            user.setPassword((new CustomPasswordEncoder()).encode(inputPass.getValue()));
             user.setActivated(true);
             
             ErrorService errorService = userService.editData(user);
@@ -56,7 +62,11 @@ public class NewPasswordDialog extends Dialog {
             }
         });
 
-        dialogLayout.add(inputPass, inputRePass, btnSave);
+        btnCancel.addClickListener(e -> {
+            close();
+        });
+
+        dialogLayout.add(inputOld, inputPass, inputRePass, btnLayout);
 
         add(dialogLayout);
         setCloseOnEsc(false);

@@ -17,12 +17,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
-import com.adivii.companymanagement.views.NewPasswordDialog;
+import com.adivii.companymanagement.data.service.ErrorService;
+import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
 
 @EnableWebSecurity
 @Configuration
@@ -40,7 +40,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new CustomPasswordEncoder();
     }
 
     @Bean
@@ -107,8 +107,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         // TODO: Search for different between HttpSession and VaadinSession
                         HttpSession session = request.getSession();
                         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+                        ErrorService errorService = new ErrorService(false, null);
+
+                            if(!userDetails.getUser().isActivated()) {
+                                errorService.setErrorStatus(true);
+                                errorService.setErrorMessage("Your Password seems to use the default template password, please change it immediately");
+                            }
                         
                         session.setAttribute("userID", userDetails.getUser());
+                        session.setAttribute("errorStatus", errorService);
                         session.setMaxInactiveInterval(1800); // Inactive Interval in Second(s)
 
                         response.sendRedirect("/");

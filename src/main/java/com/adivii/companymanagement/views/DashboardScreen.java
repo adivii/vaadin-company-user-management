@@ -8,6 +8,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -28,10 +29,9 @@ public class DashboardScreen extends HorizontalLayout {
 
         if(this.session.getAttribute("userID") != null) {
             User user = (User) this.session.getAttribute("userID");
-            NewPasswordDialog newPasswordDialog = new NewPasswordDialog(this.userService);
 
             if(!user.isActivated()) {
-                newPasswordDialog.open();
+                UI.getCurrent().getPage().setLocation("/setting");
             }
         }
 
