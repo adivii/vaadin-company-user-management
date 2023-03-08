@@ -7,17 +7,21 @@ import javax.servlet.http.HttpSession;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
+import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.filter.UserFilterService;
+import com.adivii.companymanagement.views.component.CustomAvatar;
 import com.adivii.companymanagement.views.dialog.UserDataDialog;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -28,191 +32,230 @@ import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 @Route("/user")
 @PageTitle("User List")
-public class UserList extends HorizontalLayout {
+public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
-    UserService userService;
-    CompanyService companyService;
-    DepartmentService departmentService;
-    UserFilterService userFilterService;
-    HttpSession session;
+        UserService userService;
+        CompanyService companyService;
+        DepartmentService departmentService;
+        UserFilterService userFilterService;
+        RoleService roleService;
+        HttpSession session;
 
-    Grid<User> userTable;
+        Grid<User> userTable;
 
-    public UserList(UserService userService, CompanyService companyService, DepartmentService departmentService) {
-        this.userService = userService;
-        this.companyService = companyService;
-        this.departmentService = departmentService;
-        this.userFilterService = new UserFilterService();
+        public UserList(UserService userService, CompanyService companyService, DepartmentService departmentService,
+                        RoleService roleServices) {
+                this.userService = userService;
+                this.companyService = companyService;
+                this.departmentService = departmentService;
+                this.userFilterService = new UserFilterService();
+                this.roleService = roleServices;
 
-        this.session = SessionService.getCurrentSession();
+                this.session = SessionService.getCurrentSession();
 
-        VerticalLayout sidebar = new SidebarLayout();
+                if (this.session.getAttribute("userID") != null) {
+                        User user = userService.getUser((Integer) this.session.getAttribute("userID")).get();
 
-        sidebar.setWidth("250px");
+                        if (!user.isActivated()) {
+                                UI.getCurrent().getPage().setLocation("/setting");
+                        }
+                }
 
-        setSizeFull();
-        add(sidebar, getLayout());
-    }
+                VerticalLayout sidebar = new SidebarLayout(this.userService);
 
-    public Grid<User> getUserTable() {
-        this.userTable = new Grid<>(User.class, false);
+                sidebar.setWidth("250px");
 
-        this.userTable.addComponentColumn(e -> {
-            Button button = getDeleteButton(e);
+                setSizeFull();
+                add(sidebar, getLayout());
+        }
 
-            return button;
-        }).setWidth("75px").setFlexGrow(0).setFrozen(true);
-        // TODO : Apply Filter Header
-        Grid.Column<User> emailColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
-                "<span title='[[item.email]]' aria-label='[[item.email]]'>[[item.email]]</span>")
-                .withProperty("email", User::getEmailAddress)).setAutoWidth(true).setResizable(true).setFrozen(true);
-        Grid.Column<User> firstColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
-                "<span title='[[item.first]]' aria-label='[[item.first]]'>[[item.first]]</span>")
-                .withProperty("first", User::getFirstName)).setAutoWidth(true)
-                .setResizable(true);
-        Grid.Column<User> lastColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
-                "<span title='[[item.last]]' aria-label='[[item.last]]'>[[item.last]]</span>")
-                .withProperty("last", User::getLastName)).setAutoWidth(true).setResizable(true);
-        Grid.Column<User> addressColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
-                "<span title='[[item.address]]' aria-label='[[item.address]]'>[[item.address]]</span>")
-                .withProperty("address", User::getAddress)).setAutoWidth(true).setResizable(true);
-        Grid.Column<User> phoneColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
-                "<span title='[[item.phone]]' aria-label='[[item.phone]]'>[[item.phone]]</span>")
-                .withProperty("phone", User::getPhoneNumber)).setAutoWidth(true).setResizable(true);
-        Grid.Column<User> companyColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
-                "<span title='[[item.company]]' aria-label='[[item.company]]'>[[item.company]]</span>")
-                .withProperty("company", e -> e.getDepartmentId().getCompanyId().getCompanyName()))
-                .setAutoWidth(true).setResizable(true);
-        Grid.Column<User> departmentColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
-                "<span title='[[item.department]]' aria-label='[[item.department]]'>[[item.department]]</span>")
-                .withProperty("department", e -> e.getDepartmentId().getName()))
-                .setAutoWidth(true).setResizable(true);
+        public Grid<User> getUserTable() {
+                this.userTable = new Grid<>(User.class, false);
 
-        this.userTable.addItemDoubleClickListener(e -> {
-            UserDataDialog userDataDialog = new UserDataDialog(companyService, departmentService, userService);
-            userDataDialog.setData(e.getItem());
-            userDataDialog.open();
+                this.userTable.addComponentColumn(e -> {
+                        Button button = getDeleteButton(e);
 
-            userDataDialog.addDialogCloseActionListener(closeAction -> {
+                        return button;
+                }).setWidth("75px").setFlexGrow(0).setFrozen(true);
+                this.userTable.addComponentColumn(e -> {
+                        CustomAvatar avatar = new CustomAvatar(e.getFirstName().concat(" ").concat(e.getLastName()));
+                        avatar.setColor(((int) e.getFirstName().charAt(0) + (int) e.getLastName().charAt(0)) % 4);
+
+                        if(e.getAvatar() != null){
+                                avatar.setAvatar(new Image(e.getAvatar().getUri(), null));
+                        }
+
+                        return avatar;
+                }).setWidth("70px").setFlexGrow(0).setFrozen(true);
+                // TODO : Apply Filter Header
+                Grid.Column<User> emailColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
+                                "<span title='[[item.email]]' aria-label='[[item.email]]'>[[item.email]]</span>")
+                                .withProperty("email", User::getEmailAddress)).setAutoWidth(true).setResizable(true)
+                                .setFrozen(true);
+                Grid.Column<User> firstColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
+                                "<span title='[[item.first]]' aria-label='[[item.first]]'>[[item.first]]</span>")
+                                .withProperty("first", User::getFirstName)).setAutoWidth(true)
+                                .setResizable(true);
+                Grid.Column<User> lastColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
+                                "<span title='[[item.last]]' aria-label='[[item.last]]'>[[item.last]]</span>")
+                                .withProperty("last", User::getLastName)).setAutoWidth(true).setResizable(true);
+                Grid.Column<User> addressColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
+                                "<span title='[[item.address]]' aria-label='[[item.address]]'>[[item.address]]</span>")
+                                .withProperty("address", User::getAddress)).setAutoWidth(true).setResizable(true);
+                Grid.Column<User> phoneColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
+                                "<span title='[[item.phone]]' aria-label='[[item.phone]]'>[[item.phone]]</span>")
+                                .withProperty("phone", User::getPhoneNumber)).setAutoWidth(true).setResizable(true);
+                Grid.Column<User> companyColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
+                                "<span title='[[item.company]]' aria-label='[[item.company]]'>[[item.company]]</span>")
+                                .withProperty("company", e -> e.getDepartmentId().getCompanyId().getCompanyName()))
+                                .setAutoWidth(true).setResizable(true);
+                Grid.Column<User> departmentColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
+                                "<span title='[[item.department]]' aria-label='[[item.department]]'>[[item.department]]</span>")
+                                .withProperty("department", e -> e.getDepartmentId().getName()))
+                                .setAutoWidth(true).setResizable(true);
+
+                this.userTable.addItemDoubleClickListener(e -> {
+                        UserDataDialog userDataDialog = new UserDataDialog(companyService, departmentService,
+                                        userService, roleService, UserDataDialog.METHOD_UPDATE);
+                        userDataDialog.setData(e.getItem());
+                        userDataDialog.open();
+
+                        userDataDialog.addOpenedChangeListener(actionListener -> {
+                                updateTable();
+                        });
+                });
+
+                this.userTable.setHeightFull();
+
                 updateTable();
-            });
-        });
 
-        this.userTable.setHeightFull();
+                this.userTable.getHeaderRows().clear();
+                HeaderRow headerRow = this.userTable.appendHeaderRow();
 
-        updateTable();
+                headerRow.getCell(emailColumn).setComponent(
+                                createFilterHeader("Email", this.userFilterService::setEmail));
+                headerRow.getCell(firstColumn).setComponent(
+                                createFilterHeader("First Name", this.userFilterService::setFirstName));
+                headerRow.getCell(lastColumn).setComponent(
+                                createFilterHeader("Last Name", this.userFilterService::setLastName));
+                headerRow.getCell(addressColumn).setComponent(
+                                createFilterHeader("Address", this.userFilterService::setAddress));
+                headerRow.getCell(phoneColumn).setComponent(
+                                createFilterHeader("Phone", this.userFilterService::setPhone));
+                headerRow.getCell(companyColumn).setComponent(
+                                createFilterHeader("Company", this.userFilterService::setCompany));
+                headerRow.getCell(departmentColumn).setComponent(
+                                createFilterHeader("Department", this.userFilterService::setDepartment));
 
-        this.userTable.getHeaderRows().clear();
-        HeaderRow headerRow = this.userTable.appendHeaderRow();
+                return this.userTable;
+        }
 
-        headerRow.getCell(emailColumn).setComponent(
-                createFilterHeader("Email", this.userFilterService::setEmail));
-        headerRow.getCell(firstColumn).setComponent(
-                createFilterHeader("First Name", this.userFilterService::setFirstName));
-        headerRow.getCell(lastColumn).setComponent(
-                createFilterHeader("Last Name", this.userFilterService::setLastName));
-        headerRow.getCell(addressColumn).setComponent(
-                createFilterHeader("Address", this.userFilterService::setAddress));
-        headerRow.getCell(phoneColumn).setComponent(
-                createFilterHeader("Phone", this.userFilterService::setPhone));
-        headerRow.getCell(companyColumn).setComponent(
-                createFilterHeader("Company", this.userFilterService::setCompany));
-        headerRow.getCell(departmentColumn).setComponent(
-                createFilterHeader("Department", this.userFilterService::setDepartment));
+        private static Component createFilterHeader(String labelText,
+                        Consumer<String> filterChangeConsumer) {
+                Label label = new Label(labelText);
+                label.getStyle().set("padding-top", "var(--lumo-space-m)")
+                                .set("font-size", "var(--lumo-font-size-xs)");
+                TextField textField = new TextField();
+                textField.setValueChangeMode(ValueChangeMode.EAGER);
+                textField.setClearButtonVisible(true);
+                textField.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+                textField.setWidthFull();
+                textField.getStyle().set("max-width", "100%");
+                textField.addValueChangeListener(
+                                e -> filterChangeConsumer.accept(e.getValue()));
+                VerticalLayout layout = new VerticalLayout(label, textField);
+                layout.getThemeList().clear();
+                layout.getThemeList().add("spacing-xs");
 
-        return this.userTable;
-    }
+                return layout;
+        }
 
-    private static Component createFilterHeader(String labelText,
-            Consumer<String> filterChangeConsumer) {
-        Label label = new Label(labelText);
-        label.getStyle().set("padding-top", "var(--lumo-space-m)")
-                .set("font-size", "var(--lumo-font-size-xs)");
-        TextField textField = new TextField();
-        textField.setValueChangeMode(ValueChangeMode.EAGER);
-        textField.setClearButtonVisible(true);
-        textField.addThemeVariants(TextFieldVariant.LUMO_SMALL);
-        textField.setWidthFull();
-        textField.getStyle().set("max-width", "100%");
-        textField.addValueChangeListener(
-                e -> filterChangeConsumer.accept(e.getValue()));
-        VerticalLayout layout = new VerticalLayout(label, textField);
-        layout.getThemeList().clear();
-        layout.getThemeList().add("spacing-xs");
+        public void updateTable() {
+                // TODO: Can't update table when add new record (if using only refreshAll)
+                ListDataProvider<User> provider = new ListDataProvider<>(userService.getAllUser());
 
-        return layout;
-    }
+                // userTable.setItems(items);
+                userTable.setDataProvider(provider);
+                userFilterService.setDataProvider(provider);
+        }
 
-    public void updateTable() {
-        // TODO: Can't update table when add new record (if using only refreshAll)
-        ListDataProvider<User> provider = new ListDataProvider<>(userService.getAllUser());
+        public VerticalLayout getLayout() {
+                VerticalLayout mainLayout = new VerticalLayout();
+                Button btnAdd = new Button("Add New User");
+                TextField searchBox = new TextField();
+                HorizontalLayout searchLayout = new HorizontalLayout(btnAdd, searchBox);
 
-        // userTable.setItems(items);
-        userTable.setDataProvider(provider);
-        userFilterService.setDataProvider(provider);
-    }
+                searchBox.setPlaceholder("Search");
+                searchBox.setValueChangeMode(ValueChangeMode.EAGER);
+                searchBox.addValueChangeListener(e -> {
+                        this.userFilterService.setSearchTerm(e.getValue());
 
-    public VerticalLayout getLayout() {
-        VerticalLayout mainLayout = new VerticalLayout();
-        Button btnAdd = new Button("Add New User");
-        TextField searchBox = new TextField();
-        HorizontalLayout searchLayout = new HorizontalLayout(btnAdd, searchBox);
-        
-        searchBox.setPlaceholder("Search");
-        searchBox.setValueChangeMode(ValueChangeMode.EAGER);
-        searchBox.addValueChangeListener(e -> {
-            this.userFilterService.setSearchTerm(e.getValue());
+                        searchBox.setClearButtonVisible(!searchBox.getValue().isEmpty());
+                });
 
-            searchBox.setClearButtonVisible(!searchBox.getValue().isEmpty());
-        });
+                getUserTable();
 
-        getUserTable();
+                btnAdd.addClickListener(e -> {
+                        UserDataDialog userDialog = new UserDataDialog(this.companyService, this.departmentService,
+                                        this.userService, roleService, UserDataDialog.METHOD_NEW);
+                        userDialog.open();
 
-        btnAdd.addClickListener(e -> {
-            UserDataDialog userDialog = new UserDataDialog(this.companyService, this.departmentService, this.userService);
-            userDialog.open();
+                        userDialog.addOpenedChangeListener(actionListener -> {
+                                updateTable();
+                        });
+                });
 
-            userDialog.addDialogCloseActionListener(closeAction -> {
-                updateTable();
-            });
-        });
+                mainLayout.add(searchLayout, this.userTable);
+                mainLayout.setHeightFull();
 
-        mainLayout.add(searchLayout, this.userTable);
-        mainLayout.setHeightFull();
+                return mainLayout;
+        }
 
-        return mainLayout;
-    }
+        public Button getDeleteButton(User user) {
+                Button btnDelete = new Button(new Icon(VaadinIcon.TRASH));
+                btnDelete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR,
+                                ButtonVariant.LUMO_SMALL);
 
-    public Button getDeleteButton(User user) {
-        Button btnDelete = new Button(new Icon(VaadinIcon.TRASH));
-        btnDelete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
+                // Create Confirmation Dialog
+                Dialog confirmationDialog = new Dialog();
+                VerticalLayout confirmationLayout = new VerticalLayout();
 
-        // Create Confirmation Dialog
-        Dialog confirmationDialog = new Dialog();
-        VerticalLayout confirmationLayout = new VerticalLayout();
+                Text confirmationText = new Text("Are you sure?");
+                Button confirmationButton = new Button("Yes", e -> {
+                        userService.deleteUser(user);
+                        confirmationDialog.close();
+                        updateTable();
+                });
+                Button cancelButton = new Button("No", e -> confirmationDialog.close());
+                HorizontalLayout buttonLayout = new HorizontalLayout(confirmationButton, cancelButton);
 
-        Text confirmationText = new Text("Are you sure?");
-        Button confirmationButton = new Button("Yes", e -> {
-            userService.deleteUser(user);
-            confirmationDialog.close();
-            updateTable();
-        });
-        Button cancelButton = new Button("No", e -> confirmationDialog.close());
-        HorizontalLayout buttonLayout = new HorizontalLayout(confirmationButton, cancelButton);
+                confirmationLayout.add(confirmationText, buttonLayout);
+                confirmationLayout.setAlignItems(Alignment.CENTER);
+                confirmationDialog.add(confirmationLayout);
 
-        confirmationLayout.add(confirmationText, buttonLayout);
-        confirmationLayout.setAlignItems(Alignment.CENTER);
-        confirmationDialog.add(confirmationLayout);
+                btnDelete.addClickListener(e -> {
+                        confirmationDialog.open();
+                });
 
-        btnDelete.addClickListener(e -> {
-            confirmationDialog.open();
-        });
+                return btnDelete;
+        }
 
-        return btnDelete;
-    }
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+                if (this.session.getAttribute("userID") != null) {
+                        User user = userService.getUser((Integer) this.session.getAttribute("userID")).get();
+
+                        if (!user.isActivated()) {
+                                event.forwardTo(UserSetting.class);
+                                ;
+                        }
+                }
+        }
 }

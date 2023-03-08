@@ -115,7 +115,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                                 errorService.setErrorMessage("Your Password seems to use the default template password, please change it immediately");
                             }
                         
-                        session.setAttribute("userID", userDetails.getUser());
+                        session.setAttribute("userID", userDetails.getUser().getUserId());
                         session.setAttribute("errorStatus", errorService);
                         session.setMaxInactiveInterval(1800); // Inactive Interval in Second(s)
 

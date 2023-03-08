@@ -1,22 +1,30 @@
 package com.adivii.companymanagement.views;
 
-import java.util.stream.Stream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 import javax.servlet.http.HttpSession;
 
+import org.apache.catalina.webresources.FileResource;
 import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 
+import com.adivii.companymanagement.data.entity.Avatar;
 import com.adivii.companymanagement.data.entity.User;
+import com.adivii.companymanagement.data.service.AvatarService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
+import com.adivii.companymanagement.data.service.file_upload.ProfilePictureUpload;
+import com.adivii.companymanagement.views.component.CustomAvatar;
+import com.adivii.companymanagement.views.component.CustomUploadButton;
 import com.adivii.companymanagement.views.dialog.NewPasswordDialog;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -27,25 +35,30 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.receivers.FileBuffer;
+import com.vaadin.flow.component.upload.receivers.FileData;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 
 @Route("/setting")
 public class UserSetting extends HorizontalLayout {
     private UserService userService;
     private DepartmentService departmentService;
     private CompanyService companyService;
+    private AvatarService avatarService;
     private HttpSession session;
 
-    public UserSetting(UserService userService, DepartmentService departmentService, CompanyService companyService) {
+    public UserSetting(UserService userService, DepartmentService departmentService, CompanyService companyService, AvatarService avatarService) {
         this.userService = userService;
         this.departmentService = departmentService;
         this.companyService = companyService;
+        this.avatarService = avatarService;
         this.session = SessionService.getCurrentSession();
 
-        VerticalLayout sidebar = new SidebarLayout();
-        UserSettingMainLayout mainLayout = new UserSettingMainLayout(this.userService);
+        VerticalLayout sidebar = new SidebarLayout(this.userService);
+        UserSettingMainLayout mainLayout = new UserSettingMainLayout(this.userService, this.avatarService);
         Scroller scroller = new Scroller(mainLayout.getLayout());
 
         sidebar.setWidth("250px");
@@ -58,6 +71,7 @@ public class UserSetting extends HorizontalLayout {
 class UserSettingMainLayout extends VerticalLayout {
     VerticalLayout layout;
     UserService userService;
+    private AvatarService avatarService;
     HttpSession session;
 
     User user;
@@ -76,18 +90,25 @@ class UserSettingMainLayout extends VerticalLayout {
     // Layout for phone number
     TextField inputPhone;
 
+    // Layout for profile picture upload
+    CustomAvatar profilePicture;
+    FileBuffer fileBuffer;
+    CustomUploadButton inputProfilePict;
+    File lastUploadedFile;
+
     // Layout for button
     Button btnSave;
     Button btnChangePass;
     HorizontalLayout buttonLayout;
 
-    public UserSettingMainLayout(UserService userService) {
+    public UserSettingMainLayout(UserService userService, AvatarService avatarService) {
         this.userService = userService;
+        this.avatarService = avatarService;
         this.session = SessionService.getCurrentSession();
 
         this.layout = new VerticalLayout();
-        this.user = (User) session.getAttribute("userID");
-        
+        this.user = userService.getUser((Integer) session.getAttribute("userID")).get();
+
         this.message = new Span();
 
         this.inputFirst = new TextField("First Name");
@@ -99,6 +120,17 @@ class UserSettingMainLayout extends VerticalLayout {
         this.inputPhone = new TextField("Phone Number");
         new PhoneI18nFieldFormatter(PhoneI18nFieldFormatter.REGION_ID).extend(this.inputPhone);
 
+        // TODO: Add logic to only store image when we press save
+        // TODO: Set max file size (still an error)
+        this.profilePicture = new CustomAvatar(user.getFirstName().concat(" ").concat(user.getLastName()));
+        this.profilePicture.setColor(((int) user.getFirstName().charAt(0) + (int) user.getLastName().charAt(0)) % 4);
+        this.profilePicture.setSize("100px");
+
+        // TODO: Fix file upload limit bug
+        this.fileBuffer = new FileBuffer();
+        inputProfilePict = new CustomUploadButton(fileBuffer);
+        // inputProfilePict.setMaxFileSize(10 * 1048576); // 10 MB
+
         this.btnSave = new Button("Save");
         this.btnChangePass = new Button("Change Password");
         this.buttonLayout = new HorizontalLayout(this.btnSave);
@@ -106,7 +138,9 @@ class UserSettingMainLayout extends VerticalLayout {
         this.updateField();
     }
 
-    private void updateField() { 
+    private void updateField() {
+
+        this.user = userService.getUser((Integer) session.getAttribute("userID")).get();
 
         // TODO: Create message layout (make it interesting)
         // Setting for message
@@ -115,22 +149,6 @@ class UserSettingMainLayout extends VerticalLayout {
         message.setText(errorService.getErrorMessage());
 
         // Setting for name field
-        inputFirst.addValueChangeListener(e -> {
-            if(!e.getValue().equals(user.getFirstName())){
-                btnSave.setEnabled(true);
-            } else {
-                btnSave.setEnabled(false);
-            }
-        });
-
-        inputLast.addValueChangeListener(e -> {
-            if(!e.getValue().equals(user.getLastName())){
-                btnSave.setEnabled(true);
-            } else {
-                btnSave.setEnabled(false);
-            }
-        });
-
         inputFirst.setValue(user.getFirstName());
         inputLast.setValue(user.getLastName());
 
@@ -138,15 +156,10 @@ class UserSettingMainLayout extends VerticalLayout {
         inputAddress.setWidthFull();
         inputAddress.setMaxLength(255);
         inputAddress.setHelperText("0/255");
-        
+
         inputAddress.setValueChangeMode(ValueChangeMode.EAGER);
         inputAddress.addValueChangeListener(e -> {
             e.getSource().setHelperText(e.getValue().length() + "/255");
-            if(!e.getValue().equals(user.getFirstName())){
-                btnSave.setEnabled(true);
-            } else {
-                btnSave.setEnabled(false);
-            }
         });
 
         inputAddress.setValue(user.getAddress());
@@ -157,14 +170,60 @@ class UserSettingMainLayout extends VerticalLayout {
 
         inputPhone.setValue(user.getPhoneNumber());
 
+        // Setting for profile picture
+        if(user.getAvatar() != null){
+            this.profilePicture.setAvatar(new Image(user.getAvatar().getUri(), null));
+        }
+        inputProfilePict.addProgressListener(e -> {
+            System.out.println("Mulai");
+        });
+        inputProfilePict.addFileRejectedListener(e -> {
+            System.out.println("Ketolak");
+        });
+        inputProfilePict.addFailedListener(e -> {
+            System.out.println("Gagal");
+        });
+        inputProfilePict.addStartedListener(e -> {
+            System.out.println("Jalan");
+        });
+        inputProfilePict.addSucceededListener(e -> {
+            FileData savedProfilePicture = fileBuffer.getFileData();
+            File uploadedFile = savedProfilePicture.getFile();
+
+            // System.out.println(uploadedFile.getAbsolutePath());
+            this.lastUploadedFile = uploadedFile;
+
+            this.profilePicture.setAvatar(new Image(new StreamResource("temp_photo", () -> {
+                try {
+                    return new FileInputStream(uploadedFile);
+                } catch (FileNotFoundException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                    return null;
+                }
+            }), null));
+        });
+
         // Setting for button
-        btnSave.setEnabled(false);
         btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         btnSave.addClickListener(e -> {
+            ProfilePictureUpload.saveFile(this.lastUploadedFile, ProfilePictureUpload.generateProfilePictureTitle(user.getFirstName(), user.getLastName()));
+            Avatar newAvatar;
+            if(user.getAvatar() == null){
+                newAvatar = new Avatar();
+            }else{
+                newAvatar = user.getAvatar();
+            }
+
+            newAvatar.setUri("http://localhost/vaadin-company-management-resource/profiles/".concat(ProfilePictureUpload.generateProfilePictureTitle(user.getFirstName(), user.getLastName())));
+
+            this.avatarService.saveAvatar(newAvatar);
+
             user.setFirstName(inputFirst.getValue());
             user.setLastName(inputLast.getValue());
             user.setAddress(inputAddress.getValue());
             user.setPhoneNumber(inputPhone.getValue());
+            user.setAvatar(avatarService.searchByUri(newAvatar.getUri()));
 
             ErrorService error = userService.editData(user);
             if (error.isErrorStatus()) {
@@ -180,6 +239,7 @@ class UserSettingMainLayout extends VerticalLayout {
                 notification.open();
             } else {
                 this.updateField();
+                this.inputProfilePict.getElement().callJsFunction("uploadFiles");
             }
         });
 
@@ -194,10 +254,12 @@ class UserSettingMainLayout extends VerticalLayout {
 
     public VerticalLayout getLayout() {
         return new VerticalLayout(this.message,
-                                    this.nameLayout,
-                                    this.inputAddress,
-                                    this.inputPhone,
-                                    this.btnChangePass,
-                                    this.buttonLayout);
+                this.nameLayout,
+                this.inputAddress,
+                this.inputPhone,
+                this.btnChangePass,
+                this.profilePicture,
+                this.inputProfilePict,
+                this.buttonLayout);
     }
 }

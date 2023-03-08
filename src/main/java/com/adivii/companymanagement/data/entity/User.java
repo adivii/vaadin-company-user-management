@@ -1,11 +1,13 @@
 package com.adivii.companymanagement.data.entity;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -26,8 +28,6 @@ public class User {
     @NotNull
     private String password;
     @NotNull
-    private String role;
-    @NotNull
     private boolean enabled;
     @NotNull
     private boolean activated;
@@ -37,6 +37,21 @@ public class User {
     @NotNull
     private Department departmentId;
     
+    @ManyToOne
+    @JoinColumn(name = "role")
+    @NotNull
+    private Role role;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "avatar")
+    private Avatar avatar;
+    
+    public Avatar getAvatar() {
+        return avatar;
+    }
+    public void setAvatar(Avatar avatar) {
+        this.avatar = avatar;
+    }
     public Integer getUserId() {
         return userId;
     }
@@ -85,10 +100,10 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
     public boolean isEnabled() {

@@ -6,13 +6,17 @@ import javax.servlet.http.HttpSession;
 
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.Department;
+import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.SessionService;
+import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.filter.DepartmentFilterService;
+import com.adivii.companymanagement.views.component.CustomAvatar;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -21,6 +25,7 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -33,27 +38,38 @@ import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinSession;
 
 @Route("/department")
 @PageTitle("Department List")
-public class DepartmentList extends HorizontalLayout {
+public class DepartmentList extends HorizontalLayout implements BeforeEnterObserver {
+    private UserService userService;
     private DepartmentService departmentService;
     private CompanyService companyService;
     private Grid<Department> departmentTable;
     private HttpSession session;
     private DepartmentFilterService departmentFilterService;
 
-    public DepartmentList(DepartmentService departmentService, CompanyService companyService) {
+    public DepartmentList(UserService userService, DepartmentService departmentService, CompanyService companyService) {
+        this.userService = userService;
         this.departmentService = departmentService;
         this.companyService = companyService;
         this.departmentFilterService = new DepartmentFilterService();
 
         session = SessionService.getCurrentSession();
 
-        VerticalLayout sidebarLayout = new SidebarLayout();
+        if(this.session.getAttribute("userID") != null) {
+            User user = userService.getUser((Integer) this.session.getAttribute("userID")).get();
+
+            if(!user.isActivated()) {
+                UI.getCurrent().getPage().setLocation("/setting");
+            }
+        }
+
+        VerticalLayout sidebarLayout = new SidebarLayout(this.userService);
 
         sidebarLayout.setWidth("250px");
 
@@ -69,6 +85,16 @@ public class DepartmentList extends HorizontalLayout {
 
             return button;
         }).setWidth("75px").setFlexGrow(0);
+        this.departmentTable.addComponentColumn(e -> {
+            CustomAvatar avatar = new CustomAvatar(e.getCompanyId().getCompanyName());
+            avatar.setColor(((int) e.getCompanyId().getCompanyName().charAt(0)) % 4);
+
+            if (e.getCompanyId().getAvatar() != null) {
+                avatar.setAvatar(new Image(e.getCompanyId().getAvatar().getUri(), null));
+            }
+
+            return avatar;
+        }).setWidth("70px").setFlexGrow(0).setFrozen(true);
         Grid.Column<Department> nameColumn = this.departmentTable.addColumn(TemplateRenderer.<Department>of(
                 "<span title='[[item.name]]' aria-label='[[item.name]]'>[[item.name]]</span>")
                 .withProperty("name", Department::getName)).setAutoWidth(true)
@@ -319,5 +345,16 @@ public class DepartmentList extends HorizontalLayout {
         });
 
         return btnDelete;
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        if(this.session.getAttribute("userID") != null) {
+            User user = userService.getUser((Integer) this.session.getAttribute("userID")).get();
+
+            if(!user.isActivated()) {
+                event.forwardTo(UserSetting.class);;
+            }
+        } 
     }
 }

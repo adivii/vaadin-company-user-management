@@ -27,20 +27,17 @@ public class ServletConfig extends VaadinServlet implements SessionInitListener,
 
     @Override
     protected void servletInitialized() throws ServletException {
-        // TODO Auto-generated method stub
         super.servletInitialized();
         getService().addSessionInitListener(this);
     }
 
     @Override
     public void sessionInit(SessionInitEvent arg0) throws ServiceException {
-        // TODO Auto-generated method stub
         System.out.println("Session Created");
     }
 
     @Override
     public void sessionDestroy(SessionDestroyEvent arg0) {
-        // TODO Auto-generated method stub
         Dialog dialog = new Dialog();
         HorizontalLayout dialogLayout = new HorizontalLayout();
         Label label = new Label("Your Session Has Been Expired");

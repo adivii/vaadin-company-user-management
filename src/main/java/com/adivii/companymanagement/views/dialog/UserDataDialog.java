@@ -1,15 +1,15 @@
 package com.adivii.companymanagement.views.dialog;
 
-import java.util.Arrays;
-
 import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.Department;
+import com.adivii.companymanagement.data.entity.Role;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
+import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
 import com.vaadin.flow.component.Text;
@@ -34,9 +34,15 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
 public class UserDataDialog extends Dialog {
+    public final static String METHOD_NEW = "new";
+    public final static String METHOD_UPDATE = "update";
+
     private CompanyService companyService;
     private DepartmentService departmentService;
     private UserService userService;
+    private RoleService roleService;
+
+    User user;
 
     VerticalLayout dialogLayout;
     H3 title;
@@ -55,8 +61,8 @@ public class UserDataDialog extends Dialog {
     ComboBox<Company> inputCompany;
     ComboBox<Department> inputDepartment;
     HorizontalLayout inputCompDept;
-    
-    ComboBox<String> inputRole;
+
+    ComboBox<Role> inputRole;
 
     // Button
     HorizontalLayout buttonLayout;
@@ -64,17 +70,18 @@ public class UserDataDialog extends Dialog {
     Button btnCancel;
 
     Scroller scroller;
-    
+
     public UserDataDialog(CompanyService companyService, DepartmentService departmentService,
-            UserService userService) {
+            UserService userService, RoleService roleService, String method) {
         this.companyService = companyService;
         this.departmentService = departmentService;
         this.userService = userService;
+        this.roleService = roleService;
 
-        this.initiateDialog();
+        this.initiateDialog(method);
     }
 
-    private void initiateDialog() {
+    private void initiateDialog(String method) {
         this.dialogLayout = new VerticalLayout();
         this.title = new H3("Add New User");
         this.divider = new Hr();
@@ -127,21 +134,9 @@ public class UserDataDialog extends Dialog {
 
         // Role
         this.inputRole = new ComboBox<>("Role");
-        this.inputRole
-                .setItems(Arrays.asList(new String[] { "superadmin", "companyadmin", "departmentadmin", "useradmin" }));
-        this.inputRole.setItemLabelGenerator(e -> {
-            if (e.equals("superadmin")) {
-                return "Super Admin";
-            } else if (e.equals("companyadmin")) {
-                return "Company Admin";
-            } else if (e.equals("useradmin")) {
-                return "User Admin";
-            } else if (e.equals("departmentadmin")) {
-                return "Department Admin";
-            } else {
-                return "Blank";
-            }
-        });
+        this.inputRole.setItems(roleService.getAllRole());
+        this.inputRole.setItemLabelGenerator(Role::getName);
+        this.inputRole.setWidthFull();
 
         this.inputCompany.addValueChangeListener(e -> {
             this.inputDepartment.clear();
@@ -149,7 +144,8 @@ public class UserDataDialog extends Dialog {
         });
 
         this.scroller = new Scroller(
-            new Div(this.inputName, this.inputEmail, this.inputAddress, this.inputPhone, this.inputCompDept, this.inputRole));
+                new Div(this.inputName, this.inputEmail, this.inputAddress, this.inputPhone, this.inputCompDept,
+                        this.inputRole));
         this.scroller.setHeightFull();
         this.scroller.setWidthFull();
         this.scroller.getStyle()
@@ -175,12 +171,21 @@ public class UserDataDialog extends Dialog {
             newUser.setPhoneNumber(this.inputPhone.getValue());
             newUser.setAddress(this.inputAddress.getValue());
             newUser.setDepartmentId(this.inputDepartment.getValue());
-            newUser.setPassword((new CustomPasswordEncoder()).encode("password"));
-            newUser.setActivated(false);
             newUser.setRole(this.inputRole.getValue());
             newUser.setEnabled(true);
 
-            ErrorService errorService = userService.saveUser(newUser);
+            ErrorService errorService = new ErrorService(false, null);
+            if (method.equals("new")) {
+                newUser.setPassword((new CustomPasswordEncoder()).encode("password"));
+                newUser.setActivated(false);
+                errorService = userService.saveUser(newUser);
+            } else if (method.equals("update")) {
+                newUser.setUserId(this.user.getUserId());
+                newUser.setPassword(this.user.getPassword());
+                newUser.setActivated(this.user.isActivated());
+                errorService = userService.editData(newUser);
+            }
+
             if (!errorService.isErrorStatus()) {
                 this.close();
             } else {
@@ -204,6 +209,7 @@ public class UserDataDialog extends Dialog {
     }
 
     public void setData(User user) {
+        this.user = user;
         this.inputFirst.setValue(user.getFirstName());
         this.inputLast.setValue(user.getLastName());
         this.inputEmail.setValue(user.getEmailAddress());

@@ -3,8 +3,11 @@ package com.adivii.companymanagement.views;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+
+import com.adivii.companymanagement.data.entity.Role;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.SessionService;
+import com.adivii.companymanagement.data.service.UserService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -12,8 +15,10 @@ import com.vaadin.flow.server.VaadinServletRequest;
 
 public class SidebarLayout extends VerticalLayout {
     HttpSession session;
+    UserService userService;
 
-    public SidebarLayout() {
+    public SidebarLayout(UserService userService) {
+        this.userService = userService;
         this.session = SessionService.getCurrentSession();
 
         Button navDashboard = new Button("Dashboard");
@@ -24,21 +29,21 @@ public class SidebarLayout extends VerticalLayout {
         Button btnLogout = new Button("Logout");
 
         if (this.session.getAttribute("userID") != null) {
-            String role = ((User) this.session.getAttribute("userID")).getRole();
+            Role role = this.userService.getUser((Integer) session.getAttribute("userID")).get().getRole();
 
-            if (role.equals("superadmin")) {
+            if (role.getValue().equals("superadmin")) {
                 navCompanyList.setVisible(true);
                 navDepartmentList.setVisible(true);
                 navUserList.setVisible(true);
-            } else if (role.equals("companyadmin")) {
+            } else if (role.getValue().equals("companyadmin")) {
                 navCompanyList.setVisible(true);
                 navDepartmentList.setVisible(false);
                 navUserList.setVisible(false);
-            } else if (role.equals("departmentadmin")) {
+            } else if (role.getValue().equals("departmentadmin")) {
                 navCompanyList.setVisible(false);
                 navDepartmentList.setVisible(true);
                 navUserList.setVisible(false);
-            } else if (role.equals("useradmin")) {
+            } else if (role.getValue().equals("useradmin")) {
                 navCompanyList.setVisible(false);
                 navDepartmentList.setVisible(false);
                 navUserList.setVisible(true);
@@ -62,16 +67,16 @@ public class SidebarLayout extends VerticalLayout {
 
         // Navigasi
         navDashboard.addClickListener(e -> {
-            UI.getCurrent().getPage().setLocation("/dashboard");
+            UI.getCurrent().navigate(DashboardScreen.class);
         });
         navCompanyList.addClickListener(e -> {
-            UI.getCurrent().getPage().setLocation("/company");
+            UI.getCurrent().navigate(CompanyList.class);
         });
         navDepartmentList.addClickListener(e -> {
-            UI.getCurrent().getPage().setLocation("/department");
+            UI.getCurrent().navigate(DepartmentList.class);
         });
         navUserList.addClickListener(e -> {
-            UI.getCurrent().getPage().setLocation("/user");
+            UI.getCurrent().navigate(UserList.class);
         });
         navUserSetting.addClickListener(e -> {
             UI.getCurrent().getPage().setLocation("/setting");

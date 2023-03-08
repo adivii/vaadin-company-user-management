@@ -3,6 +3,7 @@ package com.adivii.companymanagement.data.entity;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -10,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Formula;
@@ -37,6 +39,10 @@ public class Company {
     @ManyToOne
     @JoinColumn(name = "holdingCompany")
     private Company holdingCompany;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "avatar")
+    private Avatar avatar;
 
     @Formula("(SELECT COUNT(user.user_id) FROM user INNER JOIN department ON user.department_id = department.department_id WHERE department.company_id = company_id)")
     private int userCount;
@@ -101,6 +107,12 @@ public class Company {
     }
     public void setHoldingCompany(Company holdingCompany) {
         this.holdingCompany = holdingCompany;
+    }
+    public Avatar getAvatar() {
+        return avatar;
+    }
+    public void setAvatar(Avatar avatar) {
+        this.avatar = avatar;
     }
 
 

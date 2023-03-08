@@ -2,11 +2,7 @@ package com.adivii.companymanagement.views.dialog;
 
 import javax.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
 import com.adivii.companymanagement.data.entity.User;
-import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;

@@ -6,11 +6,13 @@ import java.util.function.Consumer;
 import javax.servlet.http.HttpSession;
 
 import com.adivii.companymanagement.data.entity.Company;
+import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.filter.CompanyFilterService;
+import com.adivii.companymanagement.views.component.CustomAvatar;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
@@ -23,6 +25,7 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -39,9 +42,10 @@ import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.data.renderer.TemplateRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinSession;
 
 // Add alternative Route for this page
 // So, both localhost:8080 and localhost:8080/company will open this page
@@ -49,7 +53,7 @@ import com.vaadin.flow.server.VaadinSession;
 //      shortName = "cm-app")
 @Route("/company")
 @PageTitle("Company List")
-public class CompanyList extends HorizontalLayout {
+public class CompanyList extends HorizontalLayout implements BeforeEnterObserver {
     CompanyService companyService;
     UserService userService;
     CompanyFilterService companyFilterService;
@@ -63,16 +67,7 @@ public class CompanyList extends HorizontalLayout {
         this.companyFilterService = new CompanyFilterService();
         session = SessionService.getCurrentSession();
 
-        // Check Session Status
-        // if(session.getAttribute("userID") == null) {
-        //     UI.getCurrent().getPage().setLocation("/");
-        // } else if (!((User) session.getAttribute("userID")).getRole().equals("superadmin") && !((User) session.getAttribute("userID")).getRole().equals("companyadmin")) {
-        //     UI.getCurrent().getPage().setLocation("/");
-        // }
-
-        // UI.getCurrent().setPollInterval(10000); // Set UI refresh interval in Milisecond(s)
-
-        VerticalLayout sidebar = new SidebarLayout();
+        VerticalLayout sidebar = new SidebarLayout(this.userService);
         VerticalLayout mainLayout = getLayout();
 
         sidebar.setWidth("250px");
@@ -89,12 +84,22 @@ public class CompanyList extends HorizontalLayout {
 
             return button;
         }).setWidth("75px").setFlexGrow(0).setFrozen(true);
+        this.companyTable.addComponentColumn(e -> {
+            CustomAvatar avatar = new CustomAvatar(e.getCompanyName());
+            avatar.setColor(((int) e.getCompanyName().charAt(0)) % 4);
+
+            if (e.getAvatar() != null) {
+                avatar.setAvatar(new Image(e.getAvatar().getUri(), null));
+            }
+
+            return avatar;
+        }).setWidth("70px").setFlexGrow(0).setFrozen(true);
         Grid.Column<Company> nameColumn = this.companyTable.addComponentHierarchyColumn(e -> {
             Label text = new Label(e.getCompanyName());
             text.setTitle(e.getCompanyName());
 
             return text;
-        }).setAutoWidth(true).setResizable(true);
+        }).setAutoWidth(true).setResizable(true).setFrozen(true);
         Grid.Column<Company> addressColumn = this.companyTable.addColumn(TemplateRenderer.<Company>of(
                 "<span title='[[item.address]]' aria-label='[[item.address]]'>[[item.address]]</span>")
                 .withProperty("address", Company::getAddress)).setAutoWidth(true).setResizable(true);
@@ -192,7 +197,7 @@ public class CompanyList extends HorizontalLayout {
         searchField.setValueChangeMode(ValueChangeMode.EAGER);
         searchField.addValueChangeListener(e -> {
             this.companyFilterService.setSearchTerm(e.getValue());
-            
+
             searchField.setClearButtonVisible(e.getValue() != null);
         });
 
@@ -422,5 +427,17 @@ public class CompanyList extends HorizontalLayout {
         });
 
         return btnDelete;
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+        if (this.session.getAttribute("userID") != null) {
+            User user = userService.getUser((Integer) this.session.getAttribute("userID")).get();
+
+            if (!user.isActivated()) {
+                event.forwardTo(UserSetting.class);
+                ;
+            }
+        }
     }
 }
