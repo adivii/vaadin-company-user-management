@@ -120,16 +120,14 @@ class UserSettingMainLayout extends VerticalLayout {
         this.inputPhone = new TextField("Phone Number");
         new PhoneI18nFieldFormatter(PhoneI18nFieldFormatter.REGION_ID).extend(this.inputPhone);
 
-        // TODO: Add logic to only store image when we press save
-        // TODO: Set max file size (still an error)
+        // TODO: Fix logic for profile auto-update
         this.profilePicture = new CustomAvatar(user.getFirstName().concat(" ").concat(user.getLastName()));
         this.profilePicture.setColor(((int) user.getFirstName().charAt(0) + (int) user.getLastName().charAt(0)) % 4);
         this.profilePicture.setSize("100px");
 
-        // TODO: Fix file upload limit bug
         this.fileBuffer = new FileBuffer();
         inputProfilePict = new CustomUploadButton(fileBuffer);
-        // inputProfilePict.setMaxFileSize(10 * 1048576); // 10 MB
+        inputProfilePict.setMaxFileSize(10 * 1048576); // 10 MB
 
         this.btnSave = new Button("Save");
         this.btnChangePass = new Button("Change Password");
@@ -172,20 +170,20 @@ class UserSettingMainLayout extends VerticalLayout {
 
         // Setting for profile picture
         if(user.getAvatar() != null){
-            this.profilePicture.setAvatar(new Image(user.getAvatar().getUri(), null));
+            this.profilePicture.setAvatar(new Image(user.getAvatar().getUri(), user.getFirstName()));
         }
-        inputProfilePict.addProgressListener(e -> {
-            System.out.println("Mulai");
-        });
-        inputProfilePict.addFileRejectedListener(e -> {
-            System.out.println("Ketolak");
-        });
-        inputProfilePict.addFailedListener(e -> {
-            System.out.println("Gagal");
-        });
-        inputProfilePict.addStartedListener(e -> {
-            System.out.println("Jalan");
-        });
+        // inputProfilePict.addProgressListener(e -> {
+        //     System.out.println("Mulai");
+        // });
+        // inputProfilePict.addFileRejectedListener(e -> {
+        //     System.out.println("Ketolak");
+        // });
+        // inputProfilePict.addFailedListener(e -> {
+        //     System.out.println("Gagal");
+        // });
+        // inputProfilePict.addStartedListener(e -> {
+        //     System.out.println("Jalan");
+        // });
         inputProfilePict.addSucceededListener(e -> {
             FileData savedProfilePicture = fileBuffer.getFileData();
             File uploadedFile = savedProfilePicture.getFile();
@@ -206,6 +204,7 @@ class UserSettingMainLayout extends VerticalLayout {
 
         // Setting for button
         btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        // TODO: Save button doen't do anything
         btnSave.addClickListener(e -> {
             ProfilePictureUpload.saveFile(this.lastUploadedFile, ProfilePictureUpload.generateProfilePictureTitle(user.getFirstName(), user.getLastName()));
             Avatar newAvatar;
