@@ -83,6 +83,13 @@ public class CustomBase64Encoder {
     }
 
     public static Character charAt(int index) {
-        return CHAR_CONVERSION_TABLE.get(index);
+        if(index < 0){
+            return CHAR_CONVERSION_TABLE.get(CHAR_CONVERSION_TABLE.size() + index);
+        }else if(index >= CHAR_CONVERSION_TABLE.size()){
+            return CHAR_CONVERSION_TABLE.get(0 + (index - CHAR_CONVERSION_TABLE.size()));
+        }else{
+            return CHAR_CONVERSION_TABLE.get(index);
+        }
+        
     }
 }

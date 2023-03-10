@@ -37,7 +37,7 @@ public class NewPasswordDialog extends Dialog {
         // TODO: Add checker for inputPass and inputRePass similiarity
         // TODO: Add checker for old pass validity
         btnSave.addClickListener(e -> {
-            User user = (User) session.getAttribute("userID");
+            User user = userService.getUser((Integer) session.getAttribute("userID")).get();
             user.setPassword((new CustomPasswordEncoder()).encode(inputPass.getValue()));
             user.setActivated(true);
             
