@@ -3,6 +3,10 @@ package com.adivii.companymanagement.views;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import javax.servlet.http.HttpSession;
 
@@ -38,6 +42,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.FileBuffer;
 import com.vaadin.flow.component.upload.receivers.FileData;
+import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
@@ -92,7 +97,7 @@ class UserSettingMainLayout extends VerticalLayout {
 
     // Layout for profile picture upload
     CustomAvatar profilePicture;
-    FileBuffer fileBuffer;
+    MemoryBuffer fileBuffer;
     CustomUploadButton inputProfilePict;
     File lastUploadedFile;
 
@@ -125,7 +130,7 @@ class UserSettingMainLayout extends VerticalLayout {
         this.profilePicture.setColor(((int) user.getFirstName().charAt(0) + (int) user.getLastName().charAt(0)) % 4);
         this.profilePicture.setSize("100px");
 
-        this.fileBuffer = new FileBuffer();
+        this.fileBuffer = new MemoryBuffer();
         inputProfilePict = new CustomUploadButton(fileBuffer);
         inputProfilePict.setMaxFileSize(10 * 1048576); // 10 MB
 
@@ -170,35 +175,29 @@ class UserSettingMainLayout extends VerticalLayout {
 
         // Setting for profile picture
         if(user.getAvatar() != null){
-            this.profilePicture.setAvatar(new Image(user.getAvatar().getUri(), user.getFirstName()));
-        }
-        // inputProfilePict.addProgressListener(e -> {
-        //     System.out.println("Mulai");
-        // });
-        // inputProfilePict.addFileRejectedListener(e -> {
-        //     System.out.println("Ketolak");
-        // });
-        // inputProfilePict.addFailedListener(e -> {
-        //     System.out.println("Gagal");
-        // });
-        // inputProfilePict.addStartedListener(e -> {
-        //     System.out.println("Jalan");
-        // });
-        inputProfilePict.addSucceededListener(e -> {
-            FileData savedProfilePicture = fileBuffer.getFileData();
-            File uploadedFile = savedProfilePicture.getFile();
-
-            // System.out.println(uploadedFile.getAbsolutePath());
-            this.lastUploadedFile = uploadedFile;
-
-            this.profilePicture.setAvatar(new Image(new StreamResource("temp_photo", () -> {
+            User temp = user;
+            this.profilePicture.setAvatar(new Image(new StreamResource("profile", () -> {
+                InputStream profileStream;
                 try {
-                    return new FileInputStream(uploadedFile);
-                } catch (FileNotFoundException e1) {
+                    profileStream = new URL("http://localhost/vaadin-company-management-resource/profiles/".concat(ProfilePictureUpload.generateProfilePictureTitle(temp.getFirstName(), temp.getLastName()))).openStream();
+                    return profileStream;
+                } catch (MalformedURLException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                    return null;
+                } catch (IOException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
                     return null;
                 }
+            }), null));
+        }
+        
+        inputProfilePict.addSucceededListener(e -> {
+            InputStream profileStream = fileBuffer.getInputStream();
+
+            this.profilePicture.setAvatar(new Image(new StreamResource("temp_photo", () -> {
+                return profileStream;
             }), null));
         });
 
@@ -206,7 +205,7 @@ class UserSettingMainLayout extends VerticalLayout {
         btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         // TODO: Save button doen't do anything
         btnSave.addClickListener(e -> {
-            ProfilePictureUpload.saveFile(this.lastUploadedFile, ProfilePictureUpload.generateProfilePictureTitle(user.getFirstName(), user.getLastName()));
+            ProfilePictureUpload.saveFile(fileBuffer.getInputStream(), ProfilePictureUpload.generateProfilePictureTitle(user.getFirstName(), user.getLastName()));
             Avatar newAvatar;
             if(user.getAvatar() == null){
                 newAvatar = new Avatar();
@@ -238,7 +237,17 @@ class UserSettingMainLayout extends VerticalLayout {
                 notification.open();
             } else {
                 this.updateField();
-                this.inputProfilePict.getElement().callJsFunction("uploadFiles");
+
+                Notification notification = new Notification();
+                notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                Text notificationText = new Text("Success");
+                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
+                closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+                HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
+
+                notification.setDuration(2000);
+                notification.add(notificationLayout);
+                notification.open();
             }
         });
 

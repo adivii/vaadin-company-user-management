@@ -1,5 +1,9 @@
 package com.adivii.companymanagement.views;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.function.Consumer;
 
 import javax.servlet.http.HttpSession;
@@ -10,6 +14,7 @@ import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
+import com.adivii.companymanagement.data.service.file_upload.ProfilePictureUpload;
 import com.adivii.companymanagement.data.service.filter.UserFilterService;
 import com.adivii.companymanagement.views.component.CustomAvatar;
 import com.adivii.companymanagement.views.dialog.UserDataDialog;
@@ -36,6 +41,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.StreamResource;
 
 @Route("/user")
 @PageTitle("User List")
@@ -89,7 +95,21 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                         avatar.setColor(((int) e.getFirstName().charAt(0) + (int) e.getLastName().charAt(0)) % 4);
 
                         if(e.getAvatar() != null){
-                                avatar.setAvatar(new Image(e.getAvatar().getUri(), null));
+                                avatar.setAvatar(new Image(new StreamResource("profile", () -> {
+                                        InputStream profileStream;
+                                        try {
+                                            profileStream = new URL("http://localhost/vaadin-company-management-resource/profiles/".concat(ProfilePictureUpload.generateProfilePictureTitle(e.getFirstName(), e.getLastName()))).openStream();
+                                            return profileStream;
+                                        } catch (MalformedURLException e1) {
+                                            // TODO Auto-generated catch block
+                                            e1.printStackTrace();
+                                            return null;
+                                        } catch (IOException e1) {
+                                            // TODO Auto-generated catch block
+                                            e1.printStackTrace();
+                                            return null;
+                                        }  
+                                }), null));
                         }
 
                         return avatar;
