@@ -1,4 +1,4 @@
-package com.adivii.companymanagement.views.dialog;
+package com.adivii.companymanagement.views.component.dialog;
 
 import com.vaadin.flow.component.dialog.Dialog;
 
