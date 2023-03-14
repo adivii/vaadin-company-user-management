@@ -79,6 +79,10 @@ public class ProfilePictureUpload {
     }
 
     public static String getFolder() {
-        return "/opt/lampp/htdocs/vaadin-company-management-resource/profiles/";
+        return "E:\\Apps\\xampp\\htdocs\\vaadin-crm-resource\\profiles";
+    }
+
+    public static String getLink() {
+        return "http://localhost/vaadin-crm-resource/profiles/";
     }
 }

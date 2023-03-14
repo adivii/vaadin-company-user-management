@@ -16,17 +16,15 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer userId;
     @NotNull
+    private String email;
+    @NotNull
     private String firstName;
     @NotNull
     private String lastName;
     @NotNull
-    private String emailAddress;
-    @NotNull
     private String address;
     @NotNull
     private String phoneNumber;
-    @NotNull
-    private String password;
     @NotNull
     private boolean enabled;
     @NotNull
@@ -45,7 +43,23 @@ public class User {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "avatar")
     private Avatar avatar;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "account")
+    private Account account;
     
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    public Account getAccount() {
+        return account;
+    }
+    public void setAccount(Account account) {
+        this.account = account;
+    }
     public Avatar getAvatar() {
         return avatar;
     }
@@ -70,12 +84,6 @@ public class User {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
     public String getPhoneNumber() {
         return phoneNumber;
     }
@@ -93,12 +101,6 @@ public class User {
     }
     public void setAddress(String address) {
         this.address = address;
-    }
-    public String getPassword() {
-        return password;
-    }
-    public void setPassword(String password) {
-        this.password = password;
     }
     public Role getRole() {
         return role;
@@ -121,6 +123,6 @@ public class User {
     
     // Custom Function
     public boolean checkEmpty() {
-        return firstName.isBlank() || lastName.isBlank() || address.isBlank() || emailAddress.isBlank() || phoneNumber.isBlank();
+        return firstName.isBlank() || lastName.isBlank() || address.isBlank() || email.isBlank() || phoneNumber.isBlank();
     }
 }

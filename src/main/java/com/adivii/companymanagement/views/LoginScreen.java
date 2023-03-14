@@ -5,9 +5,11 @@ import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpSession;
 
+import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.file_upload.ProfilePictureUpload;
+import com.adivii.companymanagement.data.service.generator.RoleDataGenerator;
 import com.adivii.companymanagement.data.service.security.CustomBase64Encoder;
 import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
 import com.adivii.companymanagement.data.service.security.GuitarChordEncoder;
@@ -31,7 +33,7 @@ public class LoginScreen extends VerticalLayout implements BeforeEnterObserver {
     private UserService userService;
     private HttpSession session;
 
-    public LoginScreen(UserService userService) {
+    public LoginScreen(UserService userService, RoleService roleService) {
         this.userService = userService;
         session = SessionService.getCurrentSession();
 
@@ -60,6 +62,8 @@ public class LoginScreen extends VerticalLayout implements BeforeEnterObserver {
         // }
 
         // ProfilePictureUpload.saveFile(new File("/home/adivii/Documents/aaaa"), "tes");
+        // RoleDataGenerator roleDataGenerator = new RoleDataGenerator(roleService);
+        // roleDataGenerator.generate();
     }
 
     @Override
