@@ -68,7 +68,7 @@ public class UserFilterService {
     }
 
     private boolean filter(User user) {
-        return matches(user.getEmailAddress(), email) &&
+        return matches(user.getEmail(), email) &&
                 matches(user.getFirstName(), firstName) &&
                 matches(user.getLastName(), lastName) &&
                 matches(user.getAddress(), address) &&
@@ -78,7 +78,7 @@ public class UserFilterService {
     }
 
     private boolean search(User user) {
-        return matches(user.getEmailAddress(), searchTerm) ||
+        return matches(user.getEmail(), searchTerm) ||
                 matches(user.getFirstName(), searchTerm) ||
                 matches(user.getLastName(), searchTerm) ||
                 matches(user.getAddress(), searchTerm) ||

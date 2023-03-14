@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import javax.servlet.http.HttpSession;
 
 import com.adivii.companymanagement.data.entity.User;
+import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.RoleService;
@@ -17,7 +18,7 @@ import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.file_upload.ProfilePictureUpload;
 import com.adivii.companymanagement.data.service.filter.UserFilterService;
 import com.adivii.companymanagement.views.component.CustomAvatar;
-import com.adivii.companymanagement.views.dialog.UserDataDialog;
+import com.adivii.companymanagement.views.component.dialog.UserDataDialog;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -52,17 +53,19 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
         DepartmentService departmentService;
         UserFilterService userFilterService;
         RoleService roleService;
+        AccountService accountService;
         HttpSession session;
 
         Grid<User> userTable;
 
         public UserList(UserService userService, CompanyService companyService, DepartmentService departmentService,
-                        RoleService roleServices) {
+                        RoleService roleServices, AccountService accountService) {
                 this.userService = userService;
                 this.companyService = companyService;
                 this.departmentService = departmentService;
                 this.userFilterService = new UserFilterService();
                 this.roleService = roleServices;
+                this.accountService = accountService;
 
                 this.session = SessionService.getCurrentSession();
 
@@ -117,7 +120,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 // TODO : Apply Filter Header
                 Grid.Column<User> emailColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
                                 "<span title='[[item.email]]' aria-label='[[item.email]]'>[[item.email]]</span>")
-                                .withProperty("email", User::getEmailAddress)).setAutoWidth(true).setResizable(true)
+                                .withProperty("email", User::getEmail)).setAutoWidth(true).setResizable(true)
                                 .setFrozen(true);
                 Grid.Column<User> firstColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
                                 "<span title='[[item.first]]' aria-label='[[item.first]]'>[[item.first]]</span>")
@@ -143,7 +146,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 this.userTable.addItemDoubleClickListener(e -> {
                         UserDataDialog userDataDialog = new UserDataDialog(companyService, departmentService,
-                                        userService, roleService, UserDataDialog.METHOD_UPDATE);
+                                        userService, roleService, accountService, UserDataDialog.METHOD_UPDATE);
                         userDataDialog.setData(e.getItem());
                         userDataDialog.open();
 
@@ -224,7 +227,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 btnAdd.addClickListener(e -> {
                         UserDataDialog userDialog = new UserDataDialog(this.companyService, this.departmentService,
-                                        this.userService, roleService, UserDataDialog.METHOD_NEW);
+                                        this.userService, roleService, accountService, UserDataDialog.METHOD_NEW);
                         userDialog.open();
 
                         userDialog.addOpenedChangeListener(actionListener -> {
