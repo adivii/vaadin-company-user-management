@@ -93,6 +93,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/company").hasAnyAuthority("superadmin", "companyadmin")
                 .antMatchers("/department").hasAnyAuthority("superadmin", "departmentadmin")
                 .antMatchers("/user").hasAnyAuthority("superadmin", "useradmin")
+                .antMatchers("/register").permitAll()
                 .anyRequest().authenticated()
                 // Configure login page
                 .and().formLogin()

@@ -19,7 +19,7 @@ public class CustomUserDetailsImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        List<User> users = userRepository.findByEmailAddress(username);
+        List<User> users = userRepository.findByEmail(username);
 
         if(users.size() == 0) {
             throw new UsernameNotFoundException("Can't find user");
