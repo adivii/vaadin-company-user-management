@@ -32,9 +32,13 @@ public class User {
 
     @ManyToOne
     @JoinColumn(name = "departmentId")
-    @NotNull
     private Department departmentId;
-    
+
+    @ManyToOne
+    @JoinColumn(name = "companyId")
+    @NotNull
+    private Company companyId;
+
     @ManyToOne
     @JoinColumn(name = "role")
     @NotNull
@@ -47,82 +51,113 @@ public class User {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "account")
     private Account account;
-    
+
     public String getEmail() {
         return email;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }
+
     public Account getAccount() {
         return account;
     }
+
     public void setAccount(Account account) {
         this.account = account;
     }
+
     public Avatar getAvatar() {
         return avatar;
     }
+
     public void setAvatar(Avatar avatar) {
         this.avatar = avatar;
     }
+
     public Integer getUserId() {
         return userId;
     }
+
     public void setUserId(Integer userId) {
         this.userId = userId;
     }
+
     public String getFirstName() {
         return firstName;
     }
+
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
+
     public String getLastName() {
         return lastName;
     }
+
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
+
     public String getPhoneNumber() {
         return phoneNumber;
     }
+
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
     public Department getDepartmentId() {
         return departmentId;
     }
+
     public void setDepartmentId(Department departmentId) {
         this.departmentId = departmentId;
     }
+
     public String getAddress() {
         return address;
     }
+
     public void setAddress(String address) {
         this.address = address;
     }
+
     public Role getRole() {
         return role;
     }
+
     public void setRole(Role role) {
         this.role = role;
     }
+
     public boolean isEnabled() {
         return enabled;
     }
+
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
+
     public boolean isActivated() {
         return activated;
     }
+
     public void setActivated(boolean activated) {
         this.activated = activated;
     }
-    
+    public Company getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Company companyId) {
+        this.companyId = companyId;
+    }
+
     // Custom Function
     public boolean checkEmpty() {
-        return firstName.isBlank() || lastName.isBlank() || address.isBlank() || email.isBlank() || phoneNumber.isBlank();
+        return firstName.isBlank() || lastName.isBlank() || address.isBlank() || email.isBlank()
+                || phoneNumber.isBlank();
     }
 }

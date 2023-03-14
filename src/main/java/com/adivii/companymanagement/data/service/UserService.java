@@ -32,12 +32,12 @@ public class UserService {
     }
 
     public List<User> getByEmail(String email) {
-        return this.userRepository.findByEmailAddress(email);
+        return this.userRepository.findByEmail(email);
     }
 
     public ErrorService saveUser(User user) {
         if (user != null && !user.checkEmpty()) {
-            if(getByEmail(user.getEmailAddress()).size() == 0){
+            if(getByEmail(user.getEmail()).size() == 0){
                 user.setEnabled(true);
                 this.userRepository.save(user);
             
@@ -54,7 +54,7 @@ public class UserService {
         if(user != null && !user.checkEmpty()){
             Optional<User> currentData = this.userRepository.findById(user.getUserId());
             if(currentData.isPresent()) {
-                if((currentData.get().getEmailAddress().equals(user.getEmailAddress())) || getByEmail(user.getEmailAddress()).size() == 0){
+                if((currentData.get().getEmail().equals(user.getEmail())) || getByEmail(user.getEmail()).size() == 0){
                     this.userRepository.save(user);
                     return new ErrorService(false, null);
                 } else {
@@ -72,21 +72,22 @@ public class UserService {
         this.userRepository.delete(user);
     }
 
-    public ErrorService validateUser(User user) {
-        if (user != null && !user.getEmailAddress().isBlank() && !user.getPassword().isBlank()) {
-            List<User> userCheck = getByEmail(user.getEmailAddress());
+    // TODO: Fix User Validation Method
+    // public ErrorService validateUser(User user) {
+    //     if (user != null && !user.getEmailAddress().isBlank() && !user.getPassword().isBlank()) {
+    //         List<User> userCheck = getByEmail(user.getEmailAddress());
 
-            if(userCheck.size() == 0) {
-                return new ErrorService(true, "Email Doesn't Registered");
-            } else {
-                if (BCrypt.checkpw(user.getPassword(), userCheck.get(0).getPassword())) {
-                    return new ErrorService(false, null);
-                } else {
-                    return new ErrorService(true, "Password Invalid");
-                }
-            }
-        } else {
-            return new ErrorService(true, "Field Can't Be Empty");
-        } 
-    }
+    //         if(userCheck.size() == 0) {
+    //             return new ErrorService(true, "Email Doesn't Registered");
+    //         } else {
+    //             if (BCrypt.checkpw(user.getPassword(), userCheck.get(0).getPassword())) {
+    //                 return new ErrorService(false, null);
+    //             } else {
+    //                 return new ErrorService(true, "Password Invalid");
+    //             }
+    //         }
+    //     } else {
+    //         return new ErrorService(true, "Field Can't Be Empty");
+    //     } 
+    // }
 }

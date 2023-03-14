@@ -1,6 +1,7 @@
 package com.adivii.companymanagement.data.service;
 
 import java.lang.StackWalker.Option;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -17,8 +18,8 @@ public class AccountService {
         this.accountRepository = accountRepository;
     }
 
-    public Optional<Account> get(String email) {
-        return this.accountRepository.findById(email);
+    public List<Account> get(String email) {
+        return this.accountRepository.findByEmailAddress(email);
     }
 
     public ErrorService save(Account account) {
@@ -36,8 +37,8 @@ public class AccountService {
 
     public ErrorService update(Account account) {
         if (!account.getEmailAddress().isBlank() && !account.getPassword().isBlank()) {
-            if (this.get(account.getEmailAddress()).isPresent()) {
-                Account currentAccount = this.get(account.getEmailAddress()).get();
+            if (this.get(account.getEmailAddress()).size() > 0) {
+                Account currentAccount = this.get(account.getEmailAddress()).get(0);
                 if (this.accountRepository.findByEmailAddress(account.getEmailAddress()).size() == 0
                         || (account.getEmailAddress().equals(currentAccount.getEmailAddress()))) {
                     this.accountRepository.save(account);

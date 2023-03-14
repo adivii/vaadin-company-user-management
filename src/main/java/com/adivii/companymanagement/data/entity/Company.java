@@ -35,6 +35,8 @@ public class Company {
     private List<Department> department = new LinkedList<>();
     @OneToMany(mappedBy = "holdingCompany")
     private List<Company> childCompany = new LinkedList<>();
+    @OneToMany(mappedBy = "companyId")
+    private List<User> user = new LinkedList<>();
 
     @ManyToOne
     @JoinColumn(name = "holdingCompany")
@@ -113,6 +115,12 @@ public class Company {
     }
     public void setAvatar(Avatar avatar) {
         this.avatar = avatar;
+    }
+    public List<User> getUser() {
+        return user;
+    }
+    public void setUser(List<User> user) {
+        this.user = user;
     }
 
 

@@ -1,10 +1,9 @@
 package com.adivii.companymanagement.data.entity;
 
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
-
-import com.vaadin.flow.component.polymertemplate.Id;
 
 @Entity
 public class Account {
