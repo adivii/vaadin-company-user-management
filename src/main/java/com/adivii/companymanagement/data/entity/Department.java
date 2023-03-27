@@ -27,16 +27,17 @@ public class Department {
     @JoinColumn(name = "companyId")
     @NotNull
     private Company companyId;
-    @OneToMany(mappedBy = "departmentId")
-    private List<User> user = new LinkedList<>();
+
+    @OneToMany(mappedBy = "department_id")
+    private List<RoleMap> user = new LinkedList<>();
 
     @Formula("(SELECT COUNT(user.user_id) FROM user WHERE user.department_id = department_id)")
     private int userCount;
 
-    public List<User> getUser() {
+    public List<RoleMap> getUser() {
         return user;
     }
-    public void setUser(List<User> user) {
+    public void setUser(List<RoleMap> user) {
         this.user = user;
     }
     public int getUserCount() {

@@ -30,25 +30,14 @@ public class User {
     @NotNull
     private boolean activated;
 
-    @ManyToOne
-    @JoinColumn(name = "departmentId")
-    private Department departmentId;
+    @OneToOne(mappedBy = "user_id")
+    private RoleMap roleId;
 
-    @ManyToOne
-    @JoinColumn(name = "companyId")
-    @NotNull
-    private Company companyId;
-
-    @ManyToOne
-    @JoinColumn(name = "role")
-    @NotNull
-    private Role role;
-
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "avatar")
     private Avatar avatar;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "account")
     private Account account;
 
@@ -107,29 +96,13 @@ public class User {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
-
-    public Department getDepartmentId() {
-        return departmentId;
-    }
-
-    public void setDepartmentId(Department departmentId) {
-        this.departmentId = departmentId;
-    }
-
+    
     public String getAddress() {
         return address;
     }
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
     }
 
     public boolean isEnabled() {
@@ -147,12 +120,13 @@ public class User {
     public void setActivated(boolean activated) {
         this.activated = activated;
     }
-    public Company getCompanyId() {
-        return companyId;
+
+    public RoleMap getRoleId() {
+        return roleId;
     }
 
-    public void setCompanyId(Company companyId) {
-        this.companyId = companyId;
+    public void setRoleId(RoleMap roleId) {
+        this.roleId = roleId;
     }
 
     // Custom Function

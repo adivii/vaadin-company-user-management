@@ -33,16 +33,18 @@ public class Company {
 
     @OneToMany(mappedBy = "companyId")
     private List<Department> department = new LinkedList<>();
+
     @OneToMany(mappedBy = "holdingCompany")
     private List<Company> childCompany = new LinkedList<>();
-    @OneToMany(mappedBy = "companyId")
-    private List<User> user = new LinkedList<>();
+
+    @OneToMany(mappedBy = "company_id")
+    private List<RoleMap> user = new LinkedList<>();
 
     @ManyToOne
     @JoinColumn(name = "holdingCompany")
     private Company holdingCompany;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "avatar")
     private Avatar avatar;
 
@@ -116,13 +118,12 @@ public class Company {
     public void setAvatar(Avatar avatar) {
         this.avatar = avatar;
     }
-    public List<User> getUser() {
+    public List<RoleMap> getUser() {
         return user;
     }
-    public void setUser(List<User> user) {
+    public void setUser(List<RoleMap> user) {
         this.user = user;
     }
-
 
     // Custom Function
     public boolean checkEmpty() {
