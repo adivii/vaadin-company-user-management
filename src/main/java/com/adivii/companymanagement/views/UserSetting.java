@@ -49,10 +49,12 @@ import com.vaadin.flow.component.upload.receivers.FileBuffer;
 import com.vaadin.flow.component.upload.receivers.FileData;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 
 @Route("/setting")
+@PageTitle("User Setting")
 public class UserSetting extends HorizontalLayout {
     private UserService userService;
     private DepartmentService departmentService;
