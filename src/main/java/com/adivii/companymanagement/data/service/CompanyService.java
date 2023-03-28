@@ -22,6 +22,10 @@ public class CompanyService {
         return this.companyRepository.findAll();
     }
 
+    public List<Company> getByName(String name) {
+        return this.companyRepository.findByCompanyName(name);
+    }
+
     public Long getCompanyCount() {
         return this.companyRepository.count();
     }

@@ -19,7 +19,6 @@ import com.adivii.companymanagement.data.service.security.CustomBase64Encoder;
 import com.adivii.companymanagement.data.service.security.GuitarChordEncoder;
 
 public class ProfilePictureUpload {
-    // TODO: Fix service for profil picture upload
     public static String generateProfilePictureTitle(String firstName, String lastName) {
         String firstPart, lastPart;
 

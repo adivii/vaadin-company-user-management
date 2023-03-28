@@ -149,6 +149,7 @@ public class DepartmentList extends HorizontalLayout implements BeforeEnterObser
     }
 
     public void updateTable() {
+        // TODO: Show only department owned by this company for company admin
         ListDataProvider<Department> dataProvider = new ListDataProvider<>(departmentService.getAllDepartment());
 
         this.departmentTable.setDataProvider(dataProvider);

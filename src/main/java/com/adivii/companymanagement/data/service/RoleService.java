@@ -22,4 +22,8 @@ public class RoleService {
     public void addRole(Role role) {
         this.roleRepository.save(role);
     }
+
+    public List<Role> getByValue(String value) {
+        return roleRepository.findByValue(value);
+    }
 }

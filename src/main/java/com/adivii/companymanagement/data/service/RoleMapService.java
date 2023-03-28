@@ -24,4 +24,8 @@ public class RoleMapService {
     public List<RoleMap> getByEmail(String email) {
         return this.roleMapRepository.findByUserEmail(email);
     }
+
+    public void add(RoleMap roleMap){
+        this.roleMapRepository.save(roleMap);
+    }
 }

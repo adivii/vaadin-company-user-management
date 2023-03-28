@@ -3,11 +3,16 @@ package com.adivii.companymanagement.views;
 import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 
 import com.adivii.companymanagement.data.entity.Account;
+import com.adivii.companymanagement.data.entity.Company;
+import com.adivii.companymanagement.data.entity.Role;
+import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
+import com.adivii.companymanagement.data.service.RoleMapService;
+import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
 import com.vaadin.flow.component.Component;
@@ -31,6 +36,8 @@ public class RegisterScreen extends VerticalLayout {
     private AccountService accountService;
     private CompanyService companyService;
     private DepartmentService departmentService;
+    private RoleService roleService;
+    private RoleMapService roleMapService;
 
     // Text Field
     // User
@@ -55,15 +62,22 @@ public class RegisterScreen extends VerticalLayout {
     private TextField companyNameInput;
     // Address
     private TextArea companyAddressInput;
+    // Webstite
+    private TextField companyWebsiteInput;
     // Sector
     private TextField sectorInput;
+    // Button
+    private Button btnSaveCompany;
 
     public RegisterScreen(UserService userService, AccountService accountService,
-            CompanyService companyService, DepartmentService departmentService) {
+            CompanyService companyService, DepartmentService departmentService, RoleService roleService,
+            RoleMapService roleMapService) {
         this.userService = userService;
         this.accountService = accountService;
         this.companyService = companyService;
         this.departmentService = departmentService;
+        this.roleMapService = roleMapService;
+        this.roleService = roleService;
 
         setAlignItems(Alignment.CENTER);
         add(initiateUserForm());
@@ -105,7 +119,7 @@ public class RegisterScreen extends VerticalLayout {
 
             ErrorService errorService = accountService.save(newAccount);
             if(!errorService.isErrorStatus()){
-                newAccount = accountService.getByEmail(emailInput.getValue()).get(0);
+                newAccount = accountService.getByEmail(newAccount.getEmailAddress()).get(0);
                 User newUser = new User();
                 newUser.setFirstName(firstNameInput.getValue());
                 newUser.setLastName(lastNameInput.getValue());
@@ -118,6 +132,33 @@ public class RegisterScreen extends VerticalLayout {
 
                 // TODO: Handle Error
                 ErrorService userErrorService = userService.saveUser(newUser);
+                if(!userErrorService.isErrorStatus()){
+                    this.removeAll();
+                    this.add(initiateCompanyForm());
+
+                    btnSaveCompany.addClickListener(saveCompanyEvent -> {
+                        User ownerUser = userService.getByEmail(newUser.getEmail()).get(0);
+                        
+                        Company newCompany = new Company();
+                        newCompany.setCompanyName(companyNameInput.getValue());
+                        newCompany.setSector(sectorInput.getValue());
+                        newCompany.setAddress(companyAddressInput.getValue());
+                        newCompany.setWebsite(companyWebsiteInput.getValue());
+
+                        ErrorService companyErrorService = companyService.addCompany(newCompany);
+                        if(companyErrorService.isErrorStatus()) {
+                            newCompany = companyService.getByName(newCompany.getCompanyName()).get(0);
+                            Role defaultRole = roleService.getByValue("companyadmin").get(0);
+                            
+                            RoleMap newRole = new RoleMap();
+                            newRole.setCompany(newCompany);
+                            newRole.setRole(defaultRole);
+                            newRole.setUser(ownerUser);
+
+                            roleMapService.add(newRole);
+                        }
+                    });
+                }
             }
         });
 
@@ -141,9 +182,12 @@ public class RegisterScreen extends VerticalLayout {
         });
         // Sector
         sectorInput = new TextField("Sector");
+        // Website
+        companyWebsiteInput = new TextField("Website");
         // Button
+        btnSaveCompany = new Button("Save");
 
-        companyForm.add(companyNameInput, companyAddressInput, sectorInput);
+        companyForm.add(companyNameInput, companyAddressInput, sectorInput, companyWebsiteInput, btnSaveCompany);
         return companyForm;
     }
 }
