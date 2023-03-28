@@ -28,6 +28,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 
+// TODO: Handle Success and Error
+// TODO: Show Notification
+
 @Route("/register")
 public class RegisterScreen extends VerticalLayout {
 
