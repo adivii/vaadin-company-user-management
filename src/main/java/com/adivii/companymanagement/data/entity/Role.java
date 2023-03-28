@@ -20,7 +20,7 @@ public class Role {
     @NotNull
     private String value;
     
-    @OneToMany(mappedBy = "role_id")
+    @OneToMany(mappedBy = "role")
     private List<RoleMap> user = new LinkedList<>();
 
     public Integer getId() {

@@ -28,11 +28,12 @@ public class Department {
     @NotNull
     private Company companyId;
 
-    @OneToMany(mappedBy = "department_id")
+    @OneToMany(mappedBy = "department")
     private List<RoleMap> user = new LinkedList<>();
 
-    @Formula("(SELECT COUNT(user.user_id) FROM user WHERE user.department_id = department_id)")
-    private int userCount;
+    // TODO: Implement User count in service
+    // @Formula("(SELECT COUNT(user.user_id) FROM user WHERE user.department_id = department_id)")
+    // private int userCount;
 
     public List<RoleMap> getUser() {
         return user;
@@ -40,9 +41,9 @@ public class Department {
     public void setUser(List<RoleMap> user) {
         this.user = user;
     }
-    public int getUserCount() {
-        return userCount;
-    }
+    // public int getUserCount() {
+    //     return userCount;
+    // }
     public Integer getDepartmentId() {
         return departmentId;
     }

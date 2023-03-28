@@ -4,14 +4,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.adivii.companymanagement.data.entity.User;
+import com.adivii.companymanagement.data.repository.RoleMapRepository;
+import com.adivii.companymanagement.data.service.RoleMapService;
 
 public class CustomUserDetails implements UserDetails {
     private User user;
+
+    // TODO: Autowired doesn't work
+    // @Autowired
+    // private RoleMapService roleMapService;
+
+    int temp;
 
     public CustomUserDetails(User user) {
         this.user = user;
@@ -19,9 +28,10 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        
         // Set Authority for User
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(user.getRole().getValue()));
+        authorities.add(new SimpleGrantedAuthority(user.getRoleId().getRole().getValue()));
 
         return authorities;
     }

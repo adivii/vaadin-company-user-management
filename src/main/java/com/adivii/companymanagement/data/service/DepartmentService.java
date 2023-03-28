@@ -63,12 +63,12 @@ public class DepartmentService {
     }
 
     public boolean deleteDepartment(Department department) {
-        if(department.getUserCount() == 0){
+        // if(department.getUserCount() == 0){
             this.departmentRepository.delete(department);
 
             return true;
-        } else {
-            return false;
-        }
+        // } else {
+        //     return false;
+        // }
     }
 }

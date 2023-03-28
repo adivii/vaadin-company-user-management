@@ -30,7 +30,7 @@ public class User {
     @NotNull
     private boolean activated;
 
-    @OneToOne(mappedBy = "user_id")
+    @OneToOne(mappedBy = "user")
     private RoleMap roleId;
 
     @OneToOne(cascade = CascadeType.MERGE)

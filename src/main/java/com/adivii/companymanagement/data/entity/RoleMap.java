@@ -18,21 +18,21 @@ public class RoleMap {
     Integer id;
     
     @OneToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user")
     @NotNull
     User user;
     
     @ManyToOne
-    @JoinColumn(name = "role_id")
+    @JoinColumn(name = "role")
     @NotNull
     Role role;
     
     @ManyToOne
-    @JoinColumn(name = "department_id")
+    @JoinColumn(name = "department")
     Department department;
     
     @ManyToOne
-    @JoinColumn(name = "company_id")
+    @JoinColumn(name = "company")
     @NotNull
     Company company;
 

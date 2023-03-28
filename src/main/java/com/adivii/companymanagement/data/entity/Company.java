@@ -37,7 +37,7 @@ public class Company {
     @OneToMany(mappedBy = "holdingCompany")
     private List<Company> childCompany = new LinkedList<>();
 
-    @OneToMany(mappedBy = "company_id")
+    @OneToMany(mappedBy = "company")
     private List<RoleMap> user = new LinkedList<>();
 
     @ManyToOne
@@ -48,8 +48,9 @@ public class Company {
     @JoinColumn(name = "avatar")
     private Avatar avatar;
 
-    @Formula("(SELECT COUNT(user.user_id) FROM user INNER JOIN department ON user.department_id = department.department_id WHERE department.company_id = company_id)")
-    private int userCount;
+    // TODO: Implement count in service
+    // @Formula("(SELECT COUNT(user.user_id) FROM user INNER JOIN department ON user.department_id = department.department_id WHERE department.company_id = company_id)")
+    // private int userCount;
     @Formula("(SELECT COUNT(department.department_id) FROM department WHERE department.company_id = company_id)")
     private int departmentCount;
     @Formula("(SELECT COUNT(company.company_id) FROM company WHERE company.holding_company = company_id)")
@@ -61,9 +62,9 @@ public class Company {
     public int getDepartmentCount() {
         return departmentCount;
     }
-    public Integer getUserCount() {
-        return userCount;
-    }
+    // public Integer getUserCount() {
+    //     return userCount;
+    // }
     public List<Department> getDepartment() {
         return department;
     }
