@@ -3,6 +3,7 @@ package com.adivii.companymanagement.views.component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.awt.image.BufferedImage;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.avatar.Avatar;
@@ -108,6 +109,7 @@ public class CustomAvatar extends Div {
                 .set("justify-content", "center");
 
         if(this.avatar != null) {
+            String imageWidth = this.avatar.getWidth();
             this.avatar.getStyle()
                     .set("object-fit", "contain")
                     .set("height", height);

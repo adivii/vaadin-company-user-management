@@ -1,5 +1,8 @@
 package com.adivii.companymanagement.views;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -8,6 +11,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.webresources.FileResource;
@@ -198,7 +202,16 @@ class UserSettingMainLayout extends VerticalLayout {
             InputStream profileStream = fileBuffer.getInputStream();
 
             this.profilePicture.setAvatar(new Image(new StreamResource("temp_photo", () -> {
-                return profileStream;
+                try {
+                    BufferedImage bim = ProfilePictureUpload.preprocessImage(ImageIO.read(profileStream));
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    ImageIO.write(bim, "png", bos);
+                    return new ByteArrayInputStream(bos.toByteArray());
+                } catch (IOException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                    return null;
+                }
             }), null));
         });
 
