@@ -10,6 +10,7 @@ import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
+import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
@@ -173,8 +174,8 @@ public class UserDataDialog extends Dialog {
             newUser.setEmail(this.inputEmail.getValue());
             newUser.setPhoneNumber(this.inputPhone.getValue());
             newUser.setAddress(this.inputAddress.getValue());
-            newUser.setDepartmentId(this.inputDepartment.getValue());
-            newUser.setRole(this.inputRole.getValue());
+            // newUser.setDepartmentId(this.inputDepartment.getValue());
+            // newUser.setRole(this.inputRole.getValue());
             newUser.setEnabled(true);
 
             ErrorService errorService = new ErrorService(false, null);
@@ -192,16 +193,7 @@ public class UserDataDialog extends Dialog {
             if (!errorService.isErrorStatus()) {
                 this.close();
             } else {
-                Notification notification = new Notification();
-                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                Text notificationText = new Text(errorService.getErrorMessage());
-                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
-                closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-                HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
-
-                notification.setDuration(2000);
-                notification.add(notificationLayout);
-                notification.open();
+                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, errorService.getErrorMessage());
             }
         });
 
@@ -218,8 +210,8 @@ public class UserDataDialog extends Dialog {
         this.inputEmail.setValue(user.getEmail());
         this.inputAddress.setValue(user.getAddress());
         this.inputPhone.setValue(user.getPhoneNumber());
-        this.inputCompany.setValue(user.getDepartmentId().getCompanyId());
-        this.inputDepartment.setValue(user.getDepartmentId());
-        this.inputRole.setValue(user.getRole());
+        // this.inputCompany.setValue(user.getDepartmentId().getCompanyId());
+        // this.inputDepartment.setValue(user.getDepartmentId());
+        // this.inputRole.setValue(user.getRole());
     }
 }

@@ -29,7 +29,7 @@ public class SidebarLayout extends VerticalLayout {
         Button btnLogout = new Button("Logout");
 
         if (this.session.getAttribute("userID") != null) {
-            Role role = this.userService.getUser((Integer) session.getAttribute("userID")).get().getRole();
+            Role role = this.userService.getUser((Integer) session.getAttribute("userID")).get().getRoleId().getRole();
 
             if (role.getValue().equals("superadmin")) {
                 navCompanyList.setVisible(true);

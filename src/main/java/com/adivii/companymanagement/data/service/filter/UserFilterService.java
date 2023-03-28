@@ -73,8 +73,8 @@ public class UserFilterService {
                 matches(user.getLastName(), lastName) &&
                 matches(user.getAddress(), address) &&
                 matches(user.getPhoneNumber(), phone) &&
-                matches(user.getDepartmentId().getCompanyId().getCompanyName(), company) &&
-                matches(user.getDepartmentId().getName(), department);
+                matches(user.getRoleId().getCompany().getCompanyName(), company) &&
+                matches(user.getRoleId().getDepartment().getName(), department);
     }
 
     private boolean search(User user) {
@@ -83,7 +83,7 @@ public class UserFilterService {
                 matches(user.getLastName(), searchTerm) ||
                 matches(user.getAddress(), searchTerm) ||
                 matches(user.getPhoneNumber(), searchTerm) ||
-                matches(user.getDepartmentId().getCompanyId().getCompanyName(), searchTerm) ||
-                matches(user.getDepartmentId().getName(), searchTerm);
+                matches(user.getRoleId().getCompany().getCompanyName(), company) ||
+                matches(user.getRoleId().getDepartment().getName(), department);
     }
 }

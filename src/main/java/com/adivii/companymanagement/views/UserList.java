@@ -12,6 +12,7 @@ import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
+import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
@@ -53,13 +54,14 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
         DepartmentService departmentService;
         UserFilterService userFilterService;
         RoleService roleService;
+        RoleMapService roleMapService;
         AccountService accountService;
         HttpSession session;
 
         Grid<User> userTable;
 
         public UserList(UserService userService, CompanyService companyService, DepartmentService departmentService,
-                        RoleService roleServices, AccountService accountService) {
+                        RoleService roleServices, RoleMapService roleMapService, AccountService accountService) {
                 this.userService = userService;
                 this.companyService = companyService;
                 this.departmentService = departmentService;
@@ -97,21 +99,27 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                         CustomAvatar avatar = new CustomAvatar(e.getFirstName().concat(" ").concat(e.getLastName()));
                         avatar.setColor(((int) e.getFirstName().charAt(0) + (int) e.getLastName().charAt(0)) % 4);
 
-                        if(e.getAvatar() != null){
+                        if (e.getAvatar() != null) {
                                 avatar.setAvatar(new Image(new StreamResource("profile", () -> {
                                         InputStream profileStream;
                                         try {
-                                            profileStream = new URL("http://localhost/vaadin-company-management-resource/profiles/".concat(ProfilePictureUpload.generateProfilePictureTitle(e.getFirstName(), e.getLastName()))).openStream();
-                                            return profileStream;
+                                                profileStream = new URL(
+                                                                "http://localhost/vaadin-company-management-resource/profiles/"
+                                                                                .concat(ProfilePictureUpload
+                                                                                                .generateProfilePictureTitle(
+                                                                                                                e.getFirstName(),
+                                                                                                                e.getLastName())))
+                                                                .openStream();
+                                                return profileStream;
                                         } catch (MalformedURLException e1) {
-                                            // TODO Auto-generated catch block
-                                            e1.printStackTrace();
-                                            return null;
+                                                // TODO Auto-generated catch block
+                                                e1.printStackTrace();
+                                                return null;
                                         } catch (IOException e1) {
-                                            // TODO Auto-generated catch block
-                                            e1.printStackTrace();
-                                            return null;
-                                        }  
+                                                // TODO Auto-generated catch block
+                                                e1.printStackTrace();
+                                                return null;
+                                        }
                                 }), null));
                         }
 
@@ -137,11 +145,23 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                                 .withProperty("phone", User::getPhoneNumber)).setAutoWidth(true).setResizable(true);
                 Grid.Column<User> companyColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
                                 "<span title='[[item.company]]' aria-label='[[item.company]]'>[[item.company]]</span>")
-                                .withProperty("company", e -> e.getDepartmentId().getCompanyId().getCompanyName()))
+                                .withProperty("company", e -> {
+                                        if (roleMapService.getByEmail(e.getEmail()).size() == 0) {
+                                                return "";
+                                        } else {
+                                                return roleMapService.getByEmail(e.getEmail()).get(0).getCompany().getCompanyName();
+                                        }
+                                }))
                                 .setAutoWidth(true).setResizable(true);
                 Grid.Column<User> departmentColumn = this.userTable.addColumn(TemplateRenderer.<User>of(
                                 "<span title='[[item.department]]' aria-label='[[item.department]]'>[[item.department]]</span>")
-                                .withProperty("department", e -> e.getDepartmentId().getName()))
+                                .withProperty("department", e -> {
+                                        if (roleMapService.getByEmail(e.getEmail()).size() == 0) {
+                                                return "";
+                                        } else {
+                                                return roleMapService.getByEmail(e.getEmail()).get(0).getDepartment().getName();
+                                        }
+                                }))
                                 .setAutoWidth(true).setResizable(true);
 
                 this.userTable.addItemDoubleClickListener(e -> {
