@@ -17,6 +17,7 @@ import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -26,12 +27,14 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 // TODO: Handle Success and Error
 // TODO: Show Notification
 
 @Route("/register")
+@PageTitle("Register User")
 public class RegisterScreen extends VerticalLayout {
 
     // Services
@@ -159,6 +162,8 @@ public class RegisterScreen extends VerticalLayout {
                             newRole.setUser(ownerUser);
 
                             roleMapService.add(newRole);
+
+                            UI.getCurrent().navigate(LoginScreen.class);
                         }
                     });
                 }
