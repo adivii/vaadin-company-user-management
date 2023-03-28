@@ -79,7 +79,7 @@ public class ProfilePictureUpload {
     }
 
     public static String getFolder() {
-        return "E:\\Apps\\xampp\\htdocs\\vaadin-crm-resource\\profiles";
+        return "E:\\Apps\\xampp\\htdocs\\vaadin-crm-resource\\profiles\\";
     }
 
     public static String getLink() {

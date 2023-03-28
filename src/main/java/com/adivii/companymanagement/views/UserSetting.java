@@ -11,6 +11,7 @@ import java.net.URL;
 import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.webresources.FileResource;
+import org.springframework.context.annotation.Profile;
 import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 
 import com.adivii.companymanagement.data.entity.Avatar;
@@ -24,7 +25,7 @@ import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.file_upload.ProfilePictureUpload;
 import com.adivii.companymanagement.views.component.CustomAvatar;
 import com.adivii.companymanagement.views.component.CustomUploadButton;
-import com.adivii.companymanagement.views.dialog.NewPasswordDialog;
+import com.adivii.companymanagement.views.component.dialog.NewPasswordDialog;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -179,7 +180,7 @@ class UserSettingMainLayout extends VerticalLayout {
             this.profilePicture.setAvatar(new Image(new StreamResource("profile", () -> {
                 InputStream profileStream;
                 try {
-                    profileStream = new URL("http://localhost/vaadin-company-management-resource/profiles/".concat(ProfilePictureUpload.generateProfilePictureTitle(temp.getFirstName(), temp.getLastName()))).openStream();
+                    profileStream = new URL(user.getAvatar().getUri()).openStream();
                     return profileStream;
                 } catch (MalformedURLException e1) {
                     // TODO Auto-generated catch block
@@ -213,7 +214,7 @@ class UserSettingMainLayout extends VerticalLayout {
                 newAvatar = user.getAvatar();
             }
 
-            newAvatar.setUri("http://localhost/vaadin-company-management-resource/profiles/".concat(ProfilePictureUpload.generateProfilePictureTitle(user.getFirstName(), user.getLastName())));
+            newAvatar.setUri(ProfilePictureUpload.getLink().concat(ProfilePictureUpload.generateProfilePictureTitle(user.getFirstName(), user.getLastName())));
 
             this.avatarService.saveAvatar(newAvatar);
 
