@@ -65,6 +65,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 this.userService = userService;
                 this.companyService = companyService;
                 this.departmentService = departmentService;
+                this.roleMapService = roleMapService;
                 this.userFilterService = new UserFilterService();
                 this.roleService = roleServices;
                 this.accountService = accountService;
@@ -103,13 +104,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                                 avatar.setAvatar(new Image(new StreamResource("profile", () -> {
                                         InputStream profileStream;
                                         try {
-                                                profileStream = new URL(
-                                                                "http://localhost/vaadin-company-management-resource/profiles/"
-                                                                                .concat(ProfilePictureUpload
-                                                                                                .generateProfilePictureTitle(
-                                                                                                                e.getFirstName(),
-                                                                                                                e.getLastName())))
-                                                                .openStream();
+                                                profileStream = new URL(e.getAvatar().getUri()).openStream();
                                                 return profileStream;
                                         } catch (MalformedURLException e1) {
                                                 // TODO Auto-generated catch block
@@ -149,7 +144,8 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                                         if (roleMapService.getByEmail(e.getEmail()).size() == 0) {
                                                 return "";
                                         } else {
-                                                return roleMapService.getByEmail(e.getEmail()).get(0).getCompany().getCompanyName();
+                                                return roleMapService.getByEmail(e.getEmail()).get(0).getCompany()
+                                                                .getCompanyName();
                                         }
                                 }))
                                 .setAutoWidth(true).setResizable(true);
@@ -159,7 +155,13 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                                         if (roleMapService.getByEmail(e.getEmail()).size() == 0) {
                                                 return "";
                                         } else {
-                                                return roleMapService.getByEmail(e.getEmail()).get(0).getDepartment().getName();
+                                                if (roleMapService.getByEmail(e.getEmail()).get(0)
+                                                                .getDepartment() == null) {
+                                                        return "";
+                                                } else {
+                                                        return roleMapService.getByEmail(e.getEmail()).get(0)
+                                                                        .getDepartment().getName();
+                                                }
                                         }
                                 }))
                                 .setAutoWidth(true).setResizable(true);

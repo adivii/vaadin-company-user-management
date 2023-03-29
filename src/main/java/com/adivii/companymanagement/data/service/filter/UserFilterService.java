@@ -67,14 +67,14 @@ public class UserFilterService {
         return searchTerm == null || searchTerm.isBlank() || value.toLowerCase().contains(searchTerm.toLowerCase());
     }
 
+    // TODO: Create filter service if department is null
     private boolean filter(User user) {
         return matches(user.getEmail(), email) &&
                 matches(user.getFirstName(), firstName) &&
                 matches(user.getLastName(), lastName) &&
                 matches(user.getAddress(), address) &&
                 matches(user.getPhoneNumber(), phone) &&
-                matches(user.getRoleId().getCompany().getCompanyName(), company) &&
-                matches(user.getRoleId().getDepartment().getName(), department);
+                matches(user.getRoleId().getCompany().getCompanyName(), company);
     }
 
     private boolean search(User user) {
@@ -83,7 +83,6 @@ public class UserFilterService {
                 matches(user.getLastName(), searchTerm) ||
                 matches(user.getAddress(), searchTerm) ||
                 matches(user.getPhoneNumber(), searchTerm) ||
-                matches(user.getRoleId().getCompany().getCompanyName(), company) ||
-                matches(user.getRoleId().getDepartment().getName(), department);
+                matches(user.getRoleId().getCompany().getCompanyName(), company);
     }
 }
