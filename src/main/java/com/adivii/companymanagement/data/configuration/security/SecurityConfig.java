@@ -91,8 +91,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
                 // Allow request by logged-in users
                 .antMatchers("/company").hasAnyAuthority("superadmin", "companyadmin")
-                .antMatchers("/department").hasAnyAuthority("superadmin", "departmentadmin")
-                .antMatchers("/user").hasAnyAuthority("superadmin", "useradmin")
+                .antMatchers("/department").hasAnyAuthority("superadmin", "companyadmin", "departmentadmin")
+                .antMatchers("/user").hasAnyAuthority("superadmin", "companyadmin", "departmentadmin", "useradmin")
                 .antMatchers("/register").permitAll()
                 .anyRequest().authenticated()
                 // Configure login page

@@ -37,12 +37,12 @@ public class SidebarLayout extends VerticalLayout {
                 navUserList.setVisible(true);
             } else if (role.getValue().equals("companyadmin")) {
                 navCompanyList.setVisible(true);
-                navDepartmentList.setVisible(false);
-                navUserList.setVisible(false);
+                navDepartmentList.setVisible(true);
+                navUserList.setVisible(true);
             } else if (role.getValue().equals("departmentadmin")) {
                 navCompanyList.setVisible(false);
                 navDepartmentList.setVisible(true);
-                navUserList.setVisible(false);
+                navUserList.setVisible(true);
             } else if (role.getValue().equals("useradmin")) {
                 navCompanyList.setVisible(false);
                 navDepartmentList.setVisible(false);
