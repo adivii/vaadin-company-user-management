@@ -8,6 +8,8 @@ import javax.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
+import com.adivii.companymanagement.data.entity.Company;
+import com.adivii.companymanagement.data.entity.Department;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.repository.UserRepository;
 
@@ -33,6 +35,14 @@ public class UserService {
 
     public List<User> getByEmail(String email) {
         return this.userRepository.findByEmail(email);
+    }
+
+    public List<User> getByDepartment(Department department) {
+        return this.userRepository.findByRoleIdDepartmentDepartmentId(department.getDepartmentId());
+    }
+    
+    public List<User> getByCompany(Company company) {
+        return this.userRepository.findByRoleIdCompanyCompanyId(company.getCompanyId());
     }
 
     public ErrorService saveUser(User user) {

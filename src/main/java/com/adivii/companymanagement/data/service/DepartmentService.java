@@ -8,13 +8,16 @@ import org.springframework.stereotype.Service;
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.Department;
 import com.adivii.companymanagement.data.repository.DepartmentRepository;
+import com.adivii.companymanagement.data.repository.UserRepository;
 
 @Service
 public class DepartmentService {
     private DepartmentRepository departmentRepository;
+    private UserRepository userRepository;
 
-    public DepartmentService(DepartmentRepository departmentRepository) {
+    public DepartmentService(DepartmentRepository departmentRepository, UserRepository userRepository) {
         this.departmentRepository = departmentRepository;
+        this.userRepository = userRepository;
     }
 
     public List<Department> getAllDepartment() {
@@ -63,12 +66,12 @@ public class DepartmentService {
     }
 
     public boolean deleteDepartment(Department department) {
-        // if(department.getUserCount() == 0){
+        if(userRepository.findByRoleIdDepartmentDepartmentId(department.getDepartmentId()).size() == 0){
             this.departmentRepository.delete(department);
 
             return true;
-        // } else {
-        //     return false;
-        // }
+        } else {
+            return false;
+        }
     }
 }

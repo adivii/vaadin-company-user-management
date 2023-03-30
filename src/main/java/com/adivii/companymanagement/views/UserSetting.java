@@ -20,6 +20,7 @@ import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 
 import com.adivii.companymanagement.data.entity.Avatar;
 import com.adivii.companymanagement.data.entity.User;
+import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.AvatarService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
@@ -59,18 +60,20 @@ public class UserSetting extends HorizontalLayout {
     private UserService userService;
     private DepartmentService departmentService;
     private CompanyService companyService;
+    private AccountService accountService;
     private AvatarService avatarService;
     private HttpSession session;
 
-    public UserSetting(UserService userService, DepartmentService departmentService, CompanyService companyService, AvatarService avatarService) {
+    public UserSetting(UserService userService, DepartmentService departmentService, CompanyService companyService, AccountService accountService, AvatarService avatarService) {
         this.userService = userService;
         this.departmentService = departmentService;
         this.companyService = companyService;
         this.avatarService = avatarService;
+        this.accountService = accountService;
         this.session = SessionService.getCurrentSession();
 
         VerticalLayout sidebar = new SidebarLayout(this.userService);
-        UserSettingMainLayout mainLayout = new UserSettingMainLayout(this.userService, this.avatarService);
+        UserSettingMainLayout mainLayout = new UserSettingMainLayout(this.userService, this.avatarService, accountService);
         Scroller scroller = new Scroller(mainLayout.getLayout());
 
         sidebar.setWidth("250px");
@@ -84,6 +87,7 @@ class UserSettingMainLayout extends VerticalLayout {
     VerticalLayout layout;
     UserService userService;
     private AvatarService avatarService;
+    private AccountService accountService;
     HttpSession session;
 
     User user;
@@ -113,9 +117,10 @@ class UserSettingMainLayout extends VerticalLayout {
     Button btnChangePass;
     HorizontalLayout buttonLayout;
 
-    public UserSettingMainLayout(UserService userService, AvatarService avatarService) {
+    public UserSettingMainLayout(UserService userService, AvatarService avatarService, AccountService accountService) {
         this.userService = userService;
         this.avatarService = avatarService;
+        this.accountService = accountService;
         this.session = SessionService.getCurrentSession();
 
         this.layout = new VerticalLayout();
@@ -270,7 +275,7 @@ class UserSettingMainLayout extends VerticalLayout {
         btnChangePass.setEnabled(true);
         btnChangePass.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         btnChangePass.addClickListener(e -> {
-            NewPasswordDialog passwordDialog = new NewPasswordDialog(userService);
+            NewPasswordDialog passwordDialog = new NewPasswordDialog(this.accountService, user.getAccount());
 
             passwordDialog.open();
         });

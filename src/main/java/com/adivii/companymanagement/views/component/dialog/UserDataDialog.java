@@ -5,12 +5,14 @@ import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.Department;
 import com.adivii.companymanagement.data.entity.Role;
+import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.NotificationService;
+import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
@@ -43,6 +45,7 @@ public class UserDataDialog extends Dialog {
     private DepartmentService departmentService;
     private UserService userService;
     private RoleService roleService;
+    private RoleMapService roleMapService;
     private AccountService accountService;
 
     User user;
@@ -75,11 +78,12 @@ public class UserDataDialog extends Dialog {
     Scroller scroller;
 
     public UserDataDialog(CompanyService companyService, DepartmentService departmentService,
-            UserService userService, RoleService roleService, AccountService accountService, String method) {
+            UserService userService, RoleService roleService, RoleMapService roleMapService, AccountService accountService, String method) {
         this.companyService = companyService;
         this.departmentService = departmentService;
         this.userService = userService;
         this.roleService = roleService;
+        this.roleMapService = roleMapService;
 
         this.initiateDialog(method);
     }
@@ -167,16 +171,17 @@ public class UserDataDialog extends Dialog {
 
         // Save Mechanism
         // TODO: Configure saving method to save both Account and User
+        // TODO: Adapt saving method to process RoleMap
         this.btnSave.addClickListener(e -> {
             User newUser = new User();
-            newUser.setFirstName(this.inputFirst.getValue());
-            newUser.setLastName(this.inputLast.getValue());
-            newUser.setEmail(this.inputEmail.getValue());
-            newUser.setPhoneNumber(this.inputPhone.getValue());
-            newUser.setAddress(this.inputAddress.getValue());
-            // newUser.setDepartmentId(this.inputDepartment.getValue());
-            // newUser.setRole(this.inputRole.getValue());
+            newUser.setFirstName(inputFirst.getValue());
+            newUser.setLastName(inputLast.getValue());
+            newUser.setEmail(inputEmail.getValue());
+            newUser.setPhoneNumber(inputPhone.getValue());
+            newUser.setAddress(inputAddress.getValue());
+            // newUser.setAccount(newAccount);
             newUser.setEnabled(true);
+            // newUser.setActivated(true);
 
             ErrorService errorService = new ErrorService(false, null);
             if (method.equals("new")) {
@@ -185,12 +190,28 @@ public class UserDataDialog extends Dialog {
                 errorService = userService.saveUser(newUser);
             } else if (method.equals("update")) {
                 newUser.setUserId(this.user.getUserId());
+                newUser.setAccount(user.getAccount());
+                newUser.setAvatar(user.getAvatar());
                 // newUser.setPassword(this.user.getPassword());
                 newUser.setActivated(this.user.isActivated());
                 errorService = userService.editData(newUser);
             }
 
+            // TODO: Handle Error to rollback changes if failed to save data
             if (!errorService.isErrorStatus()) {
+                RoleMap roleMap = new RoleMap();
+
+                if(method.equals("update")){
+                    roleMap = roleMapService.getByEmail(newUser.getEmail()).get(0);
+                }
+
+                roleMap.setCompany(inputCompany.getValue());
+                roleMap.setDepartment(inputDepartment.getValue());
+                roleMap.setRole(inputRole.getValue());
+                roleMap.setUser(newUser);
+
+                roleMapService.add(roleMap);
+
                 this.close();
             } else {
                 NotificationService.showNotification(NotificationVariant.LUMO_ERROR, errorService.getErrorMessage());
@@ -210,8 +231,8 @@ public class UserDataDialog extends Dialog {
         this.inputEmail.setValue(user.getEmail());
         this.inputAddress.setValue(user.getAddress());
         this.inputPhone.setValue(user.getPhoneNumber());
-        // this.inputCompany.setValue(user.getDepartmentId().getCompanyId());
-        // this.inputDepartment.setValue(user.getDepartmentId());
-        // this.inputRole.setValue(user.getRole());
+        this.inputCompany.setValue(user.getRoleId().getCompany());
+        this.inputDepartment.setValue(user.getRoleId().getDepartment());
+        this.inputRole.setValue(user.getRoleId().getRole());
     }
 }

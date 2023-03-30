@@ -106,14 +106,14 @@ public class CompanyList extends HorizontalLayout implements BeforeEnterObserver
         Grid.Column<Company> sectorColumn = this.companyTable.addColumn(TemplateRenderer.<Company>of(
                 "<span title='[[item.sector]]' aria-label='[[item.sector]]'>[[item.sector]]</span>")
                 .withProperty("sector", Company::getSector)).setAutoWidth(true).setResizable(true);
-        // Grid.Column<Company> employeeColumn = this.companyTable.addComponentColumn(e -> {
-        //     Label count = new Label();
+        Grid.Column<Company> employeeColumn = this.companyTable.addComponentColumn(e -> {
+            Label count = new Label();
 
-        //     count.setText(Integer.toString(this.companyService.getEmployeeCount(e)));
-        //     count.setTitle(Integer.toString(this.companyService.getEmployeeCount(e)));
+            count.setText(Integer.toString(this.userService.getByCompany(e).size()));
+            count.setTitle(Integer.toString(this.userService.getByCompany(e).size()));
 
-        //     return count;
-        // }).setAutoWidth(true).setResizable(true);
+            return count;
+        }).setAutoWidth(true).setResizable(true);
         Grid.Column<Company> websiteColumn = this.companyTable.addComponentColumn(e -> {
             Anchor link = new Anchor(e.getWebsite(), e.getWebsite());
             link.setTitle(e.getWebsite());

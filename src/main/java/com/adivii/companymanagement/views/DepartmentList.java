@@ -103,10 +103,12 @@ public class DepartmentList extends HorizontalLayout implements BeforeEnterObser
                 "<span title='[[item.company]]' aria-label='[[item.company]]'>[[item.company]]</span>")
                 .withProperty("company", e -> e.getCompanyId().getCompanyName()))
                 .setAutoWidth(true).setResizable(true);
-        // Grid.Column<Department> employeeColumn = this.departmentTable.addColumn(TemplateRenderer.<Department>of(
-        //         "<span title='[[item.employee]]' aria-label='[[item.employee]]'>[[item.employee]]</span>")
-        //         .withProperty("employee", Department::getUserCount)).setAutoWidth(true)
-        //         .setResizable(true);
+        Grid.Column<Department> employeeColumn = this.departmentTable.addColumn(TemplateRenderer.<Department>of(
+                "<span title='[[item.employee]]' aria-label='[[item.employee]]'>[[item.employee]]</span>")
+                .withProperty("employee", e -> {
+                    return userService.getByDepartment(e).size();
+                })).setAutoWidth(true)
+                .setResizable(true);
 
         this.departmentTable.addItemDoubleClickListener(e -> {
             getEditDialog(e.getItem()).open();

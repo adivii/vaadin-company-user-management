@@ -7,4 +7,7 @@ import com.adivii.companymanagement.data.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
     public List<User> findByEmail(String email);
+    // Find record by roleId (FK) > department (FK) > departmentId
+    public List<User> findByRoleIdDepartmentDepartmentId(Integer departmentId);
+    public List<User> findByRoleIdCompanyCompanyId(Integer companyId);
 }

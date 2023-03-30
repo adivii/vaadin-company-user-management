@@ -168,7 +168,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 this.userTable.addItemDoubleClickListener(e -> {
                         UserDataDialog userDataDialog = new UserDataDialog(companyService, departmentService,
-                                        userService, roleService, accountService, UserDataDialog.METHOD_UPDATE);
+                                        userService, roleService, roleMapService, accountService, UserDataDialog.METHOD_UPDATE);
                         userDataDialog.setData(e.getItem());
                         userDataDialog.open();
 
@@ -249,7 +249,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 btnAdd.addClickListener(e -> {
                         UserDataDialog userDialog = new UserDataDialog(this.companyService, this.departmentService,
-                                        this.userService, roleService, accountService, UserDataDialog.METHOD_NEW);
+                                        this.userService, roleService, roleMapService, accountService, UserDataDialog.METHOD_NEW);
                         userDialog.open();
 
                         userDialog.addOpenedChangeListener(actionListener -> {
