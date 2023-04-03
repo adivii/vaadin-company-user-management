@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.logging.log4j.util.Chars;
-
 /**
  * CustomBase64Encoder
  */

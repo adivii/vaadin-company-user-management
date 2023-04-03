@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpSession;
 
 import com.adivii.companymanagement.data.entity.Account;
+import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
@@ -22,6 +23,7 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.login.LoginForm;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
@@ -30,6 +32,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
 
 // TODO: Search for better authorization logic
 // TODO: Rebuild Login Screen (build custom)
@@ -39,6 +42,7 @@ import com.vaadin.flow.router.Route;
 public class LoginScreen extends VerticalLayout {
     // Service
     private UserAuthService userAuthService;
+    private VaadinSession session;
 
     // Field
     private EmailField inputUser;
@@ -49,6 +53,7 @@ public class LoginScreen extends VerticalLayout {
 
     public LoginScreen(UserAuthService userAuthService) {
         this.userAuthService = userAuthService;
+        this.session = VaadinSession.getCurrent();
 
         setupField();
         getLayout();
@@ -69,8 +74,10 @@ public class LoginScreen extends VerticalLayout {
     private void setupOnClickListener() {
         this.btnLogin.addClickListener(clickEvent -> {
             Account account = userAuthService.authenticateLogin(this.inputUser.getValue(), this.inputPass.getValue()); 
-            // add(account.getEmailAddress());
-            System.out.println("Done");
+            
+            if(account == null) {
+                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Can't Find Account");
+            }
         });
     }
 }

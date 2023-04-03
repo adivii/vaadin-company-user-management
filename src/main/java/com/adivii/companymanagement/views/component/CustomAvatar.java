@@ -3,14 +3,8 @@ package com.adivii.companymanagement.views.component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.awt.image.BufferedImage;
-
-import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
 
 public class CustomAvatar extends Div {

@@ -46,6 +46,7 @@ public class GuitarChordEncoder {
                 break;
             case 5:
                 scheme = CHORD_G;
+                break;
             case 6:
                 scheme = CHORD_F;
                 break;
