@@ -198,6 +198,7 @@ public class UserDataDialog extends Dialog {
             }
 
             // TODO: Handle Error to rollback changes if failed to save data
+            // TODO: Save only master entity, child entity should be updated (or use thread)
             if (!errorService.isErrorStatus()) {
                 RoleMap roleMap = new RoleMap();
 

@@ -11,6 +11,7 @@ import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
+import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.UserService;
@@ -20,6 +21,7 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
@@ -32,6 +34,7 @@ import com.vaadin.flow.router.Route;
 
 // TODO: Handle Success and Error
 // TODO: Show Notification
+// TODO: Modify Scheme, so that account can exist without complete data, but user must input required data on first login
 
 @Route("/register")
 @PageTitle("Register User")
@@ -116,7 +119,7 @@ public class RegisterScreen extends VerticalLayout {
         btnSaveUser = new Button("Save");
         btnSaveUser.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         btnSaveUser.addClickListener(e -> {
-            // TODO: Implement user save mechanism
+            // TODO: Implement rollback scenario, if user failed to save data
             CustomPasswordEncoder encoder = new CustomPasswordEncoder();
             Account newAccount = new Account();
 
@@ -164,9 +167,16 @@ public class RegisterScreen extends VerticalLayout {
                             roleMapService.add(newRole);
 
                             UI.getCurrent().navigate(LoginScreen.class);
+                        }else{
+                            NotificationService.showNotification(NotificationVariant.LUMO_ERROR, companyErrorService.getErrorMessage());
                         }
                     });
+                } else {
+                    accountService.delete(newAccount);
+                    NotificationService.showNotification(NotificationVariant.LUMO_ERROR, userErrorService.getErrorMessage());
                 }
+            } else {
+                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, errorService.getErrorMessage());
             }
         });
 

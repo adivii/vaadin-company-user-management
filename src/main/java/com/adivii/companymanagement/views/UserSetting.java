@@ -186,6 +186,7 @@ class UserSettingMainLayout extends VerticalLayout {
         inputPhone.setValue(user.getPhoneNumber());
 
         // Setting for profile picture
+        // TODO: Make sure user can select which part of image to upload
         if(user.getAvatar() != null){
             User temp = user;
             this.profilePicture.setAvatar(new Image(new StreamResource("profile", () -> {

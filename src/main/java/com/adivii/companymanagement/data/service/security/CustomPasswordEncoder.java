@@ -6,12 +6,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 // Used to build encryption
 // TODO: User random method to build encryption (either use data like firstname, lastname, email, etc)
 // For sake of experiment, use Huffman Compression method
 // Change of idea, we use Osmy's idea to make encryption
 @Service
+@Transactional
 public class CustomPasswordEncoder implements PasswordEncoder {
 
     @Override

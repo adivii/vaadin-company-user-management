@@ -18,6 +18,7 @@ import org.imgscalr.Scalr;
 import com.adivii.companymanagement.data.service.security.CustomBase64Encoder;
 import com.adivii.companymanagement.data.service.security.GuitarChordEncoder;
 
+// TODO: Make sure user can select which part of image to upload
 public class ProfilePictureUpload {
     public static String generateProfilePictureTitle(String firstName, String lastName) {
         String firstPart, lastPart;

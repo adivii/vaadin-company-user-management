@@ -2,17 +2,22 @@ package com.adivii.companymanagement.data.service;
 
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.adivii.companymanagement.data.entity.Account;
 import com.adivii.companymanagement.data.repository.AccountRepository;
+import com.adivii.companymanagement.data.repository.UserRepository;
 
 @Service
+@Transactional
 public class AccountService {
 
     private AccountRepository accountRepository;
+    private UserRepository userRepository;
 
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, UserRepository userRepository) {
         this.accountRepository = accountRepository;
+        this.userRepository = userRepository;
     }
 
     public List<Account> getByEmail(String email) {
@@ -48,6 +53,15 @@ public class AccountService {
             }
         } else {
             return new ErrorService(true, "Field Can't Be Empty");
+        }
+    }
+
+    public ErrorService delete(Account account) {
+        if (userRepository.findByEmail(account.getEmailAddress()).size() > 0) {
+            return new ErrorService(true, "Can't Delete Record");
+        } else {
+            accountRepository.delete(account);
+            return new ErrorService(false, null);
         }
     }
 }
