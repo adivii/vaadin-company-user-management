@@ -150,12 +150,6 @@ class UserSettingMainLayout extends VerticalLayout {
 
         this.user = userService.getUser((Integer) session.getAttribute("userID")).get();
 
-        // TODO: Create message layout (make it interesting)
-        // Setting for message
-        ErrorService errorService = ((ErrorService) session.getAttribute("errorStatus"));
-        message.setVisible(this.user.isActivated());
-        message.setText(errorService.getErrorMessage());
-
         // Setting for name field
         inputFirst.setValue(user.getFirstName());
         inputLast.setValue(user.getLastName());
@@ -220,7 +214,7 @@ class UserSettingMainLayout extends VerticalLayout {
         btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         // TODO: Save button doen't do anything
         btnSave.addClickListener(e -> {
-            ProfilePictureUpload.saveFile(fileBuffer.getInputStream(), ProfilePictureUpload.generateProfilePictureTitle(user.getFirstName(), user.getLastName()));
+            ProfilePictureUpload.saveFile(fileBuffer.getInputStream(), ProfilePictureUpload.generateProfilePictureTitle(user.getEmail()));
             Avatar newAvatar;
             if(user.getAvatar() == null){
                 newAvatar = new Avatar();
@@ -228,7 +222,7 @@ class UserSettingMainLayout extends VerticalLayout {
                 newAvatar = user.getAvatar();
             }
 
-            newAvatar.setUri(ProfilePictureUpload.getLink().concat(ProfilePictureUpload.generateProfilePictureTitle(user.getFirstName(), user.getLastName())));
+            newAvatar.setUri(ProfilePictureUpload.getLink().concat(ProfilePictureUpload.generateProfilePictureTitle(user.getEmail())));
 
             this.avatarService.saveAvatar(newAvatar);
 

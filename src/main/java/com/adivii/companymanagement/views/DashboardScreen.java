@@ -40,7 +40,7 @@ public class DashboardScreen extends HorizontalLayout implements BeforeEnterObse
             User user = userService.getUser((Integer) this.session.getAttribute("userID")).get();
 
             if(!user.isActivated()) {
-                event.forwardTo(UserActivationForm.class);;
+                event.forwardTo(UserActivationForm.class);
             }
         } 
     }

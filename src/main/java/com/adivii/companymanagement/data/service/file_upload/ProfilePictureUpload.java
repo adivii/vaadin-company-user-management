@@ -20,22 +20,8 @@ import com.adivii.companymanagement.data.service.security.GuitarChordEncoder;
 
 // TODO: Make sure user can select which part of image to upload
 public class ProfilePictureUpload {
-    public static String generateProfilePictureTitle(String firstName, String lastName) {
-        String firstPart, lastPart;
-
-        if (firstName.length() > 5) {
-            firstPart = firstName.substring(0, 5);
-        } else {
-            firstPart = firstName;
-        }
-
-        if (lastName.length() > 5) {
-            lastPart = lastName.substring(0, 5);
-        } else {
-            lastPart = lastName;
-        }
-
-        return CustomBase64Encoder.encode(firstPart.concat(lastPart));
+    public static String generateProfilePictureTitle(String email) {
+        return CustomBase64Encoder.encode(email.substring(0, email.indexOf("@") + 1));
     }
 
     public static void saveFile(File file, String filename) {

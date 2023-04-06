@@ -41,7 +41,6 @@ public class UserActivationForm extends VerticalLayout {
     private DepartmentService departmentService;
     private RoleService roleService;
     private RoleMapService roleMapService;
-    private SessionService sessionService;
 
     // User
     private User user;
@@ -51,16 +50,15 @@ public class UserActivationForm extends VerticalLayout {
 
     public UserActivationForm(AccountService accountService, UserService userService,
             CompanyService companyService, DepartmentService departmentService, RoleService roleService,
-            RoleMapService roleMapService, SessionService sessionService) {
+            RoleMapService roleMapService) {
         this.accountService = accountService;
         this.userService = userService;
         this.companyService = companyService;
         this.departmentService = departmentService;
         this.roleService = roleService;
         this.roleMapService = roleMapService;
-        this.sessionService = sessionService;
 
-        HttpSession session = this.sessionService.getCurrentSession();
+        HttpSession session = SessionService.getCurrentSession();
         this.user = this.userService.getUser((Integer) session.getAttribute("userID")).get();
 
         this.roleMap = this.roleMapService.getByEmail(this.user.getEmail()).get(0);
@@ -69,7 +67,7 @@ public class UserActivationForm extends VerticalLayout {
             if(checkRequiredForm()){
                 User user = roleMap.getUser();
                 user.setActivated(true);
-                
+
                 ErrorService errorService = userService.editData(user);
                 while(errorService.isErrorStatus()) {
                     errorService = userService.editData(user);
