@@ -17,17 +17,11 @@ public class User {
     private Integer userId;
     @NotNull
     private String email;
-    @NotNull
     private String firstName;
-    @NotNull
     private String lastName;
-    @NotNull
     private String address;
-    @NotNull
     private String phoneNumber;
-    @NotNull
     private boolean enabled;
-    @NotNull
     private boolean activated;
 
     @OneToOne(mappedBy = "user")
@@ -131,7 +125,10 @@ public class User {
 
     // Custom Function
     public boolean checkEmpty() {
-        return firstName.isBlank() || lastName.isBlank() || address.isBlank() || email.isBlank()
-                || phoneNumber.isBlank();
+        return email.isBlank();
+    }
+
+    public boolean checkIncompleted() {
+        return (firstName == null || lastName == null || address == null || phoneNumber == null);
     }
 }

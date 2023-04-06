@@ -24,11 +24,8 @@ public class Company {
 
     @NotNull
     private String companyName;
-    @NotNull
     private String address;
-    @NotNull
     private String sector;
-    @NotNull
     private String website;
 
     @OneToMany(mappedBy = "companyId")
