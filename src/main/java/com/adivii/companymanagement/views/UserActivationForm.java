@@ -17,6 +17,7 @@ import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -64,18 +65,34 @@ public class UserActivationForm extends VerticalLayout {
 
         this.roleMap = this.roleMapService.getByEmail(this.user.getEmail()).get(0);
 
-        checkRequiredForm();
+        while(true) {
+            if(checkRequiredForm()){
+                User user = roleMap.getUser();
+                user.setActivated(true);
+                
+                ErrorService errorService = userService.editData(user);
+                while(errorService.isErrorStatus()) {
+                    errorService = userService.editData(user);
+                }
+
+                UI.getCurrent().getPage().setLocation("/");
+            }
+        }
     }
 
     // TODO: Implement method to check if there are any null value in either table
     // TODO: Implement method to check if the activation succeded (and activate account also)
-    private void checkRequiredForm() {
+    private boolean checkRequiredForm() {
         if (roleMap.getCompany() == null) {
             initiateCompanyForm(METHOD_ADD);
             this.roleMap = this.roleMapService.getByEmail(this.user.getEmail()).get(0);
+
+            return false;
         } else {
             if(roleMap.getCompany().checkIncompleted()){
                 initiateCompanyForm(METHOD_EDIT);
+                
+                return false;
             }
         }
 
@@ -86,12 +103,18 @@ public class UserActivationForm extends VerticalLayout {
 
             addDefaultRole();
             this.roleMap = this.roleMapService.getByEmail(this.user.getEmail()).get(0);
+
+            return false;
         }
 
         if (roleMap.getUser().checkIncompleted()) {
             initiateUserForm();
             this.roleMap = this.roleMapService.getByEmail(this.user.getEmail()).get(0);
+
+            return false;
         }
+
+        return true;
     }
 
     private void initiateCompanyForm(String method) {
