@@ -16,7 +16,6 @@ import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
-import com.adivii.companymanagement.data.service.file_upload.ProfilePictureUpload;
 import com.adivii.companymanagement.data.service.filter.UserFilterService;
 import com.adivii.companymanagement.views.component.CustomAvatar;
 import com.adivii.companymanagement.views.component.dialog.UserDataDialog;

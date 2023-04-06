@@ -1,12 +1,9 @@
 package com.adivii.companymanagement.views;
 
-import java.util.Optional;
-
 import javax.servlet.http.HttpSession;
 
 import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 
-import com.adivii.companymanagement.data.entity.Account;
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.Role;
 import com.adivii.companymanagement.data.entity.RoleMap;
@@ -20,16 +17,11 @@ import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
-import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.EmailField;
-import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
@@ -166,11 +158,6 @@ public class UserActivationForm extends VerticalLayout {
         TextField firstNameInput;
         TextField lastNameInput;
         HorizontalLayout nameLayout;
-        // Account (Email and Password)
-        EmailField emailInput;
-        PasswordField passInput;
-        PasswordField rePassInput;
-        HorizontalLayout passLayout;
         // Phone Number
         TextField phoneInput;
         // Address

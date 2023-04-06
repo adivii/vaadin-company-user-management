@@ -5,7 +5,6 @@ import javax.servlet.http.HttpSession;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
 import com.adivii.companymanagement.data.entity.Role;
-import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.vaadin.flow.component.UI;

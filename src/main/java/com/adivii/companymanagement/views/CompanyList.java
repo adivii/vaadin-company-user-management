@@ -137,8 +137,8 @@ public class CompanyList extends HorizontalLayout implements BeforeEnterObserver
                 createFilterHeader("Address", this.companyFilterService::setAddress));
         header.getCell(sectorColumn).setComponent(
                 createFilterHeader("Sector", this.companyFilterService::setSector));
-        // header.getCell(employeeColumn).setComponent(
-        //         createFilterHeader("No of Employee", e -> this.companyFilterService.setEmployee(Integer.parseInt(e))));
+        header.getCell(employeeColumn).setComponent(
+                createFilterHeader("No of Employee", e -> this.companyFilterService.setEmployee(Integer.parseInt(e))));
         header.getCell(websiteColumn).setComponent(
                 createFilterHeader("Website", this.companyFilterService::setWebsite));
 

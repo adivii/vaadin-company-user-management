@@ -1,83 +1,53 @@
 package com.adivii.companymanagement.views;
 
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-
 import javax.servlet.http.HttpSession;
 
-import com.adivii.companymanagement.data.entity.Account;
-import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
-import com.adivii.companymanagement.data.service.file_upload.ProfilePictureUpload;
-import com.adivii.companymanagement.data.service.generator.RoleDataGenerator;
-import com.adivii.companymanagement.data.service.security.CustomBase64Encoder;
-import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
-import com.adivii.companymanagement.data.service.security.GuitarChordEncoder;
-import com.adivii.companymanagement.data.service.security.UserAuthService;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.login.LoginForm;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.EmailField;
-import com.vaadin.flow.component.textfield.PasswordField;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinSession;
 
 // TODO: Search for better authorization logic
-// TODO: Rebuild Login Screen (build custom)
 
 @Route("/login")
 @PageTitle("Login Screen")
-public class LoginScreen extends VerticalLayout {
-    // Service
-    private UserAuthService userAuthService;
-    private VaadinSession session;
+public class LoginScreen extends VerticalLayout implements BeforeEnterObserver {
+    private final LoginForm loginForm = new LoginForm();
+    private UserService userService;
+    private HttpSession session;
 
-    // Field
-    private EmailField inputUser;
-    private PasswordField inputPass;
+    public LoginScreen(UserService userService, RoleService roleService) {
+        this.userService = userService;
+        session = SessionService.getCurrentSession();
 
-    // Button
-    private Button btnLogin;
+        // Redirect if user already login
+        if (session.getAttribute("userID") != null) {
+            UI.getCurrent().getPage().setLocation("/");
+        }
 
-    public LoginScreen(UserAuthService userAuthService) {
-        this.userAuthService = userAuthService;
-        this.session = VaadinSession.getCurrent();
+        setSizeFull();
+        setAlignItems(Alignment.CENTER);
+        setJustifyContentMode(JustifyContentMode.CENTER);
 
-        setupField();
-        getLayout();
-
-        setupOnClickListener();
+        loginForm.setAction("login");
+        add(new H1("Login Form"), loginForm);
     }
 
-    private void setupField() {
-        this.inputUser = new EmailField("Email Address");
-        this.inputPass = new PasswordField("Password");
-        this.btnLogin = new Button("Login");
+    @Override
+    public void beforeEnter(BeforeEnterEvent arg0) {
+        if (arg0.getLocation()
+                .getQueryParameters()
+                .getParameters()
+                .containsKey("error")) {
+            loginForm.setError(true);
+        }
     }
 
-    private void getLayout() {
-        add(this.inputUser, this.inputPass, btnLogin);
-    }
-
-    private void setupOnClickListener() {
-        this.btnLogin.addClickListener(clickEvent -> {
-            Account account = userAuthService.authenticateLogin(this.inputUser.getValue(), this.inputPass.getValue()); 
-            
-            if(account == null) {
-                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Can't Find Account");
-            }
-        });
-    }
 }

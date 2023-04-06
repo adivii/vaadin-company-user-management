@@ -3,11 +3,9 @@ package com.adivii.companymanagement.views.component.dialog;
 import javax.servlet.http.HttpSession;
 
 import com.adivii.companymanagement.data.entity.Account;
-import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.SessionService;
-import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
