@@ -29,6 +29,9 @@ import com.vaadin.flow.router.Route;
 
 @Route("/activate")
 public class UserActivationForm extends VerticalLayout {
+    // Constant
+    private final String METHOD_ADD = "add";
+    private final String METHOD_EDIT = "edit";
 
     // Services
     private AccountService accountService;
@@ -67,15 +70,18 @@ public class UserActivationForm extends VerticalLayout {
     // TODO: Implement method to check if there are any null value in either table
     // TODO: Implement method to check if the activation succeded (and activate account also)
     private void checkRequiredForm() {
-
         if (roleMap.getCompany() == null) {
-            initiateCompanyForm();
+            initiateCompanyForm(METHOD_ADD);
             this.roleMap = this.roleMapService.getByEmail(this.user.getEmail()).get(0);
+        } else {
+            if(roleMap.getCompany().checkIncompleted()){
+                initiateCompanyForm(METHOD_EDIT);
+            }
         }
 
         if (roleMap.getRole() == null) {
             if (roleMap.getCompany() == null) {
-                initiateCompanyForm();
+                initiateCompanyForm(METHOD_ADD);
             }
 
             addDefaultRole();
@@ -88,7 +94,7 @@ public class UserActivationForm extends VerticalLayout {
         }
     }
 
-    private void initiateCompanyForm() {
+    private void initiateCompanyForm(String method) {
         // Clear Screen
         this.removeAll();
 
@@ -118,16 +124,24 @@ public class UserActivationForm extends VerticalLayout {
         sectorInput = new TextField("Sector");
         // Website
         companyWebsiteInput = new TextField("Website");
+
+        if (method.equals(METHOD_EDIT)) {
+            companyNameInput.setValue(roleMap.getCompany().getCompanyName() == null ? "" : roleMap.getCompany().getCompanyName());
+            companyAddressInput.setValue(roleMap.getCompany().getAddress() == null ? "" : roleMap.getCompany().getAddress());
+            sectorInput.setValue(roleMap.getCompany().getSector() == null ? "" : roleMap.getCompany().getSector());
+            companyWebsiteInput.setValue(roleMap.getCompany().getWebsite() == null ? "" : roleMap.getCompany().getWebsite());
+        }
+
         // Button
         btnSaveCompany = new Button("Save");
         btnSaveCompany.addClickListener(clickEvent -> {
-            Company newCompany = new Company();
+            Company newCompany = method.equals(METHOD_EDIT) ? roleMap.getCompany() : new Company();
             newCompany.setCompanyName(companyNameInput.getValue());
             newCompany.setSector(sectorInput.getValue());
             newCompany.setAddress(companyAddressInput.getValue());
             newCompany.setWebsite(companyWebsiteInput.getValue());
 
-            ErrorService companyErrorService = companyService.addCompany(newCompany);
+            ErrorService companyErrorService = method.equals(METHOD_EDIT) ? companyService.editData(newCompany) : companyService.addCompany(newCompany);
             if (!companyErrorService.isErrorStatus()) {
                 roleMap.setCompany(newCompany);
                 roleMapService.add(roleMap);

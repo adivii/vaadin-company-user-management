@@ -87,32 +87,16 @@ public class RegisterScreen extends VerticalLayout {
         this.roleService = roleService;
 
         setAlignItems(Alignment.CENTER);
-        add(initiateUserForm());
+        add(initiateForm());
     }
 
-    private VerticalLayout initiateUserForm() {
-        VerticalLayout accountForm = new VerticalLayout();
-
-        // Name
-        firstNameInput = new TextField("First Name");
-        lastNameInput = new TextField("Last Name");
-        nameLayout = new HorizontalLayout(firstNameInput, lastNameInput);
+    private VerticalLayout initiateForm() {
         // Account (Email and Password)
         emailInput = new EmailField("Email Address");
         passInput = new PasswordField("Password");
         rePassInput = new PasswordField("Confirm Password");
         passLayout = new HorizontalLayout(passInput, rePassInput);
-        // Phone Number
-        phoneInput = new TextField("Phone Number");
-        (new PhoneI18nFieldFormatter(PhoneI18nFieldFormatter.REGION_ID)).extend(phoneInput);
-        // Address
-        addressInput = new TextArea("Address");
-        addressInput.setMaxLength(255);
-        addressInput.setHelperText("0/255");
-        addressInput.setValueChangeMode(ValueChangeMode.EAGER);
-        addressInput.addValueChangeListener(e -> {
-            e.getSource().setHelperText(e.getValue().length() + "/255");
-        });
+
         // Button
         btnSaveUser = new Button("Save");
         btnSaveUser.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -125,85 +109,28 @@ public class RegisterScreen extends VerticalLayout {
             newAccount.setPassword(encoder.encode(passInput.getValue()));
 
             ErrorService errorService = accountService.save(newAccount);
-            if(!errorService.isErrorStatus()){
+            if (errorService.isErrorStatus()) {
+                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, errorService.getErrorMessage());
+            } else {
                 newAccount = accountService.getByEmail(newAccount.getEmailAddress()).get(0);
                 User newUser = new User();
-                newUser.setFirstName(firstNameInput.getValue());
-                newUser.setLastName(lastNameInput.getValue());
                 newUser.setEmail(emailInput.getValue());
-                newUser.setPhoneNumber(phoneInput.getValue());
-                newUser.setAddress(addressInput.getValue());
                 newUser.setAccount(newAccount);
                 newUser.setEnabled(true);
-                newUser.setActivated(true);
+                newUser.setActivated(false);
 
                 // TODO: Handle Error
                 ErrorService userErrorService = userService.saveUser(newUser);
-                if(!userErrorService.isErrorStatus()){
-                    this.removeAll();
-                    this.add(initiateCompanyForm());
-
-                    btnSaveCompany.addClickListener(saveCompanyEvent -> {
-                        User ownerUser = userService.getByEmail(newUser.getEmail()).get(0);
-                        
-                        Company newCompany = new Company();
-                        newCompany.setCompanyName(companyNameInput.getValue());
-                        newCompany.setSector(sectorInput.getValue());
-                        newCompany.setAddress(companyAddressInput.getValue());
-                        newCompany.setWebsite(companyWebsiteInput.getValue());
-
-                        ErrorService companyErrorService = companyService.addCompany(newCompany);
-                        if(companyErrorService.isErrorStatus()) {
-                            newCompany = companyService.getByName(newCompany.getCompanyName()).get(0);
-                            Role defaultRole = roleService.getByValue("companyadmin").get(0);
-                            
-                            RoleMap newRole = new RoleMap();
-                            newRole.setCompany(newCompany);
-                            newRole.setRole(defaultRole);
-                            newRole.setUser(ownerUser);
-
-                            roleMapService.add(newRole);
-
-                            UI.getCurrent().navigate(LoginScreen.class);
-                        }else{
-                            NotificationService.showNotification(NotificationVariant.LUMO_ERROR, companyErrorService.getErrorMessage());
-                        }
-                    });
+                if (userErrorService.isErrorStatus()) {
+                    NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
+                            userErrorService.getErrorMessage());
                 } else {
-                    accountService.delete(newAccount);
-                    NotificationService.showNotification(NotificationVariant.LUMO_ERROR, userErrorService.getErrorMessage());
+                    NotificationService.showNotification(NotificationVariant.LUMO_SUCCESS, "Success");
+                    UI.getCurrent().getPage().setLocation("/login");
                 }
-            } else {
-                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, errorService.getErrorMessage());
             }
         });
 
-        accountForm.add(nameLayout, emailInput, passLayout, phoneInput, addressInput, btnSaveUser);
-        accountForm.setAlignSelf(Alignment.CENTER);
-        return accountForm;
-    }
-
-    private VerticalLayout initiateCompanyForm() {
-        VerticalLayout companyForm = new VerticalLayout();
-
-        // Name
-        companyNameInput = new TextField("Company Name");
-        // Address
-        companyAddressInput = new TextArea("Company Address");
-        companyAddressInput.setMaxLength(255);
-        companyAddressInput.setHelperText("0/255");
-        companyAddressInput.setValueChangeMode(ValueChangeMode.EAGER);
-        companyAddressInput.addValueChangeListener(e -> {
-            e.getSource().setHelperText(e.getValue().length() + "/255");
-        });
-        // Sector
-        sectorInput = new TextField("Sector");
-        // Website
-        companyWebsiteInput = new TextField("Website");
-        // Button
-        btnSaveCompany = new Button("Save");
-
-        companyForm.add(companyNameInput, companyAddressInput, sectorInput, companyWebsiteInput, btnSaveCompany);
-        return companyForm;
+        return new VerticalLayout(emailInput, passLayout, btnSaveUser);
     }
 }

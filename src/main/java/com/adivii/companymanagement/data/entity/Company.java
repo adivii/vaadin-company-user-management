@@ -125,6 +125,10 @@ public class Company {
 
     // Custom Function
     public boolean checkEmpty() {
-        return companyName.isBlank() || address.isBlank() || sector.isBlank() || website.isBlank();
+        return companyName.isBlank();
+    }
+
+    public boolean checkIncompleted() {
+        return (address == null || sector == null || website == null);
     }
 }
