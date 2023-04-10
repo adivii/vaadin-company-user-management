@@ -66,6 +66,8 @@
     "@webcomponents/webcomponentsjs": "^2.2.10",
     "cleave.js": "1.6.0",
     "construct-style-sheets-polyfill": "3.0.4",
+    "cropperjs": "1.5.13",
+    "croppie": "^2.6.5",
     "lit-element": "2.5.1",
     "lit-html": "1.4.1",
     "terser": "^5.13.1"
@@ -160,6 +162,7 @@
       "@webcomponents/webcomponentsjs": "^2.2.10",
       "cleave.js": "1.6.0",
       "construct-style-sheets-polyfill": "3.0.4",
+      "cropperjs": "1.5.13",
       "lit-element": "2.5.1",
       "lit-html": "1.4.1"
     },
@@ -184,6 +187,6 @@
       "webpack-dev-server": "3.11.0",
       "webpack-merge": "4.2.2"
     },
-    "hash": "37bf164aa964e897a896fe12afd315b104b62e94cd57857f4031a4216b0e4a80"
+    "hash": "db9661bfd6b8ba8af782c1be418c0bbce9c2bc0930d8e82b2c6fe1a6c733aeb9"
   }
 }

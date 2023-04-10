@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -30,6 +31,7 @@ import com.adivii.companymanagement.views.component.dialog.NewPasswordDialog;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
@@ -47,6 +49,10 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 
+import de.f0rce.cropper.Cropper;
+import de.f0rce.cropper.settings.CropperSettings;
+import de.f0rce.cropper.settings.enums.ViewMode;
+
 @Route("/setting")
 @PageTitle("User Setting")
 public class UserSetting extends HorizontalLayout {
@@ -57,7 +63,8 @@ public class UserSetting extends HorizontalLayout {
     private AvatarService avatarService;
     private HttpSession session;
 
-    public UserSetting(UserService userService, DepartmentService departmentService, CompanyService companyService, AccountService accountService, AvatarService avatarService) {
+    public UserSetting(UserService userService, DepartmentService departmentService, CompanyService companyService,
+            AccountService accountService, AvatarService avatarService) {
         this.userService = userService;
         this.departmentService = departmentService;
         this.companyService = companyService;
@@ -66,7 +73,8 @@ public class UserSetting extends HorizontalLayout {
         this.session = SessionService.getCurrentSession();
 
         VerticalLayout sidebar = new SidebarLayout(this.userService);
-        UserSettingMainLayout mainLayout = new UserSettingMainLayout(this.userService, this.avatarService, accountService);
+        UserSettingMainLayout mainLayout = new UserSettingMainLayout(this.userService, this.avatarService,
+                accountService);
         Scroller scroller = new Scroller(mainLayout.getLayout());
 
         sidebar.setWidth("250px");
@@ -101,6 +109,7 @@ class UserSettingMainLayout extends VerticalLayout {
 
     // Layout for profile picture upload
     CustomAvatar profilePicture;
+    InputStream inputProfileStream;
     MemoryBuffer fileBuffer;
     CustomUploadButton inputProfilePict;
     File lastUploadedFile;
@@ -139,6 +148,13 @@ class UserSettingMainLayout extends VerticalLayout {
         inputProfilePict = new CustomUploadButton(fileBuffer);
         inputProfilePict.setMaxFileSize(10 * 1048576); // 10 MB
 
+        // Set up cropper component
+        // cropper = new Cropper(profilePicture);
+        // cropper.withAspectRatio(1, 1);
+        // cropper.withPreviewSize(200, 200);
+        // cropper.withOutputSize(100, 100);
+        // add(cropper);
+
         this.btnSave = new Button("Save");
         this.btnChangePass = new Button("Change Password");
         this.buttonLayout = new HorizontalLayout(this.btnSave);
@@ -174,7 +190,7 @@ class UserSettingMainLayout extends VerticalLayout {
 
         // Setting for profile picture
         // TODO: Make sure user can select which part of image to upload
-        if(user.getAvatar() != null){
+        if (user.getAvatar() != null) {
             User temp = user;
             this.profilePicture.setAvatar(new Image(new StreamResource("profile", () -> {
                 InputStream profileStream;
@@ -192,37 +208,56 @@ class UserSettingMainLayout extends VerticalLayout {
                 }
             }), null));
         }
-        
+
         inputProfilePict.addSucceededListener(e -> {
             InputStream profileStream = fileBuffer.getInputStream();
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            inputProfileStream = profileStream;
 
-            this.profilePicture.setAvatar(new Image(new StreamResource("temp_photo", () -> {
-                try {
-                    BufferedImage bim = ProfilePictureUpload.preprocessImage(ImageIO.read(profileStream));
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    ImageIO.write(bim, "png", bos);
-                    return new ByteArrayInputStream(bos.toByteArray());
-                } catch (IOException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                    return null;
-                }
-            }), null));
+            try {
+                ImageIO.write(ProfilePictureUpload.preprocessImage(ImageIO.read(profileStream)), "png", os);
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+
+            Dialog dialog = new Dialog();
+            dialog.setHeight("600px");
+            dialog.setWidth("1050px");
+            dialog.setCloseOnOutsideClick(false);
+            this.addToDialog(os, dialog, e.getMIMEType());
+
+            // this.profilePicture.setAvatar(new Image(new StreamResource("temp_photo", ()
+            // -> {
+            // try {
+            // BufferedImage bim =
+            // ProfilePictureUpload.preprocessImage(ImageIO.read(profileStream));
+            // ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            // ImageIO.write(bim, "png", bos);
+            // return new ByteArrayInputStream(bos.toByteArray());
+            // } catch (IOException e1) {
+            // // TODO Auto-generated catch block
+            // e1.printStackTrace();
+            // return null;
+            // }
+            // }), null));
         });
 
         // Setting for button
         btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         // TODO: Save button doen't do anything
         btnSave.addClickListener(e -> {
-            ProfilePictureUpload.saveFile(fileBuffer.getInputStream(), ProfilePictureUpload.generateProfilePictureTitle(user.getEmail()));
+            ProfilePictureUpload.saveFile(inputProfileStream,
+                    ProfilePictureUpload.generateProfilePictureTitle(user.getEmail()));
             Avatar newAvatar;
-            if(user.getAvatar() == null){
+            if (user.getAvatar() == null) {
                 newAvatar = new Avatar();
-            }else{
+            } else {
                 newAvatar = user.getAvatar();
             }
 
-            newAvatar.setUri(ProfilePictureUpload.getLink().concat(ProfilePictureUpload.generateProfilePictureTitle(user.getEmail())));
+            newAvatar.setUri(ProfilePictureUpload.getLink()
+                    .concat(ProfilePictureUpload.generateProfilePictureTitle(user.getEmail())));
 
             this.avatarService.saveAvatar(newAvatar);
 
@@ -278,5 +313,35 @@ class UserSettingMainLayout extends VerticalLayout {
                 this.profilePicture,
                 this.inputProfilePict,
                 this.buttonLayout);
+    }
+
+    public void addToDialog(ByteArrayOutputStream os, Dialog dialog, String mimeType) {
+        Button cropButton = new Button("Crop");
+
+        CropperSettings croppersett = new CropperSettings();
+        croppersett.setAspectRatio(1);
+        croppersett.setViewMode(ViewMode.ONE);
+        croppersett.setCroppedImageHeight(250);
+        croppersett.setCroppedImageHeight(250);
+        croppersett.setRoundCropBox(true);
+
+        Cropper crop = new Cropper(
+                croppersett, java.util.Base64.getEncoder().encodeToString(os.toByteArray()), mimeType);
+        crop.setHeight("500px");
+        crop.setWidth("1000px");
+        crop.setEncoderQuality(1.00);
+
+        cropButton.addClickListener(
+                event -> {
+                    dialog.close();
+                    String imageUri = crop.getImageUri();
+                    inputProfileStream = new ByteArrayInputStream(crop.getImageBase64());
+                    Image img = new Image();
+                    img.setSrc(imageUri);
+                    this.profilePicture.setAvatar(img);
+                });
+
+        dialog.add(crop, cropButton);
+        dialog.open();
     }
 }
