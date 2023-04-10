@@ -125,6 +125,11 @@ public class RegisterScreen extends VerticalLayout {
                     NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
                             userErrorService.getErrorMessage());
                 } else {
+                    RoleMap roleMap = new RoleMap();
+                    roleMap.setUser(newUser);
+                    
+                    roleMapService.add(roleMap);
+                    
                     NotificationService.showNotification(NotificationVariant.LUMO_SUCCESS, "Success");
                     UI.getCurrent().getPage().setLocation("/login");
                 }

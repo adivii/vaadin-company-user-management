@@ -28,7 +28,13 @@ public class CustomUserDetails implements UserDetails {
         
         // Set Authority for User
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(user.getRoleId().getRole().getValue()));
+
+        if(user.isActivated()){
+            authorities.add(new SimpleGrantedAuthority(user.getRoleId().getRole().getValue()));
+        } else {
+            authorities.add(new SimpleGrantedAuthority("unactivated"));
+        }
+        
 
         return authorities;
     }
