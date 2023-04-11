@@ -63,38 +63,31 @@ public class UserActivationForm extends VerticalLayout {
 
         this.roleMap = this.roleMapService.getByEmail(this.user.getEmail()).get(0);
 
-        while(true) {
-            if(checkRequiredForm()){
-                User user = roleMap.getUser();
-                user.setActivated(true);
+        validate();
+    }
 
-                ErrorService errorService = userService.editData(user);
-                while(errorService.isErrorStatus()) {
-                    errorService = userService.editData(user);
-                }
+    private void validate() {
+        if(checkRequiredForm()) {
+            User user = roleMap.getUser();
+            user.setActivated(true);
+            userService.editData(user);
 
-                UI.getCurrent().getPage().setLocation("/");
-            }
+            UI.getCurrent().getPage().setLocation("/");
         }
     }
 
     // TODO: Implement method to check if there are any null value in either table
-    // TODO: Implement method to check if the activation succeded (and activate account also)
+    // TODO: Implement method to check if the activation succeded (and activate
+    // account also)
     private boolean checkRequiredForm() {
+        boolean status = true;
+
         if (roleMap.getCompany() == null) {
             initiateCompanyForm(METHOD_ADD);
             this.roleMap = this.roleMapService.getByEmail(this.user.getEmail()).get(0);
 
-            return false;
-        } else {
-            if(roleMap.getCompany().checkIncompleted()){
-                initiateCompanyForm(METHOD_EDIT);
-                
-                return false;
-            }
-        }
-
-        if (roleMap.getRole() == null) {
+            status = false;
+        } else if (roleMap.getRole() == null) {
             if (roleMap.getCompany() == null) {
                 initiateCompanyForm(METHOD_ADD);
             }
@@ -102,17 +95,21 @@ public class UserActivationForm extends VerticalLayout {
             addDefaultRole();
             this.roleMap = this.roleMapService.getByEmail(this.user.getEmail()).get(0);
 
-            return false;
-        }
-
-        if (roleMap.getUser().checkIncompleted()) {
+            status = false;
+        } else if (roleMap.getUser().checkIncompleted()) {
             initiateUserForm();
             this.roleMap = this.roleMapService.getByEmail(this.user.getEmail()).get(0);
 
-            return false;
+            status = false;
+        } else {
+            if (roleMap.getCompany().checkIncompleted()) {
+                initiateCompanyForm(METHOD_EDIT);
+
+                status = false;
+            }
         }
 
-        return true;
+        return status;
     }
 
     private void initiateCompanyForm(String method) {
@@ -147,10 +144,13 @@ public class UserActivationForm extends VerticalLayout {
         companyWebsiteInput = new TextField("Website");
 
         if (method.equals(METHOD_EDIT)) {
-            companyNameInput.setValue(roleMap.getCompany().getCompanyName() == null ? "" : roleMap.getCompany().getCompanyName());
-            companyAddressInput.setValue(roleMap.getCompany().getAddress() == null ? "" : roleMap.getCompany().getAddress());
+            companyNameInput.setValue(
+                    roleMap.getCompany().getCompanyName() == null ? "" : roleMap.getCompany().getCompanyName());
+            companyAddressInput
+                    .setValue(roleMap.getCompany().getAddress() == null ? "" : roleMap.getCompany().getAddress());
             sectorInput.setValue(roleMap.getCompany().getSector() == null ? "" : roleMap.getCompany().getSector());
-            companyWebsiteInput.setValue(roleMap.getCompany().getWebsite() == null ? "" : roleMap.getCompany().getWebsite());
+            companyWebsiteInput
+                    .setValue(roleMap.getCompany().getWebsite() == null ? "" : roleMap.getCompany().getWebsite());
         }
 
         // Button
@@ -162,7 +162,8 @@ public class UserActivationForm extends VerticalLayout {
             newCompany.setAddress(companyAddressInput.getValue());
             newCompany.setWebsite(companyWebsiteInput.getValue());
 
-            ErrorService companyErrorService = method.equals(METHOD_EDIT) ? companyService.editData(newCompany) : companyService.addCompany(newCompany);
+            ErrorService companyErrorService = method.equals(METHOD_EDIT) ? companyService.editData(newCompany)
+                    : companyService.addCompany(newCompany);
             if (!companyErrorService.isErrorStatus()) {
                 roleMap.setCompany(newCompany);
                 roleMapService.add(roleMap);
@@ -170,6 +171,9 @@ public class UserActivationForm extends VerticalLayout {
                 NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
                         companyErrorService.getErrorMessage());
             }
+
+            validate();
+            UI.getCurrent().getPage().reload();
         });
 
         this.add(companyNameInput, companyAddressInput, sectorInput, companyWebsiteInput, btnSaveCompany);
@@ -180,6 +184,9 @@ public class UserActivationForm extends VerticalLayout {
         newRole = roleService.getByValue("companyadmin").get(0);
         roleMap.setRole(newRole);
         roleMapService.add(roleMap);
+
+        validate();
+        UI.getCurrent().getPage().reload();
     }
 
     private void initiateUserForm() {
@@ -236,6 +243,9 @@ public class UserActivationForm extends VerticalLayout {
                 NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
                         userErrorService.getErrorMessage());
             }
+
+            validate();
+            UI.getCurrent().getPage().reload();
         });
 
         this.add(nameLayout, phoneInput, addressInput, btnSaveUser);

@@ -116,9 +116,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         session.setAttribute("userID", userDetails.getUser().getUserId());
                         session.setMaxInactiveInterval(1800); // Inactive Interval in Second(s)
                         if (!userDetails.getUser().isActivated()) {
-                            // response.sendRedirect("/activate");
-                            UI ui = (UI) session.getAttribute("ui");
-                            ui.navigate(UserActivationForm.class);
+                            response.sendRedirect("/activate");
+                            // UI ui = (UI) session.getAttribute("ui");
+                            // ui.navigate(UserActivationForm.class);
                         } else {
                             response.sendRedirect("/");
                         }
