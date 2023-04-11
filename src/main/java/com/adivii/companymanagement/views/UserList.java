@@ -44,6 +44,9 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
 
+
+// TODO: Fetch data by RoleMap
+// TODO: or modiy program so that we can show multiple role in one account
 @Route("/user")
 @PageTitle("User List")
 public class UserList extends HorizontalLayout implements BeforeEnterObserver {
@@ -297,8 +300,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                         User user = userService.getUser((Integer) this.session.getAttribute("userID")).get();
 
                         if (!user.isActivated()) {
-                                event.forwardTo(UserSetting.class);
-                                ;
+                                event.forwardTo(UserActivationForm.class);
                         }
                 }
         }

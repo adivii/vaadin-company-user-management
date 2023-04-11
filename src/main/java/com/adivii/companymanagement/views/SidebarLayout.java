@@ -5,6 +5,7 @@ import javax.servlet.http.HttpSession;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
 import com.adivii.companymanagement.data.entity.Role;
+import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.vaadin.flow.component.UI;
@@ -29,24 +30,26 @@ public class SidebarLayout extends VerticalLayout {
 
         if (this.session.getAttribute("userID") != null) {
             // TODO: Modify role retrieving, only retrieve role if user is activated
-            Role role = this.userService.getUser((Integer) session.getAttribute("userID")).get().getRoleId().getRole();
-
-            if (role.getValue().equals("superadmin")) {
-                navCompanyList.setVisible(true);
-                navDepartmentList.setVisible(true);
-                navUserList.setVisible(true);
-            } else if (role.getValue().equals("companyadmin")) {
-                navCompanyList.setVisible(true);
-                navDepartmentList.setVisible(true);
-                navUserList.setVisible(true);
-            } else if (role.getValue().equals("departmentadmin")) {
-                navCompanyList.setVisible(false);
-                navDepartmentList.setVisible(true);
-                navUserList.setVisible(true);
-            } else if (role.getValue().equals("useradmin")) {
-                navCompanyList.setVisible(false);
-                navDepartmentList.setVisible(false);
-                navUserList.setVisible(true);
+            User loggedUser = this.userService.getUser((Integer) session.getAttribute("userID")).get();
+            if (loggedUser.getRoleId().getRole() != null) {
+                Role role = loggedUser.getRoleId().getRole();
+                if (role.getValue().equals("superadmin")) {
+                    navCompanyList.setVisible(true);
+                    navDepartmentList.setVisible(true);
+                    navUserList.setVisible(true);
+                } else if (role.getValue().equals("companyadmin")) {
+                    navCompanyList.setVisible(true);
+                    navDepartmentList.setVisible(true);
+                    navUserList.setVisible(true);
+                } else if (role.getValue().equals("departmentadmin")) {
+                    navCompanyList.setVisible(false);
+                    navDepartmentList.setVisible(true);
+                    navUserList.setVisible(true);
+                } else if (role.getValue().equals("useradmin")) {
+                    navCompanyList.setVisible(false);
+                    navDepartmentList.setVisible(false);
+                    navUserList.setVisible(true);
+                }
             } else {
                 navCompanyList.setVisible(false);
                 navDepartmentList.setVisible(false);

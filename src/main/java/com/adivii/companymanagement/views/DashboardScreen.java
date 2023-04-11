@@ -42,6 +42,8 @@ public class DashboardScreen extends HorizontalLayout implements BeforeEnterObse
             if(!user.isActivated()) {
                 event.forwardTo(UserActivationForm.class);
             }
-        } 
+        } else {
+            event.forwardTo(LoginScreen.class);
+        }
     }
 }

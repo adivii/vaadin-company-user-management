@@ -12,30 +12,33 @@ import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.RoleMapService;
+import com.adivii.companymanagement.data.service.UserService;
 
 @Service
 @Transactional
 public class UserAuthService {
-    
-    @Autowired
+
+    // Service
+    private UserService userService;
     private AccountService accountService;
-    @Autowired
-    private CustomPasswordEncoder customPasswordEncoder;
-    @Autowired
     private RoleMapService roleMapService;
 
-    public UserAuthService(AccountService accountService, CustomPasswordEncoder customPasswordEncoder,
-            RoleMapService roleMapService) {
+    // Additional Service
+    private CustomPasswordEncoder customPasswordEncoder;
+
+    public UserAuthService(UserService userService, AccountService accountService, RoleMapService roleMapService) {
+        this.userService = userService;
         this.accountService = accountService;
-        this.customPasswordEncoder = customPasswordEncoder;
         this.roleMapService = roleMapService;
+
+        this.customPasswordEncoder = new CustomPasswordEncoder();
     }
 
-    public Account authenticateLogin(String username, String password) {
+    public User authenticateLogin(String username, String password) {
         List<Account> accounts = accountService.getByEmail(username);
 
-        if(customPasswordEncoder.matches(password, accounts.get(0).getPassword())) {
-            return accounts.get(0);
+        if (customPasswordEncoder.matches(password, accounts.get(0).getPassword())) {
+            return userService.getByEmail(username).get(0);
         } else {
             return null;
         }
