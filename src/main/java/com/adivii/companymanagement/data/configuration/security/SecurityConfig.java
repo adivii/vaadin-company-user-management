@@ -23,6 +23,8 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
+import com.adivii.companymanagement.views.UserActivationForm;
+import com.vaadin.flow.component.UI;
 
 // TODO: Learn Spring Security, modify this Configuration
 
@@ -114,7 +116,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         session.setAttribute("userID", userDetails.getUser().getUserId());
                         session.setMaxInactiveInterval(1800); // Inactive Interval in Second(s)
                         if (!userDetails.getUser().isActivated()) {
-                            response.sendRedirect("/activate");
+                            // response.sendRedirect("/activate");
+                            UI ui = (UI) session.getAttribute("ui");
+                            ui.navigate(UserActivationForm.class);
                         } else {
                             response.sendRedirect("/");
                         }

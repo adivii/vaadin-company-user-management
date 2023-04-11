@@ -38,7 +38,11 @@ public class LoginScreen extends VerticalLayout implements BeforeEnterObserver {
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
 
-        loginForm.setAction("login");
+        // loginForm.setAction("login");
+        loginForm.addLoginListener(loginEvent -> {
+            System.out.println("Login Fired");
+        });
+
         add(new H1("Login Form"), loginForm);
     }
 

@@ -28,6 +28,7 @@ public class SidebarLayout extends VerticalLayout {
         Button btnLogout = new Button("Logout");
 
         if (this.session.getAttribute("userID") != null) {
+            // TODO: Modify role retrieving, only retrieve role if user is activated
             Role role = this.userService.getUser((Integer) session.getAttribute("userID")).get().getRoleId().getRole();
 
             if (role.getValue().equals("superadmin")) {
