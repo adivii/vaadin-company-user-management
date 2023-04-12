@@ -22,7 +22,7 @@ public class NotificationService {
         closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
         HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
 
-        notification.setDuration(2000);
+        notification.setDuration(5000);
         notification.add(notificationLayout);
         notification.open();
     }

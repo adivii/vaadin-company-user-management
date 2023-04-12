@@ -12,6 +12,7 @@ import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.NotificationService;
+import com.adivii.companymanagement.data.service.PasswordValidatorService;
 import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.UserService;
@@ -19,6 +20,7 @@ import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -46,35 +48,15 @@ public class RegisterScreen extends VerticalLayout {
     private RoleService roleService;
     private RoleMapService roleMapService;
 
-    // Text Field
-    // User
-    // Name
-    private TextField firstNameInput;
-    private TextField lastNameInput;
-    private HorizontalLayout nameLayout;
     // Account (Email and Password)
     private EmailField emailInput;
     private PasswordField passInput;
     private PasswordField rePassInput;
     private HorizontalLayout passLayout;
-    // Phone Number
-    private TextField phoneInput;
-    // Address
-    private TextArea addressInput;
+    // Error Message
+    VerticalLayout errorMessage;
     // Button
     private Button btnSaveUser;
-
-    // Company
-    // Name
-    private TextField companyNameInput;
-    // Address
-    private TextArea companyAddressInput;
-    // Webstite
-    private TextField companyWebsiteInput;
-    // Sector
-    private TextField sectorInput;
-    // Button
-    private Button btnSaveCompany;
 
     public RegisterScreen(UserService userService, AccountService accountService,
             CompanyService companyService, DepartmentService departmentService, RoleService roleService,
@@ -97,45 +79,110 @@ public class RegisterScreen extends VerticalLayout {
         rePassInput = new PasswordField("Confirm Password");
         passLayout = new HorizontalLayout(passInput, rePassInput);
 
+        passInput.addValueChangeListener(valueChange -> {
+            errorMessage.removeAll();
+
+            if (PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())
+                    && PasswordValidatorService.validatePassword(passInput.getValue())) {
+                btnSaveUser.setEnabled(true);
+            }else{
+                btnSaveUser.setEnabled(false);
+
+                if(!PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())) {
+                    errorMessage.add(new Span("Password Doesn't Match!"));
+                }
+                if(!PasswordValidatorService.haveLowercase(passInput.getValue())) {
+                    errorMessage.add(new Span("Must Contain Lowercase Letter"));
+                }
+                if(!PasswordValidatorService.haveUppercase(passInput.getValue())) {
+                    errorMessage.add(new Span("Must Contain Uppercase Letter"));
+                }
+                if(!PasswordValidatorService.haveNumeric(passInput.getValue())) {
+                    errorMessage.add(new Span("Must Contain Numeric Character"));
+                }
+                if(!PasswordValidatorService.haveSymbol(passInput.getValue())) {
+                    errorMessage.add(new Span("Must Contain Symbol"));
+                }
+            }
+        });
+        passInput.setValueChangeMode(ValueChangeMode.EAGER);
+        rePassInput.addValueChangeListener(valueChange -> {
+            errorMessage.removeAll();
+            
+            if (PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())
+                    && PasswordValidatorService.validatePassword(passInput.getValue())) {
+                btnSaveUser.setEnabled(true);
+            }else{
+                btnSaveUser.setEnabled(false);
+
+                if(!PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())) {
+                    errorMessage.add(new Span("Password Doesn't Match!"));
+                }
+                if(!PasswordValidatorService.haveLowercase(passInput.getValue())) {
+                    errorMessage.add(new Span("Must Contain Lowercase Letter"));
+                }
+                if(!PasswordValidatorService.haveUppercase(passInput.getValue())) {
+                    errorMessage.add(new Span("Must Contain Uppercase Letter"));
+                }
+                if(!PasswordValidatorService.haveNumeric(passInput.getValue())) {
+                    errorMessage.add(new Span("Must Contain Numeric Character"));
+                }
+                if(!PasswordValidatorService.haveSymbol(passInput.getValue())) {
+                    errorMessage.add(new Span("Must Contain Symbol"));
+                }
+            }
+        });
+        rePassInput.setValueChangeMode(ValueChangeMode.EAGER);
+
         // Button
         btnSaveUser = new Button("Save");
         btnSaveUser.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        btnSaveUser.setEnabled(false);
         btnSaveUser.addClickListener(e -> {
             // TODO: Implement rollback scenario, if user failed to save data
             CustomPasswordEncoder encoder = new CustomPasswordEncoder();
             Account newAccount = new Account();
 
-            newAccount.setEmailAddress(emailInput.getValue());
-            newAccount.setPassword(encoder.encode(passInput.getValue()));
+            if (PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())
+                    && PasswordValidatorService.validatePassword(passInput.getValue())) {
+                newAccount.setEmailAddress(emailInput.getValue());
+                newAccount.setPassword(encoder.encode(passInput.getValue()));
 
-            ErrorService errorService = accountService.save(newAccount);
-            if (errorService.isErrorStatus()) {
-                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, errorService.getErrorMessage());
-            } else {
-                newAccount = accountService.getByEmail(newAccount.getEmailAddress()).get(0);
-                User newUser = new User();
-                newUser.setEmail(emailInput.getValue());
-                newUser.setAccount(newAccount);
-                newUser.setEnabled(true);
-                newUser.setActivated(false);
-
-                // TODO: Handle Error
-                ErrorService userErrorService = userService.saveUser(newUser);
-                if (userErrorService.isErrorStatus()) {
+                ErrorService errorService = accountService.save(newAccount);
+                if (errorService.isErrorStatus()) {
                     NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
-                            userErrorService.getErrorMessage());
+                            errorService.getErrorMessage());
                 } else {
-                    RoleMap roleMap = new RoleMap();
-                    roleMap.setUser(newUser);
-                    
-                    roleMapService.add(roleMap);
-                    
-                    NotificationService.showNotification(NotificationVariant.LUMO_SUCCESS, "Success");
-                    UI.getCurrent().getPage().setLocation("/login");
+                    newAccount = accountService.getByEmail(newAccount.getEmailAddress()).get(0);
+                    User newUser = new User();
+                    newUser.setEmail(emailInput.getValue());
+                    newUser.setAccount(newAccount);
+                    newUser.setEnabled(true);
+                    newUser.setActivated(false);
+
+                    // TODO: Handle Error
+                    ErrorService userErrorService = userService.saveUser(newUser);
+                    if (userErrorService.isErrorStatus()) {
+                        NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
+                                userErrorService.getErrorMessage());
+                    } else {
+                        RoleMap roleMap = new RoleMap();
+                        roleMap.setUser(newUser);
+
+                        roleMapService.add(roleMap);
+
+                        NotificationService.showNotification(NotificationVariant.LUMO_SUCCESS, "Success");
+                        UI.getCurrent().getPage().setLocation("/login");
+                    }
                 }
+            } else {
+                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Password Doesn't Match!");
             }
+
         });
 
-        return new VerticalLayout(emailInput, passLayout, btnSaveUser);
+        errorMessage = new VerticalLayout();
+
+        return new VerticalLayout(emailInput, passLayout, errorMessage, btnSaveUser);
     }
 }
