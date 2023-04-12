@@ -5,6 +5,7 @@ import javax.servlet.http.HttpSession;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.NotificationService;
+import com.adivii.companymanagement.data.service.PasswordValidatorService;
 import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.SessionService;
@@ -74,6 +75,7 @@ public class LoginScreen extends VerticalLayout implements BeforeEnterObserver {
         loginForm.setAction("login");
 
         add(new H1("Login Form"), loginForm);
+        // PasswordValidatorService.validatePassword("pass");
         // CustomPasswordEncoder custom = new CustomPasswordEncoder();
         // custom.matches("12345678", "fc93201c7e18235a064c75f14e6a6b229ed9a1d975dd8db816448da1338644cb$[B@d8aff93");
     }

@@ -46,7 +46,7 @@ import com.vaadin.flow.server.StreamResource;
 
 
 // TODO: Fetch data by RoleMap
-// TODO: or modiy program so that we can show multiple role in one account
+// TODO: or modify program so that we can show multiple role in one account
 @Route("/user")
 @PageTitle("User List")
 public class UserList extends HorizontalLayout implements BeforeEnterObserver {
