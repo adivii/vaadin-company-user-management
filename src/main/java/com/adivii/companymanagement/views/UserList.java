@@ -146,8 +146,12 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                                         if (roleMapService.getByEmail(e.getEmail()).size() == 0) {
                                                 return "";
                                         } else {
-                                                return roleMapService.getByEmail(e.getEmail()).get(0).getCompany()
+                                                if(roleMapService.getByEmail(e.getEmail()).get(0).getCompany() != null){
+                                                        return roleMapService.getByEmail(e.getEmail()).get(0).getCompany()
                                                                 .getCompanyName();
+                                                } else {
+                                                        return "";
+                                                }
                                         }
                                 }))
                                 .setAutoWidth(true).setResizable(true);
