@@ -46,6 +46,8 @@ import com.vaadin.flow.router.Route;
 @Route("/department")
 @PageTitle("Department List")
 public class DepartmentList extends HorizontalLayout implements BeforeEnterObserver {
+    private User currentUser;
+
     private UserService userService;
     private DepartmentService departmentService;
     private CompanyService companyService;
@@ -62,12 +64,8 @@ public class DepartmentList extends HorizontalLayout implements BeforeEnterObser
         session = SessionService.getCurrentSession();
 
         if(this.session.getAttribute("userID") != null) {
-            User user = userService.getUser((Integer) this.session.getAttribute("userID")).get();
-
-            if(!user.isActivated()) {
-                UI.getCurrent().getPage().setLocation("/setting");
-            }
-        }
+            currentUser = userService.getUser((Integer) this.session.getAttribute("userID")).get();
+        } 
 
         VerticalLayout sidebarLayout = new SidebarLayout(this.userService);
 
@@ -353,10 +351,8 @@ public class DepartmentList extends HorizontalLayout implements BeforeEnterObser
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         if(this.session.getAttribute("userID") != null) {
-            User user = userService.getUser((Integer) this.session.getAttribute("userID")).get();
-
-            if(!user.isActivated()) {
-                event.forwardTo(UserSetting.class);;
+            if(!currentUser.isActivated()) {
+                event.forwardTo(UserActivationForm.class);;
             }
         } 
     }

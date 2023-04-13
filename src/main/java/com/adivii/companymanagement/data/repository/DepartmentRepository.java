@@ -8,4 +8,5 @@ import com.adivii.companymanagement.data.entity.Department;
 
 public interface DepartmentRepository extends JpaRepository<Department, Integer> {
     public List<Department> findByCompanyId(Company company);
+    public List<Department> findByName(String name);
 }
