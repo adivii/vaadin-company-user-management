@@ -5,10 +5,12 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import javax.servlet.http.HttpSession;
 
+import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
@@ -44,7 +46,6 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.StreamResource;
-
 
 // TODO: Fetch data by RoleMap
 // TODO: or modify program so that we can show multiple role in one account
@@ -144,9 +145,11 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                                         if (roleMapService.getByEmail(e.getEmail()).size() == 0) {
                                                 return "";
                                         } else {
-                                                if(roleMapService.getByEmail(e.getEmail()).get(0).getCompany() != null){
-                                                        return roleMapService.getByEmail(e.getEmail()).get(0).getCompany()
-                                                                .getCompanyName();
+                                                if (roleMapService.getByEmail(e.getEmail()).get(0)
+                                                                .getCompany() != null) {
+                                                        return roleMapService.getByEmail(e.getEmail()).get(0)
+                                                                        .getCompany()
+                                                                        .getCompanyName();
                                                 } else {
                                                         return "";
                                                 }
@@ -172,7 +175,8 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 this.userTable.addItemDoubleClickListener(e -> {
                         UserDataDialog userDataDialog = new UserDataDialog(companyService, departmentService,
-                                        userService, roleService, roleMapService, accountService, UserDataDialog.METHOD_UPDATE);
+                                        userService, roleService, roleMapService, accountService,
+                                        UserDataDialog.METHOD_UPDATE);
                         userDataDialog.setData(e.getItem());
                         userDataDialog.open();
 
@@ -229,12 +233,31 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
         public void updateTable() {
                 // TODO: Can't update table when add new record (if using only refreshAll)
                 ListDataProvider<User> provider;
+                List<User> userList = new ArrayList<>();
+                List<Company> compList = new ArrayList<>();
 
-                if(currentUser.getRoleId().getRole().getValue().equals("companyadmin")) {
-                        provider = new ListDataProvider<>(userService.getByCompany(currentUser.getRoleId().getCompany()));
-                }else if (currentUser.getRoleId().getRole().getValue().equals("departmentadmin")){
-                        provider = new ListDataProvider<>(userService.getByDepartment(currentUser.getRoleId().getDepartment()));
-                }else{
+                if (currentUser.getRoleId().getRole().getValue().equals("companyadmin")) {
+                        if (this.currentUser.getRoleId().getCompany().getHoldingCompany() == null) {
+                                compList
+                                        .addAll(this.companyService.getByName(this.currentUser.getRoleId()
+                                                .getCompany().getCompanyName()));
+                                compList
+                                        .addAll(this.companyService
+                                                .getChildCompany(this.currentUser.getRoleId().getCompany()));
+                        } else {
+                                compList.addAll(this.companyService.getChildCompany(
+                                                this.currentUser.getRoleId().getCompany().getHoldingCompany()));
+                        }
+
+                        for (Company comp : compList) {
+                                userList.addAll(userService.getByCompany(comp));
+                        }
+
+                        provider = new ListDataProvider<>(userList);
+                } else if (currentUser.getRoleId().getRole().getValue().equals("departmentadmin")) {
+                        provider = new ListDataProvider<>(
+                                        userService.getByDepartment(currentUser.getRoleId().getDepartment()));
+                } else {
                         provider = new ListDataProvider<>(new ArrayList<>());
                 }
 
@@ -261,7 +284,8 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 btnAdd.addClickListener(e -> {
                         UserDataDialog userDialog = new UserDataDialog(this.companyService, this.departmentService,
-                                        this.userService, roleService, roleMapService, accountService, UserDataDialog.METHOD_NEW);
+                                        this.userService, roleService, roleMapService, accountService,
+                                        UserDataDialog.METHOD_NEW);
                         userDialog.open();
 
                         userDialog.addOpenedChangeListener(actionListener -> {
