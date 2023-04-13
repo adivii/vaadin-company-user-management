@@ -46,7 +46,7 @@ import com.vaadin.flow.server.StreamResource;
 
 
 // TODO: Fetch data by RoleMap
-// TODO: or modiy program so that we can show multiple role in one account
+// TODO: or modify program so that we can show multiple role in one account
 @Route("/user")
 @PageTitle("User List")
 public class UserList extends HorizontalLayout implements BeforeEnterObserver {
@@ -146,8 +146,12 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                                         if (roleMapService.getByEmail(e.getEmail()).size() == 0) {
                                                 return "";
                                         } else {
-                                                return roleMapService.getByEmail(e.getEmail()).get(0).getCompany()
+                                                if(roleMapService.getByEmail(e.getEmail()).get(0).getCompany() != null){
+                                                        return roleMapService.getByEmail(e.getEmail()).get(0).getCompany()
                                                                 .getCompanyName();
+                                                } else {
+                                                        return "";
+                                                }
                                         }
                                 }))
                                 .setAutoWidth(true).setResizable(true);

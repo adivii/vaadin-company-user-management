@@ -17,10 +17,10 @@ public class User {
     private Integer userId;
     @NotNull
     private String email;
-    private String firstName;
-    private String lastName;
-    private String address;
-    private String phoneNumber;
+    private String firstName = " ";
+    private String lastName = " ";
+    private String address = " ";
+    private String phoneNumber = " ";
     private boolean enabled;
     private boolean activated;
 
