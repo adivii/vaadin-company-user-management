@@ -1,5 +1,10 @@
 package com.adivii.companymanagement.views.component.dialog;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpSession;
+
 import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 
 import com.adivii.companymanagement.data.entity.Company;
@@ -14,6 +19,7 @@ import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
+import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -42,8 +48,10 @@ public class UserDataDialog extends Dialog {
     private RoleService roleService;
     private RoleMapService roleMapService;
     private AccountService accountService;
+    private HttpSession session;
 
     User user;
+    User currentUser;
 
     VerticalLayout dialogLayout;
     H3 title;
@@ -73,12 +81,19 @@ public class UserDataDialog extends Dialog {
     Scroller scroller;
 
     public UserDataDialog(CompanyService companyService, DepartmentService departmentService,
-            UserService userService, RoleService roleService, RoleMapService roleMapService, AccountService accountService, String method) {
+            UserService userService, RoleService roleService, RoleMapService roleMapService,
+            AccountService accountService, String method) {
         this.companyService = companyService;
         this.departmentService = departmentService;
         this.userService = userService;
         this.roleService = roleService;
         this.roleMapService = roleMapService;
+
+        this.session = SessionService.getCurrentSession();
+
+        if (this.session.getAttribute("userID") != null) {
+            currentUser = userService.getUser((Integer) this.session.getAttribute("userID")).get();
+        }
 
         this.initiateDialog(method);
     }
@@ -125,7 +140,16 @@ public class UserDataDialog extends Dialog {
         this.inputDepartment = new ComboBox<>("Department Name");
         this.inputCompDept = new HorizontalLayout(inputCompany, inputDepartment);
 
-        this.inputCompany.setItems(this.companyService.getAllCompany());
+        List<Company> companyItems = new ArrayList<>();
+        if (this.currentUser.getRoleId().getCompany().getHoldingCompany() == null) {
+            companyItems
+                    .addAll(this.companyService.getByName(this.currentUser.getRoleId().getCompany().getCompanyName()));
+            companyItems.addAll(this.companyService.getChildCompany(this.currentUser.getRoleId().getCompany()));
+        } else {
+            companyItems.addAll(this.companyService.getChildCompany(
+                    this.currentUser.getRoleId().getCompany().getHoldingCompany()));
+        }
+        this.inputCompany.setItems(companyItems);
         this.inputCompany.setItemLabelGenerator(Company::getCompanyName);
         this.inputCompany.setWidth("50%");
 
@@ -197,7 +221,7 @@ public class UserDataDialog extends Dialog {
             if (!errorService.isErrorStatus()) {
                 RoleMap roleMap = new RoleMap();
 
-                if(method.equals("update")){
+                if (method.equals("update")) {
                     roleMap = roleMapService.getByEmail(newUser.getEmail()).get(0);
                 }
 
