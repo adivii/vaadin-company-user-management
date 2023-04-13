@@ -52,6 +52,7 @@ import com.vaadin.flow.server.StreamResource;
 import de.f0rce.cropper.Cropper;
 import de.f0rce.cropper.settings.CropperSettings;
 import de.f0rce.cropper.settings.enums.ViewMode;
+import elemental.json.Json;
 
 @Route("/setting")
 @PageTitle("User Setting")
@@ -302,6 +303,8 @@ class UserSettingMainLayout extends VerticalLayout {
 
             passwordDialog.open();
         });
+
+        inputProfilePict.getElement().setPropertyJson("files", Json.createArray());
     }
 
     public VerticalLayout getLayout() {

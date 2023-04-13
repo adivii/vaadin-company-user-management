@@ -69,18 +69,38 @@ public class UserFilterService {
 
     // TODO: Create filter service if department and company is null
     private boolean filter(User user) {
-        return matches(user.getEmail(), email) &&
+        boolean condition = matches(user.getEmail(), email) &&
                 matches(user.getFirstName(), firstName) &&
                 matches(user.getLastName(), lastName) &&
                 matches(user.getAddress(), address) &&
                 matches(user.getPhoneNumber(), phone);
+
+        if (user.getRoleId().getCompany() != null) {
+            condition = condition && matches(user.getRoleId().getCompany().getCompanyName(), company);
+        }
+
+        if (user.getRoleId().getDepartment() != null) {
+            condition = condition && matches(user.getRoleId().getDepartment().getName(), department);
+        }
+
+        return condition;
     }
 
     private boolean search(User user) {
-        return matches(user.getEmail(), searchTerm) ||
+        boolean condition = matches(user.getEmail(), searchTerm) ||
                 matches(user.getFirstName(), searchTerm) ||
                 matches(user.getLastName(), searchTerm) ||
                 matches(user.getAddress(), searchTerm) ||
                 matches(user.getPhoneNumber(), searchTerm);
+
+        if (user.getRoleId().getCompany() != null) {
+            condition = condition || matches(user.getRoleId().getCompany().getCompanyName(), searchTerm);
+        }
+
+        if (user.getRoleId().getDepartment() != null) {
+            condition = condition || matches(user.getRoleId().getDepartment().getName(), searchTerm);
+        }
+
+        return condition;
     }
 }
