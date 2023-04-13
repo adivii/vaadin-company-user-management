@@ -24,6 +24,10 @@ public class DepartmentService {
         return this.departmentRepository.findAll();
     }
 
+    public List<Department> getByName(String name) {
+        return this.departmentRepository.findByName(name);
+    }
+
     public List<Department> getByCompany(Company company) {
         return this.departmentRepository.findByCompanyId(company);
     }

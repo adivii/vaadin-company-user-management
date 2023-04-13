@@ -54,6 +54,8 @@ import com.vaadin.flow.router.Route;
 @Route("/company")
 @PageTitle("Company List")
 public class CompanyList extends HorizontalLayout implements BeforeEnterObserver {
+    User currentUser;
+
     CompanyService companyService;
     UserService userService;
     CompanyFilterService companyFilterService;
@@ -66,6 +68,10 @@ public class CompanyList extends HorizontalLayout implements BeforeEnterObserver
         this.userService = userService;
         this.companyFilterService = new CompanyFilterService();
         session = SessionService.getCurrentSession();
+
+        if (this.session.getAttribute("userID") != null) {
+            currentUser = userService.getUser((Integer) this.session.getAttribute("userID")).get();
+        }
 
         VerticalLayout sidebar = new SidebarLayout(this.userService);
         VerticalLayout mainLayout = getLayout();
@@ -167,7 +173,7 @@ public class CompanyList extends HorizontalLayout implements BeforeEnterObserver
 
     public void updateTable() {
         TreeData<Company> data = new TreeData<>();
-        List<Company> holdings = companyService.getHoldingCompany();
+        List<Company> holdings = companyService.getByName(currentUser.getRoleId().getCompany().getCompanyName());
 
         data.addItems(null, holdings);
         holdings.forEach(holding -> data.addItems(holding, companyService.getChildCompany(holding)));
@@ -432,11 +438,8 @@ public class CompanyList extends HorizontalLayout implements BeforeEnterObserver
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
         if (this.session.getAttribute("userID") != null) {
-            User user = userService.getUser((Integer) this.session.getAttribute("userID")).get();
-
-            if (!user.isActivated()) {
-                event.forwardTo(UserSetting.class);
-                ;
+            if (!currentUser.isActivated()) {
+                event.forwardTo(UserActivationForm.class);
             }
         }
     }

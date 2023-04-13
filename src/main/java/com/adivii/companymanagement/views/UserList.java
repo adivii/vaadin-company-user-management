@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 import javax.servlet.http.HttpSession;
@@ -50,6 +51,7 @@ import com.vaadin.flow.server.StreamResource;
 @Route("/user")
 @PageTitle("User List")
 public class UserList extends HorizontalLayout implements BeforeEnterObserver {
+        User currentUser;
 
         UserService userService;
         CompanyService companyService;
@@ -75,11 +77,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 this.session = SessionService.getCurrentSession();
 
                 if (this.session.getAttribute("userID") != null) {
-                        User user = userService.getUser((Integer) this.session.getAttribute("userID")).get();
-
-                        if (!user.isActivated()) {
-                                UI.getCurrent().getPage().setLocation("/setting");
-                        }
+                        currentUser = userService.getUser((Integer) this.session.getAttribute("userID")).get();
                 }
 
                 VerticalLayout sidebar = new SidebarLayout(this.userService);
@@ -230,7 +228,15 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
         public void updateTable() {
                 // TODO: Can't update table when add new record (if using only refreshAll)
-                ListDataProvider<User> provider = new ListDataProvider<>(userService.getAllUser());
+                ListDataProvider<User> provider;
+
+                if(currentUser.getRoleId().getRole().getValue().equals("companyadmin")) {
+                        provider = new ListDataProvider<>(userService.getByCompany(currentUser.getRoleId().getCompany()));
+                }else if (currentUser.getRoleId().getRole().getValue().equals("departmentadmin")){
+                        provider = new ListDataProvider<>(userService.getByDepartment(currentUser.getRoleId().getDepartment()));
+                }else{
+                        provider = new ListDataProvider<>(new ArrayList<>());
+                }
 
                 // userTable.setItems(items);
                 userTable.setDataProvider(provider);
@@ -301,9 +307,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
         @Override
         public void beforeEnter(BeforeEnterEvent event) {
                 if (this.session.getAttribute("userID") != null) {
-                        User user = userService.getUser((Integer) this.session.getAttribute("userID")).get();
-
-                        if (!user.isActivated()) {
+                        if (!currentUser.isActivated()) {
                                 event.forwardTo(UserActivationForm.class);
                         }
                 }
