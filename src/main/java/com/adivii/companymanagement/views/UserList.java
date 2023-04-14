@@ -239,11 +239,12 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 if (currentUser.getRoleId().getRole().getValue().equals("companyadmin")) {
                         if (this.currentUser.getRoleId().getCompany().getHoldingCompany() == null) {
                                 compList
-                                        .addAll(this.companyService.getByName(this.currentUser.getRoleId()
-                                                .getCompany().getCompanyName()));
+                                                .addAll(this.companyService.getByName(this.currentUser.getRoleId()
+                                                                .getCompany().getCompanyName()));
                                 compList
-                                        .addAll(this.companyService
-                                                .getChildCompany(this.currentUser.getRoleId().getCompany()));
+                                                .addAll(this.companyService
+                                                                .getChildCompany(this.currentUser.getRoleId()
+                                                                                .getCompany()));
                         } else {
                                 compList.addAll(this.companyService.getChildCompany(
                                                 this.currentUser.getRoleId().getCompany().getHoldingCompany()));
