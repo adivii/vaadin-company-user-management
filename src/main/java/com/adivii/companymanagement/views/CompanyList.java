@@ -1,5 +1,6 @@
 package com.adivii.companymanagement.views;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -254,7 +255,14 @@ public class CompanyList extends HorizontalLayout implements BeforeEnterObserver
         addressInput.setHelperText("0/255");
         addressInput.setValueChangeMode(ValueChangeMode.EAGER);
         holdingInput.setWidthFull();
-        holdingInput.setItems(this.companyService.getHoldingCompany());
+        List<Company> companyItems = new ArrayList<>();
+        if (this.currentUser.getRoleId().getCompany().getHoldingCompany() == null) {
+            companyItems
+                    .addAll(this.companyService.getByName(this.currentUser.getRoleId().getCompany().getCompanyName()));
+        } else {
+            this.currentUser.getRoleId().getCompany().getHoldingCompany();
+        }
+        holdingInput.setItems(companyItems);
         holdingInput.setItemLabelGenerator(Company::getCompanyName);
         holdingInput.addValueChangeListener(e -> {
             holdingInput.setClearButtonVisible(holdingInput.getValue() != null);
@@ -342,7 +350,14 @@ public class CompanyList extends HorizontalLayout implements BeforeEnterObserver
         addressInput.setHelperText("0/255");
         addressInput.setValueChangeMode(ValueChangeMode.EAGER);
         holdingInput.setWidthFull();
-        holdingInput.setItems(this.companyService.getHoldingCompany());
+        List<Company> companyItems = new ArrayList<>();
+        if (this.currentUser.getRoleId().getCompany().getHoldingCompany() == null) {
+            companyItems
+                    .addAll(this.companyService.getByName(this.currentUser.getRoleId().getCompany().getCompanyName()));
+        } else {
+            this.currentUser.getRoleId().getCompany().getHoldingCompany();
+        }
+        holdingInput.setItems(companyItems);
         holdingInput.setItemLabelGenerator(Company::getCompanyName);
 
         Scroller scroller = new Scroller(new Div(nameInput, addressInput, sectorInput, websiteInput, holdingInput));

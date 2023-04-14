@@ -8,14 +8,17 @@ import org.springframework.stereotype.Service;
 
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.repository.CompanyRepository;
+import com.adivii.companymanagement.data.repository.RoleMapRepository;
 
 @Service
 @Transactional
 public class CompanyService {
     private CompanyRepository companyRepository;
+    private RoleMapRepository roleMapRepository;
 
-    public CompanyService(CompanyRepository companyRepository) {
+    public CompanyService(CompanyRepository companyRepository, RoleMapRepository roleMapRepository) {
         this.companyRepository = companyRepository;
+        this.roleMapRepository = roleMapRepository;
     }
 
     public List<Company> getAllCompany() {
@@ -86,7 +89,7 @@ public class CompanyService {
     }
 
     public boolean deleteCompany(Company company) {
-        if(company.getDepartmentCount() == 0 && company.getChildCompanyCount() == 0){
+        if(roleMapRepository.findByCompany(company).size() == 0 && company.getChildCompanyCount() == 0){
             this.companyRepository.delete(company);
 
             return true;

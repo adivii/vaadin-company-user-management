@@ -129,6 +129,6 @@ public class User {
     }
 
     public boolean checkIncompleted() {
-        return (firstName == null || lastName == null || address == null || phoneNumber == null);
+        return (firstName.equals(" ") || lastName.equals(" ") || address.equals(" ") || phoneNumber.equals(" "));
     }
 }

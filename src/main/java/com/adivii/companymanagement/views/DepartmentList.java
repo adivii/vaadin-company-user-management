@@ -121,9 +121,9 @@ public class DepartmentList extends HorizontalLayout implements BeforeEnterObser
         header.getCell(nameColumn).setComponent(
                 createFilterHeader("Department Name", this.departmentFilterService::setDepartmentName));
         header.getCell(companyColumn).setComponent(
-                createFilterHeader("Department Name", this.departmentFilterService::setCompanyName));
+                createFilterHeader("Company", this.departmentFilterService::setCompanyName));
         header.getCell(employeeColumn).setComponent(
-                createFilterHeader("Department Name", this.departmentFilterService::setCompanyName));
+                createFilterHeader("Employee", this.departmentFilterService::setCompanyName));
 
         return this.departmentTable;
     }
