@@ -257,7 +257,11 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                         }
 
                         for (Company comp : compList) {
-                                userList.addAll(userService.getByCompany(comp));
+                                for (User user : userService.getByCompany(comp)) {
+                                        if(!userList.contains(user)){
+                                                userList.add(user);
+                                        }
+                                }
                         }
 
                         provider = new ListDataProvider<>(userList);

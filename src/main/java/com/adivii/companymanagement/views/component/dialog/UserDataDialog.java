@@ -245,7 +245,7 @@ public class UserDataDialog extends Dialog {
                                 inputCompany.getValue(),
                                 inputDepartment.getValue()).get(0);
 
-                        if (inputRole.getValue().contains(role)) {
+                        if (new ArrayList<>(inputRole.getValue()).contains(role)) {
                             roleMap.setCompany(inputCompany.getValue());
                             roleMap.setDepartment(inputDepartment.getValue());
                             roleMap.setRole(role);
@@ -255,7 +255,7 @@ public class UserDataDialog extends Dialog {
                             roleMapService.delete(roleMap);
                         }
                     }else{
-                        if (inputRole.getValue().contains(role)) {
+                        if (new ArrayList<>(inputRole.getValue()).contains(role)) {
                             roleMap.setCompany(inputCompany.getValue());
                             roleMap.setDepartment(inputDepartment.getValue());
                             roleMap.setRole(role);

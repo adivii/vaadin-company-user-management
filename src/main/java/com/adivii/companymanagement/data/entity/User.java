@@ -135,4 +135,13 @@ public class User {
     public boolean checkIncompleted() {
         return (firstName.equals(" ") || lastName.equals(" ") || address.equals(" ") || phoneNumber.equals(" "));
     }
+
+    @Override
+    public boolean equals(Object arg0) {
+        if(arg0 instanceof User) {
+            return ((User) arg0).getUserId().equals(this.userId);
+        }
+
+        return false;
+    }
 }
