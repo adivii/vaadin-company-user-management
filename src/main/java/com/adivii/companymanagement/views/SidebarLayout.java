@@ -5,11 +5,13 @@ import javax.servlet.http.HttpSession;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
 import com.adivii.companymanagement.data.entity.Role;
+import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.server.VaadinServletRequest;
 
@@ -21,6 +23,7 @@ public class SidebarLayout extends VerticalLayout {
         this.userService = userService;
         this.session = SessionService.getCurrentSession();
 
+        ComboBox<RoleMap> companySelect = new ComboBox<>("Company");
         Button navDashboard = new Button("Dashboard");
         Button navCompanyList = new Button("Company List");
         Button navDepartmentList = new Button("Department List");
@@ -31,30 +34,41 @@ public class SidebarLayout extends VerticalLayout {
         if (this.session.getAttribute("userID") != null) {
             // TODO: Modify role retrieving, only retrieve role if user is activated
             User loggedUser = this.userService.getUser((Integer) session.getAttribute("userID")).get();
-            if (loggedUser.getRoleId().getRole() != null) {
-                Role role = loggedUser.getRoleId().getRole();
-                if (role.getValue().equals("superadmin")) {
-                    navCompanyList.setVisible(true);
-                    navDepartmentList.setVisible(true);
-                    navUserList.setVisible(true);
-                } else if (role.getValue().equals("companyadmin")) {
-                    navCompanyList.setVisible(true);
-                    navDepartmentList.setVisible(true);
-                    navUserList.setVisible(true);
-                } else if (role.getValue().equals("departmentadmin")) {
-                    navCompanyList.setVisible(false);
-                    navDepartmentList.setVisible(true);
-                    navUserList.setVisible(true);
-                } else if (role.getValue().equals("useradmin")) {
+            companySelect.setItems(loggedUser.getRoleId());
+            companySelect.setItemLabelGenerator(roleMapLabel -> {
+                String compName = roleMapLabel.getCompany().getCompanyName();
+                String roleDesc = roleMapLabel.getRole().getName();
+
+                return compName.concat(" - ").concat(roleDesc);
+            });
+            companySelect.addValueChangeListener(event -> {
+                session.setAttribute("currentRole", event.getValue());
+                if (event.getValue().getRole() != null) {
+                    Role role = event.getValue().getRole();
+                    if (role.getValue().equals("superadmin")) {
+                        navCompanyList.setVisible(true);
+                        navDepartmentList.setVisible(true);
+                        navUserList.setVisible(true);
+                    } else if (role.getValue().equals("companyadmin")) {
+                        navCompanyList.setVisible(true);
+                        navDepartmentList.setVisible(true);
+                        navUserList.setVisible(true);
+                    } else if (role.getValue().equals("departmentadmin")) {
+                        navCompanyList.setVisible(false);
+                        navDepartmentList.setVisible(true);
+                        navUserList.setVisible(true);
+                    } else if (role.getValue().equals("useradmin")) {
+                        navCompanyList.setVisible(false);
+                        navDepartmentList.setVisible(false);
+                        navUserList.setVisible(true);
+                    }
+                } else {
                     navCompanyList.setVisible(false);
                     navDepartmentList.setVisible(false);
-                    navUserList.setVisible(true);
+                    navUserList.setVisible(false);
                 }
-            } else {
-                navCompanyList.setVisible(false);
-                navDepartmentList.setVisible(false);
-                navUserList.setVisible(false);
-            }
+            });
+            companySelect.setValue(loggedUser.getRoleId().get(0));
 
             navDashboard.setVisible(true);
             navUserSetting.setVisible(true);
@@ -92,6 +106,6 @@ public class SidebarLayout extends VerticalLayout {
                     null);
         });
 
-        add(navDashboard, navCompanyList, navDepartmentList, navUserList, navUserSetting, btnLogout);
+        add(companySelect, navDashboard, navCompanyList, navDepartmentList, navUserList, navUserSetting, btnLogout);
     }
 }

@@ -19,32 +19,49 @@ public class Role {
     private String name;
     @NotNull
     private String value;
-    
+
     @OneToMany(mappedBy = "role")
     private List<RoleMap> user = new LinkedList<>();
 
     public Integer getId() {
         return id;
     }
+
     public void setId(Integer id) {
         this.id = id;
     }
+
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
+
     public String getValue() {
         return value;
     }
+
     public void setValue(String value) {
         this.value = value;
     }
+
     public List<RoleMap> getUser() {
         return user;
     }
+
     public void setUser(List<RoleMap> user) {
         this.user = user;
+    }
+
+    // Custom Function
+    @Override
+    public boolean equals(Object arg0) {
+        if(arg0 instanceof Role) {
+            return ((Role) arg0).getId().equals(this.id);
+        }
+
+        return false;
     }
 }

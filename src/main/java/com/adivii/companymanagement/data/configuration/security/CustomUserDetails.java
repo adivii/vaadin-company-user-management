@@ -7,7 +7,10 @@ import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.adivii.companymanagement.data.entity.Role;
+import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
 
 public class CustomUserDetails implements UserDetails {
@@ -24,17 +27,22 @@ public class CustomUserDetails implements UserDetails {
     }
 
     @Override
+    @Transactional
     public Collection<? extends GrantedAuthority> getAuthorities() {
         
         // Set Authority for User
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
-        if(user.isActivated()){
-            authorities.add(new SimpleGrantedAuthority(user.getRoleId().getRole().getValue()));
-        } else {
-            authorities.add(new SimpleGrantedAuthority("unactivated"));
-        }
-        
+        // if(user.isActivated()){
+        //     for (RoleMap role : user.getRoleId()) {
+        //         authorities.add(new SimpleGrantedAuthority(role.getRole().getValue()));
+        //     }
+        // } else {
+        //     authorities.add(new SimpleGrantedAuthority("unactivated"));
+        // }
+
+        // Temporary Solution
+        authorities.add(new SimpleGrantedAuthority("authority"));
 
         return authorities;
     }

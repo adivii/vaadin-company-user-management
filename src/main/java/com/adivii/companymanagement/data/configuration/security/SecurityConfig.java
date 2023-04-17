@@ -94,10 +94,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // Allow Vaadin's internal request
                 .requestMatchers(SecurityUtils::isFrameworkInternalRequest).permitAll()
                 // Allow request by logged-in users
-                .antMatchers("/company").hasAnyAuthority("superadmin, companyadmin")
-                .antMatchers("/department").hasAnyAuthority("superadmin", "companyadmin")
-                .antMatchers("/user").hasAnyAuthority("superadmin", "companyadmin", "departmentadmin", "useradmin")
-                .antMatchers("/register").permitAll()
+                // .antMatchers("/company").hasAnyAuthority("superadmin, companyadmin")
+                // .antMatchers("/department").hasAnyAuthority("superadmin", "companyadmin")
+                // .antMatchers("/user").hasAnyAuthority("superadmin", "companyadmin", "departmentadmin", "useradmin")
+                // .antMatchers("/register").permitAll()
                 .anyRequest().authenticated()
                 // Configure login page
                 .and().formLogin()
@@ -114,6 +114,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
                         session.setAttribute("userID", userDetails.getUser().getUserId());
+                        session.setAttribute("currentRole", userDetails.getUser().getRoleId().get(0));
                         session.setMaxInactiveInterval(1800); // Inactive Interval in Second(s)
                         if (!userDetails.getUser().isActivated()) {
                             response.sendRedirect("/activate");

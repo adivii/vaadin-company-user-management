@@ -1,7 +1,9 @@
 package com.adivii.companymanagement.views.component.dialog;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
@@ -23,6 +25,8 @@ import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.CheckboxGroup;
+import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
@@ -53,6 +57,9 @@ public class UserDataDialog extends Dialog {
     User user;
     User currentUser;
 
+    RoleMap currentRole;
+    List<Role> roleList;
+
     VerticalLayout dialogLayout;
     H3 title;
     Hr divider;
@@ -71,7 +78,7 @@ public class UserDataDialog extends Dialog {
     ComboBox<Department> inputDepartment;
     HorizontalLayout inputCompDept;
 
-    ComboBox<Role> inputRole;
+    CheckboxGroup<Role> inputRole;
 
     // Button
     HorizontalLayout buttonLayout;
@@ -93,6 +100,10 @@ public class UserDataDialog extends Dialog {
 
         if (this.session.getAttribute("userID") != null) {
             currentUser = userService.getUser((Integer) this.session.getAttribute("userID")).get();
+        }
+
+        if (this.session.getAttribute("currentRole") != null) {
+            currentRole = (RoleMap) session.getAttribute("currentRole");
         }
 
         this.initiateDialog(method);
@@ -141,13 +152,13 @@ public class UserDataDialog extends Dialog {
         this.inputCompDept = new HorizontalLayout(inputCompany, inputDepartment);
 
         List<Company> companyItems = new ArrayList<>();
-        if (this.currentUser.getRoleId().getCompany().getHoldingCompany() == null) {
+        if (currentRole.getCompany().getHoldingCompany() == null) {
             companyItems
-                    .addAll(this.companyService.getByName(this.currentUser.getRoleId().getCompany().getCompanyName()));
-            companyItems.addAll(this.companyService.getChildCompany(this.currentUser.getRoleId().getCompany()));
+                    .addAll(this.companyService.getByName(currentRole.getCompany().getCompanyName()));
+            companyItems.addAll(this.companyService.getChildCompany(currentRole.getCompany()));
         } else {
             companyItems.addAll(this.companyService.getChildCompany(
-                    this.currentUser.getRoleId().getCompany().getHoldingCompany()));
+                    currentRole.getCompany().getHoldingCompany()));
         }
         this.inputCompany.setItems(companyItems);
         this.inputCompany.setItemLabelGenerator(Company::getCompanyName);
@@ -159,8 +170,11 @@ public class UserDataDialog extends Dialog {
         this.inputCompDept.setWidthFull();
 
         // Role
-        this.inputRole = new ComboBox<>("Role");
-        this.inputRole.setItems(roleService.getAllRole());
+        roleList = roleService.getAllRole();
+        this.inputRole = new CheckboxGroup<>();
+        this.inputRole.setLabel("Role");
+        this.inputRole.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
+        this.inputRole.setItems(roleList);
         this.inputRole.setItemLabelGenerator(Role::getName);
         this.inputRole.setWidthFull();
 
@@ -219,18 +233,37 @@ public class UserDataDialog extends Dialog {
             // TODO: Handle Error to rollback changes if failed to save data
             // TODO: Save only master entity, child entity should be updated (or use thread)
             if (!errorService.isErrorStatus()) {
-                RoleMap roleMap = new RoleMap();
+                for (Role role : roleService.getAllRole()) {
+                    RoleMap roleMap = new RoleMap();
 
-                if (method.equals("update")) {
-                    roleMap = roleMapService.getByEmail(newUser.getEmail()).get(0);
+                    if (roleMapService.getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
+                            role,
+                            inputCompany.getValue(),
+                            inputDepartment.getValue()).size() > 0) {
+                        roleMap = roleMapService.getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
+                                role,
+                                inputCompany.getValue(),
+                                inputDepartment.getValue()).get(0);
+
+                        if (inputRole.getValue().contains(role)) {
+                            roleMap.setCompany(inputCompany.getValue());
+                            roleMap.setDepartment(inputDepartment.getValue());
+                            roleMap.setRole(role);
+                            roleMap.setUser(newUser);
+                            roleMapService.add(roleMap);
+                        } else {
+                            roleMapService.delete(roleMap);
+                        }
+                    }else{
+                        if (inputRole.getValue().contains(role)) {
+                            roleMap.setCompany(inputCompany.getValue());
+                            roleMap.setDepartment(inputDepartment.getValue());
+                            roleMap.setRole(role);
+                            roleMap.setUser(newUser);
+                            roleMapService.add(roleMap);
+                        }
+                    }
                 }
-
-                roleMap.setCompany(inputCompany.getValue());
-                roleMap.setDepartment(inputDepartment.getValue());
-                roleMap.setRole(inputRole.getValue());
-                roleMap.setUser(newUser);
-
-                roleMapService.add(roleMap);
 
                 this.close();
             } else {
@@ -241,6 +274,11 @@ public class UserDataDialog extends Dialog {
         this.dialogLayout.add(this.title, this.divider, this.scroller, this.buttonLayout);
         this.dialogLayout.setWidth("500px");
         this.dialogLayout.setHeight("500px");
+
+        if (method.equals(this.METHOD_UPDATE)) {
+            setData(currentUser);
+        }
+
         this.add(this.dialogLayout);
     }
 
@@ -251,8 +289,18 @@ public class UserDataDialog extends Dialog {
         this.inputEmail.setValue(user.getEmail());
         this.inputAddress.setValue(user.getAddress());
         this.inputPhone.setValue(user.getPhoneNumber());
-        this.inputCompany.setValue(user.getRoleId().getCompany());
-        this.inputDepartment.setValue(user.getRoleId().getDepartment());
-        this.inputRole.setValue(user.getRoleId().getRole());
+        this.inputCompany.setValue(currentRole.getCompany());
+        this.inputDepartment.setValue(currentRole.getDepartment());
+
+        List<Role> ownedRole = new ArrayList<>();
+        for (RoleMap roleMap : currentUser.getRoleId()) {
+            ownedRole.add(roleMap.getRole());
+        }
+
+        for (Role role : roleList) {
+            if(ownedRole.contains(role)) {
+                this.inputRole.select(role);
+            }
+        }
     }
 }

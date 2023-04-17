@@ -7,6 +7,8 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.adivii.companymanagement.data.entity.Company;
+import com.adivii.companymanagement.data.entity.Department;
 import com.adivii.companymanagement.data.entity.Role;
 import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.repository.RoleMapRepository;
@@ -28,6 +30,14 @@ public class RoleMapService {
 
     public List<RoleMap> getByEmailAndRole(String email, Role role) {
         return this.roleMapRepository.findByUserEmailAndRole(email, role);
+    }
+    
+    public List<RoleMap> getByEmailAndRoleAndCompanyAndDepartment(String email, Role role, Company company, Department department) {
+        return this.roleMapRepository.findByUserEmailAndRoleAndCompanyAndDepartment(email, role, company, department);
+    }
+
+    public List<RoleMap> getByEmailAndCompany(String email, Company company) {
+        return this.roleMapRepository.findByUserEmailAndCompany(email, company);
     }
 
     public void add(RoleMap roleMap){
