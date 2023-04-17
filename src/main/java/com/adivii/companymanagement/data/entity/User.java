@@ -1,12 +1,16 @@
 package com.adivii.companymanagement.data.entity;
 
+import java.util.List;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 
@@ -24,8 +28,8 @@ public class User {
     private boolean enabled;
     private boolean activated;
 
-    @OneToOne(mappedBy = "user")
-    private RoleMap roleId;
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private List<RoleMap> roleId;
 
     @OneToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "avatar")
@@ -115,11 +119,11 @@ public class User {
         this.activated = activated;
     }
 
-    public RoleMap getRoleId() {
+    public List<RoleMap> getRoleId() {
         return roleId;
     }
 
-    public void setRoleId(RoleMap roleId) {
+    public void setRoleId(List<RoleMap> roleId) {
         this.roleId = roleId;
     }
 
@@ -130,5 +134,14 @@ public class User {
 
     public boolean checkIncompleted() {
         return (firstName.equals(" ") || lastName.equals(" ") || address.equals(" ") || phoneNumber.equals(" "));
+    }
+
+    @Override
+    public boolean equals(Object arg0) {
+        if(arg0 instanceof User) {
+            return ((User) arg0).getUserId().equals(this.userId);
+        }
+
+        return false;
     }
 }

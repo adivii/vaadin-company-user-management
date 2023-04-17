@@ -17,7 +17,7 @@ public class RoleMap {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;
     
-    @OneToOne(cascade = CascadeType.MERGE)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "user")
     User user;
     

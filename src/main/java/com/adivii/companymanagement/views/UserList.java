@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import javax.servlet.http.HttpSession;
 
 import com.adivii.companymanagement.data.entity.Company;
+import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
@@ -53,6 +54,7 @@ import com.vaadin.flow.server.StreamResource;
 @PageTitle("User List")
 public class UserList extends HorizontalLayout implements BeforeEnterObserver {
         User currentUser;
+        RoleMap currentRole;
 
         UserService userService;
         CompanyService companyService;
@@ -79,6 +81,10 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 if (this.session.getAttribute("userID") != null) {
                         currentUser = userService.getUser((Integer) this.session.getAttribute("userID")).get();
+                }
+
+                if (this.session.getAttribute("currentRole") != null) {
+                        currentRole = (RoleMap) this.session.getAttribute("currentRole");
                 }
 
                 VerticalLayout sidebar = new SidebarLayout(this.userService);
@@ -177,7 +183,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                         UserDataDialog userDataDialog = new UserDataDialog(companyService, departmentService,
                                         userService, roleService, roleMapService, accountService,
                                         UserDataDialog.METHOD_UPDATE);
-                        userDataDialog.setData(e.getItem());
+                        
                         userDataDialog.open();
 
                         userDataDialog.addOpenedChangeListener(actionListener -> {
@@ -236,28 +242,32 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 List<User> userList = new ArrayList<>();
                 List<Company> compList = new ArrayList<>();
 
-                if (currentUser.getRoleId().getRole().getValue().equals("companyadmin")) {
-                        if (this.currentUser.getRoleId().getCompany().getHoldingCompany() == null) {
+                if (currentRole.getRole().getValue().equals("companyadmin")) {
+                        if (currentRole.getCompany().getHoldingCompany() == null) {
                                 compList
-                                                .addAll(this.companyService.getByName(this.currentUser.getRoleId()
+                                                .addAll(this.companyService.getByName(currentRole
                                                                 .getCompany().getCompanyName()));
                                 compList
                                                 .addAll(this.companyService
-                                                                .getChildCompany(this.currentUser.getRoleId()
+                                                                .getChildCompany(currentRole
                                                                                 .getCompany()));
                         } else {
                                 compList.addAll(this.companyService.getChildCompany(
-                                                this.currentUser.getRoleId().getCompany().getHoldingCompany()));
+                                                currentRole.getCompany().getHoldingCompany()));
                         }
 
                         for (Company comp : compList) {
-                                userList.addAll(userService.getByCompany(comp));
+                                for (User user : userService.getByCompany(comp)) {
+                                        if(!userList.contains(user)){
+                                                userList.add(user);
+                                        }
+                                }
                         }
 
                         provider = new ListDataProvider<>(userList);
-                } else if (currentUser.getRoleId().getRole().getValue().equals("departmentadmin")) {
+                } else if (currentRole.getRole().getValue().equals("departmentadmin")) {
                         provider = new ListDataProvider<>(
-                                        userService.getByDepartment(currentUser.getRoleId().getDepartment()));
+                                        userService.getByDepartment(currentRole.getDepartment()));
                 } else {
                         provider = new ListDataProvider<>(new ArrayList<>());
                 }

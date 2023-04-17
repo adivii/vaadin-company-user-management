@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import javax.servlet.http.HttpSession;
 
 import com.adivii.companymanagement.data.entity.Company;
+import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.ErrorService;
@@ -56,6 +57,7 @@ import com.vaadin.flow.router.Route;
 @PageTitle("Company List")
 public class CompanyList extends HorizontalLayout implements BeforeEnterObserver {
     User currentUser;
+    RoleMap currentRole;
 
     CompanyService companyService;
     UserService userService;
@@ -72,6 +74,10 @@ public class CompanyList extends HorizontalLayout implements BeforeEnterObserver
 
         if (this.session.getAttribute("userID") != null) {
             currentUser = userService.getUser((Integer) this.session.getAttribute("userID")).get();
+        }
+
+        if (this.session.getAttribute("currentRole") != null) {
+            currentRole = (RoleMap) this.session.getAttribute("currentRole");
         }
 
         VerticalLayout sidebar = new SidebarLayout(this.userService);
@@ -174,7 +180,7 @@ public class CompanyList extends HorizontalLayout implements BeforeEnterObserver
 
     public void updateTable() {
         TreeData<Company> data = new TreeData<>();
-        List<Company> holdings = companyService.getByName(currentUser.getRoleId().getCompany().getCompanyName());
+        List<Company> holdings = companyService.getByName(currentRole.getCompany().getCompanyName());
 
         data.addItems(null, holdings);
         holdings.forEach(holding -> data.addItems(holding, companyService.getChildCompany(holding)));
@@ -256,11 +262,11 @@ public class CompanyList extends HorizontalLayout implements BeforeEnterObserver
         addressInput.setValueChangeMode(ValueChangeMode.EAGER);
         holdingInput.setWidthFull();
         List<Company> companyItems = new ArrayList<>();
-        if (this.currentUser.getRoleId().getCompany().getHoldingCompany() == null) {
+        if (this.currentRole.getCompany().getHoldingCompany() == null) {
             companyItems
-                    .addAll(this.companyService.getByName(this.currentUser.getRoleId().getCompany().getCompanyName()));
+                    .addAll(this.companyService.getByName(this.currentRole.getCompany().getCompanyName()));
         } else {
-            this.currentUser.getRoleId().getCompany().getHoldingCompany();
+            this.currentRole.getCompany().getHoldingCompany();
         }
         holdingInput.setItems(companyItems);
         holdingInput.setItemLabelGenerator(Company::getCompanyName);
@@ -351,11 +357,11 @@ public class CompanyList extends HorizontalLayout implements BeforeEnterObserver
         addressInput.setValueChangeMode(ValueChangeMode.EAGER);
         holdingInput.setWidthFull();
         List<Company> companyItems = new ArrayList<>();
-        if (this.currentUser.getRoleId().getCompany().getHoldingCompany() == null) {
+        if (this.currentRole.getCompany().getHoldingCompany() == null) {
             companyItems
-                    .addAll(this.companyService.getByName(this.currentUser.getRoleId().getCompany().getCompanyName()));
+                    .addAll(this.companyService.getByName(this.currentRole.getCompany().getCompanyName()));
         } else {
-            this.currentUser.getRoleId().getCompany().getHoldingCompany();
+            this.currentRole.getCompany().getHoldingCompany();
         }
         holdingInput.setItems(companyItems);
         holdingInput.setItemLabelGenerator(Company::getCompanyName);
