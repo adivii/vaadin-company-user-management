@@ -9,10 +9,6 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpSession;
 
-import org.springframework.mail.MailSender;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 
 import com.adivii.companymanagement.data.entity.Company;
@@ -24,6 +20,7 @@ import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
+import com.adivii.companymanagement.data.service.MailSenderService;
 import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
@@ -92,17 +89,6 @@ public class UserDataDialog extends Dialog {
     Button btnCancel;
 
     Scroller scroller;
-
-    private MailSender mailSender;
-    private SimpleMailMessage templateMessage;
-
-    public void setMailSender(MailSender mailSender) {
-        this.mailSender = mailSender;
-    }
-
-    public void setTemplateMessage(SimpleMailMessage templateMessage) {
-        this.templateMessage = templateMessage;
-    }
 
     public UserDataDialog(CompanyService companyService, DepartmentService departmentService,
             UserService userService, RoleService roleService, RoleMapService roleMapService,
@@ -287,21 +273,7 @@ public class UserDataDialog extends Dialog {
                     }
 
                     if (method == this.METHOD_NEW) {
-                        JavaMailSenderImpl sender = new JavaMailSenderImpl();
-                        sender.setHost("nyelow.my.id");
-
-                        MimeMessage message = sender.createMimeMessage();
-                        MimeMessageHelper helper = new MimeMessageHelper(message);
-
-                        try {
-                            helper.setTo(newUser.getEmail());
-                            helper.setText("You have registered");
-                        } catch (Exception e1) {
-                            // TODO Auto-generated catch block
-                            e1.printStackTrace();
-                        }
-
-                        sender.send(message);
+                        MailSenderService.sendEmail(newUser.getEmail(), "Invitation", "You have been registered at company ".concat(inputCompany.getValue().getCompanyName()));
                     }
 
                     this.close();
