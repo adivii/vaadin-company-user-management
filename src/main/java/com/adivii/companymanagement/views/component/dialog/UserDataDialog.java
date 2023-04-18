@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpSession;
 
 import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
@@ -18,6 +20,7 @@ import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
+import com.adivii.companymanagement.data.service.MailSenderService;
 import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
@@ -233,39 +236,48 @@ public class UserDataDialog extends Dialog {
             // TODO: Handle Error to rollback changes if failed to save data
             // TODO: Save only master entity, child entity should be updated (or use thread)
             if (!errorService.isErrorStatus()) {
-                for (Role role : roleService.getAllRole()) {
-                    RoleMap roleMap = new RoleMap();
+                if (inputRole.getValue().size() < 1) {
+                    NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
+                            "User Must Have At Least One Role");
+                } else {
+                    for (Role role : roleService.getAllRole()) {
+                        RoleMap roleMap = new RoleMap();
 
-                    if (roleMapService.getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
-                            role,
-                            inputCompany.getValue(),
-                            inputDepartment.getValue()).size() > 0) {
-                        roleMap = roleMapService.getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
+                        if (roleMapService.getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
                                 role,
                                 inputCompany.getValue(),
-                                inputDepartment.getValue()).get(0);
+                                inputDepartment.getValue()).size() > 0) {
+                            roleMap = roleMapService.getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
+                                    role,
+                                    inputCompany.getValue(),
+                                    inputDepartment.getValue()).get(0);
 
-                        if (new ArrayList<>(inputRole.getValue()).contains(role)) {
-                            roleMap.setCompany(inputCompany.getValue());
-                            roleMap.setDepartment(inputDepartment.getValue());
-                            roleMap.setRole(role);
-                            roleMap.setUser(newUser);
-                            roleMapService.add(roleMap);
+                            if (new ArrayList<>(inputRole.getValue()).contains(role)) {
+                                roleMap.setCompany(inputCompany.getValue());
+                                roleMap.setDepartment(inputDepartment.getValue());
+                                roleMap.setRole(role);
+                                roleMap.setUser(newUser);
+                                roleMapService.add(roleMap);
+                            } else {
+                                roleMapService.delete(roleMap);
+                            }
                         } else {
-                            roleMapService.delete(roleMap);
-                        }
-                    }else{
-                        if (new ArrayList<>(inputRole.getValue()).contains(role)) {
-                            roleMap.setCompany(inputCompany.getValue());
-                            roleMap.setDepartment(inputDepartment.getValue());
-                            roleMap.setRole(role);
-                            roleMap.setUser(newUser);
-                            roleMapService.add(roleMap);
+                            if (new ArrayList<>(inputRole.getValue()).contains(role)) {
+                                roleMap.setCompany(inputCompany.getValue());
+                                roleMap.setDepartment(inputDepartment.getValue());
+                                roleMap.setRole(role);
+                                roleMap.setUser(newUser);
+                                roleMapService.add(roleMap);
+                            }
                         }
                     }
-                }
 
-                this.close();
+                    if (method == this.METHOD_NEW) {
+                        MailSenderService.sendEmail(newUser.getEmail(), "Invitation", "You have been registered at company ".concat(inputCompany.getValue().getCompanyName()));
+                    }
+
+                    this.close();
+                }
             } else {
                 NotificationService.showNotification(NotificationVariant.LUMO_ERROR, errorService.getErrorMessage());
             }
@@ -298,7 +310,7 @@ public class UserDataDialog extends Dialog {
         }
 
         for (Role role : roleList) {
-            if(ownedRole.contains(role)) {
+            if (ownedRole.contains(role)) {
                 this.inputRole.select(role);
             }
         }

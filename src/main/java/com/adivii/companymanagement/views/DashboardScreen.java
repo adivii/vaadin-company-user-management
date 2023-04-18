@@ -13,7 +13,9 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.server.PWA;
 
+@PWA(name = "Company User Management", shortName = "usermanagement")
 @Route("/")
 @RouteAlias("/dashboard")
 @PageTitle("Dashboard")

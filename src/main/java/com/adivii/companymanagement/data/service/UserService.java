@@ -9,19 +9,23 @@ import org.springframework.stereotype.Service;
 
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.Department;
+import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
+import com.adivii.companymanagement.data.repository.RoleMapRepository;
 import com.adivii.companymanagement.data.repository.UserRepository;
 
 @Service
 @Transactional
 public class UserService {
     private UserRepository userRepository;
+    private RoleMapRepository roleMapRepository;
     
     // @Autowired
     // PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, RoleMapRepository roleMapRepository) {
         this.userRepository = userRepository;
+        this.roleMapRepository = roleMapRepository;
     }
 
     public List<User> getAllUser() {
@@ -77,8 +81,14 @@ public class UserService {
         }
     }
 
-    public void deleteUser(User user) {
-        this.userRepository.delete(user);
+    public void deleteUser(User user, Company company) {
+        for (RoleMap roleMap : roleMapRepository.findByUserEmailAndCompany(user.getEmail(), company)) {
+            this.roleMapRepository.delete(roleMap);
+        }
+
+        if(roleMapRepository.findByUserEmail(user.getEmail()).size() == 0) {
+            this.userRepository.delete(user);
+        }
     }
 
     // TODO: Fix User Validation Method

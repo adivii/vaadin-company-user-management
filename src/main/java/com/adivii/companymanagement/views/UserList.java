@@ -321,7 +321,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 Text confirmationText = new Text("Are you sure?");
                 Button confirmationButton = new Button("Yes", e -> {
-                        userService.deleteUser(user);
+                        userService.deleteUser(user, currentRole.getCompany());
                         confirmationDialog.close();
                         updateTable();
                 });
