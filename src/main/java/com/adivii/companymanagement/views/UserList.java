@@ -16,6 +16,7 @@ import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
+import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.SessionService;
@@ -25,7 +26,6 @@ import com.adivii.companymanagement.views.component.CustomAvatar;
 import com.adivii.companymanagement.views.component.dialog.UserDataDialog;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -35,6 +35,7 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -333,7 +334,11 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 confirmationDialog.add(confirmationLayout);
 
                 btnDelete.addClickListener(e -> {
-                        confirmationDialog.open();
+                        if (!user.equals(currentUser)){
+                                confirmationDialog.open();
+                        } else {
+                                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "You Can't Delete Yourself");
+                        }
                 });
 
                 return btnDelete;

@@ -41,16 +41,6 @@ public class CompanyService {
         return this.companyRepository.findByHoldingCompany(holdingCompany);
     }
 
-    // public int getEmployeeCount(Company company) {
-    //     int employeeCount = company.getUserCount();
-
-    //     for (Company childCompany : getChildCompany(company)) {
-    //         employeeCount += getEmployeeCount(childCompany);
-    //     }
-
-    //     return employeeCount;
-    // }
-
     public ErrorService addCompany(Company company) {
         if(company != null && !company.checkEmpty()) {
             if(this.companyRepository.findByCompanyName(company.getCompanyName()).size() == 0) {

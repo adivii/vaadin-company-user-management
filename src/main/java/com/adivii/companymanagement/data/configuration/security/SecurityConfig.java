@@ -21,10 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
-import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
-import com.adivii.companymanagement.views.UserActivationForm;
-import com.vaadin.flow.component.UI;
 
 // TODO: Learn Spring Security, modify this Configuration
 

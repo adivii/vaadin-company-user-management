@@ -1,12 +1,7 @@
 package com.adivii.companymanagement.views.component.dialog;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpSession;
 
 import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;

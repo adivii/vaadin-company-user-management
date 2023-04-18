@@ -49,10 +49,6 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-// Add alternative Route for this page
-// So, both localhost:8080 and localhost:8080/company will open this page
-// @PWA(name = "Company Management App",
-//      shortName = "cm-app")
 @Route("/company")
 @PageTitle("Company List")
 public class CompanyList extends HorizontalLayout implements BeforeEnterObserver {

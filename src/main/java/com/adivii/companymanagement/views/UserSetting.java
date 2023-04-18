@@ -1,12 +1,10 @@
 package com.adivii.companymanagement.views;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -149,13 +147,6 @@ class UserSettingMainLayout extends VerticalLayout {
         inputProfilePict = new CustomUploadButton(fileBuffer);
         inputProfilePict.setMaxFileSize(10 * 1048576); // 10 MB
 
-        // Set up cropper component
-        // cropper = new Cropper(profilePicture);
-        // cropper.withAspectRatio(1, 1);
-        // cropper.withPreviewSize(200, 200);
-        // cropper.withOutputSize(100, 100);
-        // add(cropper);
-
         this.btnSave = new Button("Save");
         this.btnChangePass = new Button("Change Password");
         this.buttonLayout = new HorizontalLayout(this.btnSave);
@@ -227,21 +218,6 @@ class UserSettingMainLayout extends VerticalLayout {
             dialog.setWidth("1050px");
             dialog.setCloseOnOutsideClick(false);
             this.addToDialog(os, dialog, e.getMIMEType());
-
-            // this.profilePicture.setAvatar(new Image(new StreamResource("temp_photo", ()
-            // -> {
-            // try {
-            // BufferedImage bim =
-            // ProfilePictureUpload.preprocessImage(ImageIO.read(profileStream));
-            // ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            // ImageIO.write(bim, "png", bos);
-            // return new ByteArrayInputStream(bos.toByteArray());
-            // } catch (IOException e1) {
-            // // TODO Auto-generated catch block
-            // e1.printStackTrace();
-            // return null;
-            // }
-            // }), null));
         });
 
         // Setting for button
