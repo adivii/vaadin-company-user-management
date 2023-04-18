@@ -5,8 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 
 import com.adivii.companymanagement.data.entity.Company;
@@ -86,6 +92,17 @@ public class UserDataDialog extends Dialog {
     Button btnCancel;
 
     Scroller scroller;
+
+    private MailSender mailSender;
+    private SimpleMailMessage templateMessage;
+
+    public void setMailSender(MailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
+    public void setTemplateMessage(SimpleMailMessage templateMessage) {
+        this.templateMessage = templateMessage;
+    }
 
     public UserDataDialog(CompanyService companyService, DepartmentService departmentService,
             UserService userService, RoleService roleService, RoleMapService roleMapService,
@@ -233,39 +250,62 @@ public class UserDataDialog extends Dialog {
             // TODO: Handle Error to rollback changes if failed to save data
             // TODO: Save only master entity, child entity should be updated (or use thread)
             if (!errorService.isErrorStatus()) {
-                for (Role role : roleService.getAllRole()) {
-                    RoleMap roleMap = new RoleMap();
+                if (inputRole.getValue().size() < 1) {
+                    NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
+                            "User Must Have At Least One Role");
+                } else {
+                    for (Role role : roleService.getAllRole()) {
+                        RoleMap roleMap = new RoleMap();
 
-                    if (roleMapService.getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
-                            role,
-                            inputCompany.getValue(),
-                            inputDepartment.getValue()).size() > 0) {
-                        roleMap = roleMapService.getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
+                        if (roleMapService.getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
                                 role,
                                 inputCompany.getValue(),
-                                inputDepartment.getValue()).get(0);
+                                inputDepartment.getValue()).size() > 0) {
+                            roleMap = roleMapService.getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
+                                    role,
+                                    inputCompany.getValue(),
+                                    inputDepartment.getValue()).get(0);
 
-                        if (new ArrayList<>(inputRole.getValue()).contains(role)) {
-                            roleMap.setCompany(inputCompany.getValue());
-                            roleMap.setDepartment(inputDepartment.getValue());
-                            roleMap.setRole(role);
-                            roleMap.setUser(newUser);
-                            roleMapService.add(roleMap);
+                            if (new ArrayList<>(inputRole.getValue()).contains(role)) {
+                                roleMap.setCompany(inputCompany.getValue());
+                                roleMap.setDepartment(inputDepartment.getValue());
+                                roleMap.setRole(role);
+                                roleMap.setUser(newUser);
+                                roleMapService.add(roleMap);
+                            } else {
+                                roleMapService.delete(roleMap);
+                            }
                         } else {
-                            roleMapService.delete(roleMap);
-                        }
-                    }else{
-                        if (new ArrayList<>(inputRole.getValue()).contains(role)) {
-                            roleMap.setCompany(inputCompany.getValue());
-                            roleMap.setDepartment(inputDepartment.getValue());
-                            roleMap.setRole(role);
-                            roleMap.setUser(newUser);
-                            roleMapService.add(roleMap);
+                            if (new ArrayList<>(inputRole.getValue()).contains(role)) {
+                                roleMap.setCompany(inputCompany.getValue());
+                                roleMap.setDepartment(inputDepartment.getValue());
+                                roleMap.setRole(role);
+                                roleMap.setUser(newUser);
+                                roleMapService.add(roleMap);
+                            }
                         }
                     }
-                }
 
-                this.close();
+                    if (method == this.METHOD_NEW) {
+                        JavaMailSenderImpl sender = new JavaMailSenderImpl();
+                        sender.setHost("nyelow.my.id");
+
+                        MimeMessage message = sender.createMimeMessage();
+                        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+                        try {
+                            helper.setTo(newUser.getEmail());
+                            helper.setText("You have registered");
+                        } catch (Exception e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
+
+                        sender.send(message);
+                    }
+
+                    this.close();
+                }
             } else {
                 NotificationService.showNotification(NotificationVariant.LUMO_ERROR, errorService.getErrorMessage());
             }
@@ -298,7 +338,7 @@ public class UserDataDialog extends Dialog {
         }
 
         for (Role role : roleList) {
-            if(ownedRole.contains(role)) {
+            if (ownedRole.contains(role)) {
                 this.inputRole.select(role);
             }
         }

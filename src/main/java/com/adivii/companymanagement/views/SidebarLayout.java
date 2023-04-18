@@ -41,6 +41,7 @@ public class SidebarLayout extends VerticalLayout {
 
                 return compName.concat(" - ").concat(roleDesc);
             });
+            companySelect.setAllowCustomValue(false);
             companySelect.addValueChangeListener(event -> {
                 session.setAttribute("currentRole", event.getValue());
                 if (event.getValue().getRole() != null) {
@@ -61,14 +62,15 @@ public class SidebarLayout extends VerticalLayout {
                         navCompanyList.setVisible(false);
                         navDepartmentList.setVisible(false);
                         navUserList.setVisible(true);
+                    } else {
+                        navCompanyList.setVisible(false);
+                        navDepartmentList.setVisible(false);
+                        navUserList.setVisible(false);
                     }
-                } else {
-                    navCompanyList.setVisible(false);
-                    navDepartmentList.setVisible(false);
-                    navUserList.setVisible(false);
-                }
+                } 
             });
-            companySelect.setValue(loggedUser.getRoleId().get(0));
+
+            companySelect.setValue((RoleMap) session.getAttribute("currentRole"));
 
             navDashboard.setVisible(true);
             navUserSetting.setVisible(true);
