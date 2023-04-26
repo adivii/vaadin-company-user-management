@@ -18,3 +18,4 @@ drivers/
 error-screenshots/
 webpack.generated.js
 src/main/resources/application.properties
+src/main/resources/application.yml
