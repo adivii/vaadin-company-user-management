@@ -1,9 +1,14 @@
 package com.adivii.companymanagement.views.component.dialog;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.mail.MailSender;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 
 import com.adivii.companymanagement.data.entity.Company;
@@ -51,6 +56,8 @@ public class UserDataDialog extends Dialog {
     private RoleMapService roleMapService;
     private AccountService accountService;
     private HttpSession session;
+    
+    JavaMailSender mailSender;
 
     User user;
     User currentUser;
@@ -87,12 +94,13 @@ public class UserDataDialog extends Dialog {
 
     public UserDataDialog(CompanyService companyService, DepartmentService departmentService,
             UserService userService, RoleService roleService, RoleMapService roleMapService,
-            AccountService accountService, String method) {
+            AccountService accountService, JavaMailSender mailSender, String method) {
         this.companyService = companyService;
         this.departmentService = departmentService;
         this.userService = userService;
         this.roleService = roleService;
         this.roleMapService = roleMapService;
+        this.mailSender = mailSender;
 
         this.session = SessionService.getCurrentSession();
 
@@ -267,8 +275,16 @@ public class UserDataDialog extends Dialog {
                         }
                     }
 
-                    if (method == this.METHOD_NEW) {
-                        MailSenderService.sendEmail(newUser.getEmail(), "Invitation", "You have been registered at company ".concat(inputCompany.getValue().getCompanyName()));
+                    if (method == UserDataDialog.METHOD_NEW) {
+                        try {
+                            MailSenderService.sendEmail(mailSender, newUser.getEmail(), "Invitation", "You have been registered at company ".concat(inputCompany.getValue().getCompanyName()));
+                        } catch (UnsupportedEncodingException e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        } catch (MessagingException e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
                     }
 
                     this.close();
@@ -282,7 +298,7 @@ public class UserDataDialog extends Dialog {
         this.dialogLayout.setWidth("500px");
         this.dialogLayout.setHeight("500px");
 
-        if (method.equals(this.METHOD_UPDATE)) {
+        if (method.equals(UserDataDialog.METHOD_UPDATE)) {
             setData(currentUser);
         }
 

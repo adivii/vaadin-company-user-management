@@ -1,8 +1,14 @@
 package com.adivii.companymanagement.views;
 
+import java.io.UnsupportedEncodingException;
+
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.mail.javamail.JavaMailSender;
+
 import com.adivii.companymanagement.data.service.AccountService;
+import com.adivii.companymanagement.data.service.MailSenderService;
 import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
@@ -26,7 +32,7 @@ public class LoginScreen extends VerticalLayout implements BeforeEnterObserver {
 
     private LoginForm loginForm;
 
-    public LoginScreen(UserService userService, AccountService accountService, RoleMapService roleMapService) {
+    public LoginScreen(UserService userService, AccountService accountService, RoleMapService roleMapService, JavaMailSender mailSender) {
         this.userService = userService;
         this.accountService = accountService;
         this.roleMapService = roleMapService;

@@ -10,6 +10,8 @@ import java.util.function.Consumer;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.mail.javamail.JavaMailSender;
+
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
@@ -66,10 +68,13 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
         AccountService accountService;
         HttpSession session;
 
+        JavaMailSender mailSender;
+
         Grid<User> userTable;
 
         public UserList(UserService userService, CompanyService companyService, DepartmentService departmentService,
-                        RoleService roleServices, RoleMapService roleMapService, AccountService accountService) {
+                        RoleService roleServices, RoleMapService roleMapService, AccountService accountService,
+                        JavaMailSender mailSender) {
                 this.userService = userService;
                 this.companyService = companyService;
                 this.departmentService = departmentService;
@@ -77,6 +82,8 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 this.userFilterService = new UserFilterService();
                 this.roleService = roleServices;
                 this.accountService = accountService;
+
+                this.mailSender = mailSender;
 
                 this.session = SessionService.getCurrentSession();
 
@@ -182,9 +189,9 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 this.userTable.addItemDoubleClickListener(e -> {
                         UserDataDialog userDataDialog = new UserDataDialog(companyService, departmentService,
-                                        userService, roleService, roleMapService, accountService,
+                                        userService, roleService, roleMapService, accountService, mailSender,
                                         UserDataDialog.METHOD_UPDATE);
-                        
+
                         userDataDialog.open();
 
                         userDataDialog.addOpenedChangeListener(actionListener -> {
@@ -259,7 +266,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                         for (Company comp : compList) {
                                 for (User user : userService.getByCompany(comp)) {
-                                        if(!userList.contains(user)){
+                                        if (!userList.contains(user)) {
                                                 userList.add(user);
                                         }
                                 }
@@ -297,7 +304,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 btnAdd.addClickListener(e -> {
                         UserDataDialog userDialog = new UserDataDialog(this.companyService, this.departmentService,
                                         this.userService, roleService, roleMapService, accountService,
-                                        UserDataDialog.METHOD_NEW);
+                                        mailSender, UserDataDialog.METHOD_NEW);
                         userDialog.open();
 
                         userDialog.addOpenedChangeListener(actionListener -> {
@@ -334,10 +341,11 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 confirmationDialog.add(confirmationLayout);
 
                 btnDelete.addClickListener(e -> {
-                        if (!user.equals(currentUser)){
+                        if (!user.equals(currentUser)) {
                                 confirmationDialog.open();
                         } else {
-                                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "You Can't Delete Yourself");
+                                NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
+                                                "You Can't Delete Yourself");
                         }
                 });
 
