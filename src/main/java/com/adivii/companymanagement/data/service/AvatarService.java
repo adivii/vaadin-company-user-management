@@ -3,7 +3,6 @@ package com.adivii.companymanagement.data.service;
 import org.springframework.stereotype.Service;
 
 import com.adivii.companymanagement.data.entity.Avatar;
-import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.repository.AvatarRepository;
 
 @Service

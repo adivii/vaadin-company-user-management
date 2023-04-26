@@ -19,9 +19,6 @@ import com.adivii.companymanagement.data.repository.UserRepository;
 public class UserService {
     private UserRepository userRepository;
     private RoleMapRepository roleMapRepository;
-    
-    // @Autowired
-    // PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository, RoleMapRepository roleMapRepository) {
         this.userRepository = userRepository;
@@ -90,23 +87,4 @@ public class UserService {
             this.userRepository.delete(user);
         }
     }
-
-    // TODO: Fix User Validation Method
-    // public ErrorService validateUser(User user) {
-    //     if (user != null && !user.getEmailAddress().isBlank() && !user.getPassword().isBlank()) {
-    //         List<User> userCheck = getByEmail(user.getEmailAddress());
-
-    //         if(userCheck.size() == 0) {
-    //             return new ErrorService(true, "Email Doesn't Registered");
-    //         } else {
-    //             if (BCrypt.checkpw(user.getPassword(), userCheck.get(0).getPassword())) {
-    //                 return new ErrorService(false, null);
-    //             } else {
-    //                 return new ErrorService(true, "Password Invalid");
-    //             }
-    //         }
-    //     } else {
-    //         return new ErrorService(true, "Field Can't Be Empty");
-    //     } 
-    // }
 }

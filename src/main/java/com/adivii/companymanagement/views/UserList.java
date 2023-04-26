@@ -10,12 +10,15 @@ import java.util.function.Consumer;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.mail.javamail.JavaMailSender;
+
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
+import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.SessionService;
@@ -25,7 +28,6 @@ import com.adivii.companymanagement.views.component.CustomAvatar;
 import com.adivii.companymanagement.views.component.dialog.UserDataDialog;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -35,6 +37,7 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -65,10 +68,13 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
         AccountService accountService;
         HttpSession session;
 
+        JavaMailSender mailSender;
+
         Grid<User> userTable;
 
         public UserList(UserService userService, CompanyService companyService, DepartmentService departmentService,
-                        RoleService roleServices, RoleMapService roleMapService, AccountService accountService) {
+                        RoleService roleServices, RoleMapService roleMapService, AccountService accountService,
+                        JavaMailSender mailSender) {
                 this.userService = userService;
                 this.companyService = companyService;
                 this.departmentService = departmentService;
@@ -76,6 +82,8 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 this.userFilterService = new UserFilterService();
                 this.roleService = roleServices;
                 this.accountService = accountService;
+
+                this.mailSender = mailSender;
 
                 this.session = SessionService.getCurrentSession();
 
@@ -181,9 +189,9 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 this.userTable.addItemDoubleClickListener(e -> {
                         UserDataDialog userDataDialog = new UserDataDialog(companyService, departmentService,
-                                        userService, roleService, roleMapService, accountService,
+                                        userService, roleService, roleMapService, accountService, mailSender,
                                         UserDataDialog.METHOD_UPDATE);
-                        
+
                         userDataDialog.open();
 
                         userDataDialog.addOpenedChangeListener(actionListener -> {
@@ -258,7 +266,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                         for (Company comp : compList) {
                                 for (User user : userService.getByCompany(comp)) {
-                                        if(!userList.contains(user)){
+                                        if (!userList.contains(user)) {
                                                 userList.add(user);
                                         }
                                 }
@@ -296,7 +304,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 btnAdd.addClickListener(e -> {
                         UserDataDialog userDialog = new UserDataDialog(this.companyService, this.departmentService,
                                         this.userService, roleService, roleMapService, accountService,
-                                        UserDataDialog.METHOD_NEW);
+                                        mailSender, UserDataDialog.METHOD_NEW);
                         userDialog.open();
 
                         userDialog.addOpenedChangeListener(actionListener -> {
@@ -333,7 +341,12 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 confirmationDialog.add(confirmationLayout);
 
                 btnDelete.addClickListener(e -> {
-                        confirmationDialog.open();
+                        if (!user.equals(currentUser)) {
+                                confirmationDialog.open();
+                        } else {
+                                NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
+                                                "You Can't Delete Yourself");
+                        }
                 });
 
                 return btnDelete;

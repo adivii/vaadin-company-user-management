@@ -1,10 +1,6 @@
 package com.adivii.companymanagement.views;
 
-import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
-
 import com.adivii.companymanagement.data.entity.Account;
-import com.adivii.companymanagement.data.entity.Company;
-import com.adivii.companymanagement.data.entity.Role;
 import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
@@ -26,8 +22,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
-import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;

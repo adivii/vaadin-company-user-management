@@ -21,10 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
-import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.security.CustomPasswordEncoder;
-import com.adivii.companymanagement.views.UserActivationForm;
-import com.vaadin.flow.component.UI;
 
 // TODO: Learn Spring Security, modify this Configuration
 
@@ -97,7 +94,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // .antMatchers("/company").hasAnyAuthority("superadmin, companyadmin")
                 // .antMatchers("/department").hasAnyAuthority("superadmin", "companyadmin")
                 // .antMatchers("/user").hasAnyAuthority("superadmin", "companyadmin", "departmentadmin", "useradmin")
-                // .antMatchers("/register").permitAll()
+                .antMatchers("/register").permitAll()
                 .anyRequest().authenticated()
                 // Configure login page
                 .and().formLogin()

@@ -16,7 +16,6 @@ import com.adivii.companymanagement.data.service.filter.DepartmentFilterService;
 import com.adivii.companymanagement.views.component.CustomAvatar;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
