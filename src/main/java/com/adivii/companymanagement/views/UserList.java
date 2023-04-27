@@ -274,8 +274,13 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                         provider = new ListDataProvider<>(userList);
                 } else if (currentRole.getRole().getValue().equals("departmentadmin")) {
-                        provider = new ListDataProvider<>(
-                                        userService.getByDepartment(currentRole.getDepartment()));
+                        List<User> users = new ArrayList<>();
+                        for (User user : userService.getByDepartment(currentRole.getDepartment())) {
+                                if(!users.contains(user)){
+                                        users.add(user);
+                                }
+                        }
+                        provider = new ListDataProvider<>(users);
                 } else {
                         provider = new ListDataProvider<>(new ArrayList<>());
                 }
