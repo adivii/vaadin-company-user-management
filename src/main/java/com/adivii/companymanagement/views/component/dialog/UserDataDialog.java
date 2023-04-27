@@ -21,6 +21,7 @@ import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.MailSenderService;
+import com.adivii.companymanagement.data.service.MailTemplateGenerator;
 import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
@@ -56,7 +57,7 @@ public class UserDataDialog extends Dialog {
     private RoleMapService roleMapService;
     private AccountService accountService;
     private HttpSession session;
-    
+
     JavaMailSender mailSender;
 
     User user;
@@ -276,8 +277,11 @@ public class UserDataDialog extends Dialog {
                     }
 
                     if (method == UserDataDialog.METHOD_NEW) {
+                        String messageTemplate = MailTemplateGenerator.getMailTemplate("Invitation",
+                                "You have been registered at company ".concat(inputCompany.getValue().getCompanyName()),
+                                MailTemplateGenerator.getLinkTemplate(newUser.getEmail()));
                         try {
-                            MailSenderService.sendEmail(mailSender, newUser.getEmail(), "Invitation", "You have been registered at company ".concat(inputCompany.getValue().getCompanyName()));
+                            MailSenderService.sendEmail(mailSender, newUser.getEmail(), "Invitation", messageTemplate);
                         } catch (UnsupportedEncodingException e1) {
                             // TODO Auto-generated catch block
                             e1.printStackTrace();
