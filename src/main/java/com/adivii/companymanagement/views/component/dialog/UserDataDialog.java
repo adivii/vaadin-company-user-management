@@ -219,119 +219,7 @@ public class UserDataDialog extends Dialog {
         // TODO: Configure saving method to save both Account and User
         // TODO: Adapt saving method to process RoleMap
         this.btnSave.addClickListener(e -> {
-            User newUser = new User();
-            newUser.setFirstName(inputFirst.getValue());
-            newUser.setLastName(inputLast.getValue());
-            newUser.setEmail(inputEmail.getValue());
-            newUser.setPhoneNumber(inputPhone.getValue());
-            newUser.setAddress(inputAddress.getValue());
-            // newUser.setAccount(newAccount);
-            newUser.setEnabled(true);
-            // newUser.setActivated(true);
-
-            ErrorService errorService = new ErrorService(false, null);
-            if (method.equals("new")) {
-                // newUser.setPassword((new CustomPasswordEncoder()).encode("password"));
-                newUser.setActivated(false);
-                errorService = userService.saveUser(newUser);
-            } else if (method.equals("update")) {
-                newUser.setUserId(this.user.getUserId());
-                newUser.setAccount(user.getAccount());
-                newUser.setAvatar(user.getAvatar());
-                // newUser.setPassword(this.user.getPassword());
-                newUser.setActivated(this.user.isActivated());
-                errorService = userService.editData(newUser);
-            }
-
-            // TODO: Handle Error to rollback changes if failed to save data
-            // TODO: Save only master entity, child entity should be updated (or use thread)
-            if (!errorService.isErrorStatus()) {
-                if (inputRole.getValue().size() < 1) {
-                    NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
-                            "User Must Have At Least One Role");
-                } else {
-                    for (Role role : roleService.getAllRole()) {
-                        RoleMap roleMap = new RoleMap();
-
-                        if (role.getValue().equals("companyadmin")) {
-                            if (roleMapService
-                                    .getByEmailAndCompanyAndRole(newUser.getEmail(), inputCompany.getValue(), role)
-                                    .size() > 0) {
-                                roleMap = roleMapService
-                                        .getByEmailAndCompanyAndRole(newUser.getEmail(), inputCompany.getValue(), role)
-                                        .get(0);
-
-                                if (new ArrayList<>(inputRole.getValue()).contains(role)) {
-                                    roleMap.setCompany(inputCompany.getValue());
-                                    roleMap.setRole(role);
-                                    roleMap.setUser(newUser);
-                                    roleMapService.add(roleMap);
-                                } else {
-                                    roleMapService.delete(roleMap);
-                                }
-                            } else {
-                                if (new ArrayList<>(inputRole.getValue()).contains(role)) {
-                                    roleMap.setCompany(inputCompany.getValue());
-                                    roleMap.setRole(role);
-                                    roleMap.setUser(newUser);
-                                    roleMapService.add(roleMap);
-                                }
-                            }
-                        } else {
-                            if (roleMapService
-                                    .getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
-                                            role,
-                                            inputCompany.getValue(),
-                                            inputDepartment.getValue())
-                                    .size() > 0) {
-                                roleMap = roleMapService
-                                        .getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
-                                                role,
-                                                inputCompany.getValue(),
-                                                inputDepartment.getValue())
-                                        .get(0);
-
-                                if (new ArrayList<>(inputRole.getValue()).contains(role)) {
-                                    roleMap.setCompany(inputCompany.getValue());
-                                    roleMap.setDepartment(inputDepartment.getValue());
-                                    roleMap.setRole(role);
-                                    roleMap.setUser(newUser);
-                                    roleMapService.add(roleMap);
-                                } else {
-                                    roleMapService.delete(roleMap);
-                                }
-                            } else {
-                                if (new ArrayList<>(inputRole.getValue()).contains(role)) {
-                                    roleMap.setCompany(inputCompany.getValue());
-                                    roleMap.setDepartment(inputDepartment.getValue());
-                                    roleMap.setRole(role);
-                                    roleMap.setUser(newUser);
-                                    roleMapService.add(roleMap);
-                                }
-                            }
-                        }
-                    }
-
-                    if (method == UserDataDialog.METHOD_NEW) {
-                        String messageTemplate = MailTemplateGenerator.getMailTemplate("Invitation",
-                                "You have been registered at company ".concat(inputCompany.getValue().getCompanyName()),
-                                MailTemplateGenerator.getLinkTemplate(newUser.getEmail()));
-                        try {
-                            MailSenderService.sendEmail(mailSender, newUser.getEmail(), "Invitation", messageTemplate);
-                        } catch (UnsupportedEncodingException e1) {
-                            // TODO Auto-generated catch block
-                            e1.printStackTrace();
-                        } catch (MessagingException e1) {
-                            // TODO Auto-generated catch block
-                            e1.printStackTrace();
-                        }
-                    }
-
-                    this.close();
-                }
-            } else {
-                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, errorService.getErrorMessage());
-            }
+            processInput(method);
         });
 
         this.dialogLayout.add(this.title, this.divider, this.scroller, this.buttonLayout);
@@ -343,6 +231,140 @@ public class UserDataDialog extends Dialog {
         }
 
         this.add(this.dialogLayout);
+    }
+
+    private void processInput(String method) {
+        User newUser = saveUser(method);
+
+        // TODO: Handle Error to rollback changes if failed to save data
+        // TODO: Save only master entity, child entity should be updated (or use thread)
+        if (newUser != null) {
+            updateRoleMap(newUser, method);
+        }
+    }
+
+    private void updateRoleMap(User newUser, String method) {
+        if (inputRole.getValue().size() < 1) {
+            NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
+                    "User Must Have At Least One Role");
+        } else {
+            for (Role role : roleService.getAllRole()) {
+                RoleMap roleMap = new RoleMap();
+
+                if (role.getValue().equals("companyadmin")) {
+                    if (roleMapService
+                            .getByEmailAndCompanyAndRole(newUser.getEmail(), inputCompany.getValue(), role)
+                            .size() > 0) {
+                        roleMap = roleMapService
+                                .getByEmailAndCompanyAndRole(newUser.getEmail(), inputCompany.getValue(), role)
+                                .get(0);
+
+                        if (new ArrayList<>(inputRole.getValue()).contains(role)) {
+                            saveRoleMap(roleMap.getId(), inputCompany.getValue(), null, role, newUser);
+                        } else {
+                            roleMapService.delete(roleMap);
+                        }
+                    } else {
+                        if (new ArrayList<>(inputRole.getValue()).contains(role)) {
+                            saveRoleMap(null, inputCompany.getValue(), null, role, newUser);
+                        }
+                    }
+                } else {
+                    if (roleMapService
+                            .getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
+                                    role,
+                                    inputCompany.getValue(),
+                                    inputDepartment.getValue())
+                            .size() > 0) {
+                        roleMap = roleMapService
+                                .getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
+                                        role,
+                                        inputCompany.getValue(),
+                                        inputDepartment.getValue())
+                                .get(0);
+
+                        if (new ArrayList<>(inputRole.getValue()).contains(role)) {
+                            saveRoleMap(roleMap.getId(), inputCompany.getValue(), inputDepartment.getValue(), role,
+                                    newUser);
+                        } else {
+                            roleMapService.delete(roleMap);
+                        }
+                    } else {
+                        if (new ArrayList<>(inputRole.getValue()).contains(role)) {
+                            saveRoleMap(null, inputCompany.getValue(), inputDepartment.getValue(), role, newUser);
+                        }
+                    }
+                }
+            }
+
+            sendEmail(newUser, method);
+
+            this.close();
+        }
+    }
+
+    private void saveRoleMap(Integer id, Company company, Department department, Role role, User newUser) {
+        RoleMap roleMap = new RoleMap();
+
+        if (id != null) {
+            roleMap.setId(id);
+        }
+
+        roleMap.setCompany(company);
+        roleMap.setDepartment(department);
+        roleMap.setRole(role);
+        roleMap.setUser(newUser);
+        roleMapService.add(roleMap);
+    }
+
+    private void sendEmail(User newUser, String method) {
+        if (method == UserDataDialog.METHOD_NEW) {
+            String messageTemplate = MailTemplateGenerator.getMailTemplate("Invitation",
+                    "You have been registered at company ".concat(inputCompany.getValue().getCompanyName()),
+                    MailTemplateGenerator.getLinkTemplate(newUser.getEmail()));
+            try {
+                MailSenderService.sendEmail(mailSender, newUser.getEmail(), "Invitation", messageTemplate);
+            } catch (UnsupportedEncodingException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            } catch (MessagingException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        }
+    }
+
+    private User saveUser(String method) {
+        User newUser = new User();
+        newUser.setFirstName(inputFirst.getValue());
+        newUser.setLastName(inputLast.getValue());
+        newUser.setEmail(inputEmail.getValue());
+        newUser.setPhoneNumber(inputPhone.getValue());
+        newUser.setAddress(inputAddress.getValue());
+        // newUser.setAccount(newAccount);
+        newUser.setEnabled(true);
+        // newUser.setActivated(true);
+
+        ErrorService errorService = new ErrorService(false, null);
+        if (method.equals("new")) {
+            // newUser.setPassword((new CustomPasswordEncoder()).encode("password"));
+            newUser.setActivated(false);
+            errorService = userService.saveUser(newUser);
+        } else if (method.equals("update")) {
+            newUser.setUserId(this.user.getUserId());
+            newUser.setAccount(user.getAccount());
+            newUser.setAvatar(user.getAvatar());
+            // newUser.setPassword(this.user.getPassword());
+            newUser.setActivated(this.user.isActivated());
+            errorService = userService.editData(newUser);
+        }
+
+        if (errorService.isErrorStatus()) {
+            NotificationService.showNotification(NotificationVariant.LUMO_ERROR, errorService.getErrorMessage());
+            return null;
+        }
+
+        return newUser;
     }
 
     public void setData(User user) {
