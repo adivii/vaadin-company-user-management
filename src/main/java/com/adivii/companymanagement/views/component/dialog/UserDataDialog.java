@@ -188,6 +188,12 @@ public class UserDataDialog extends Dialog {
         this.inputCompany.addValueChangeListener(e -> {
             this.inputDepartment.clear();
             this.inputDepartment.setItems(departmentService.getByCompany(e.getValue()));
+            setRole(this.inputEmail.getValue(), this.inputCompany.getValue(), this.inputDepartment.getValue());
+
+        });
+
+        this.inputDepartment.addValueChangeListener(e -> {
+            setRole(this.inputEmail.getValue(), this.inputCompany.getValue(), this.inputDepartment.getValue());
         });
 
         this.scroller = new Scroller(
@@ -247,31 +253,61 @@ public class UserDataDialog extends Dialog {
                     for (Role role : roleService.getAllRole()) {
                         RoleMap roleMap = new RoleMap();
 
-                        if (roleMapService.getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
-                                role,
-                                inputCompany.getValue(),
-                                inputDepartment.getValue()).size() > 0) {
-                            roleMap = roleMapService.getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
-                                    role,
-                                    inputCompany.getValue(),
-                                    inputDepartment.getValue()).get(0);
+                        if (role.getValue().equals("companyadmin")) {
+                            if (roleMapService
+                                    .getByEmailAndCompanyAndRole(newUser.getEmail(), inputCompany.getValue(), role)
+                                    .size() > 0) {
+                                roleMap = roleMapService
+                                        .getByEmailAndCompanyAndRole(newUser.getEmail(), inputCompany.getValue(), role)
+                                        .get(0);
 
-                            if (new ArrayList<>(inputRole.getValue()).contains(role)) {
-                                roleMap.setCompany(inputCompany.getValue());
-                                roleMap.setDepartment(inputDepartment.getValue());
-                                roleMap.setRole(role);
-                                roleMap.setUser(newUser);
-                                roleMapService.add(roleMap);
+                                if (new ArrayList<>(inputRole.getValue()).contains(role)) {
+                                    roleMap.setCompany(inputCompany.getValue());
+                                    roleMap.setRole(role);
+                                    roleMap.setUser(newUser);
+                                    roleMapService.add(roleMap);
+                                } else {
+                                    roleMapService.delete(roleMap);
+                                }
                             } else {
-                                roleMapService.delete(roleMap);
+                                if (new ArrayList<>(inputRole.getValue()).contains(role)) {
+                                    roleMap.setCompany(inputCompany.getValue());
+                                    roleMap.setRole(role);
+                                    roleMap.setUser(newUser);
+                                    roleMapService.add(roleMap);
+                                }
                             }
                         } else {
-                            if (new ArrayList<>(inputRole.getValue()).contains(role)) {
-                                roleMap.setCompany(inputCompany.getValue());
-                                roleMap.setDepartment(inputDepartment.getValue());
-                                roleMap.setRole(role);
-                                roleMap.setUser(newUser);
-                                roleMapService.add(roleMap);
+                            if (roleMapService
+                                    .getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
+                                            role,
+                                            inputCompany.getValue(),
+                                            inputDepartment.getValue())
+                                    .size() > 0) {
+                                roleMap = roleMapService
+                                        .getByEmailAndRoleAndCompanyAndDepartment(newUser.getEmail(),
+                                                role,
+                                                inputCompany.getValue(),
+                                                inputDepartment.getValue())
+                                        .get(0);
+
+                                if (new ArrayList<>(inputRole.getValue()).contains(role)) {
+                                    roleMap.setCompany(inputCompany.getValue());
+                                    roleMap.setDepartment(inputDepartment.getValue());
+                                    roleMap.setRole(role);
+                                    roleMap.setUser(newUser);
+                                    roleMapService.add(roleMap);
+                                } else {
+                                    roleMapService.delete(roleMap);
+                                }
+                            } else {
+                                if (new ArrayList<>(inputRole.getValue()).contains(role)) {
+                                    roleMap.setCompany(inputCompany.getValue());
+                                    roleMap.setDepartment(inputDepartment.getValue());
+                                    roleMap.setRole(role);
+                                    roleMap.setUser(newUser);
+                                    roleMapService.add(roleMap);
+                                }
                             }
                         }
                     }
@@ -319,8 +355,13 @@ public class UserDataDialog extends Dialog {
         this.inputCompany.setValue(currentRole.getCompany());
         this.inputDepartment.setValue(currentRole.getDepartment());
 
+        setRole(user.getEmail(), currentRole.getCompany(), currentRole.getDepartment());
+    }
+
+    private void setRole(String email, Company company, Department department) {
         List<Role> ownedRole = new ArrayList<>();
-        for (RoleMap roleMap : currentUser.getRoleId()) {
+
+        for (RoleMap roleMap : roleMapService.getByEmailAndCompanyAndDepartment(email, company, department)) {
             ownedRole.add(roleMap.getRole());
         }
 
