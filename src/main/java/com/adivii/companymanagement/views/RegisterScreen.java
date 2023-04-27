@@ -1,5 +1,10 @@
 package com.adivii.companymanagement.views;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.web.bind.annotation.RequestParam;
+
 import com.adivii.companymanagement.data.entity.Account;
 import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
@@ -23,7 +28,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 
 // TODO: Handle Success and Error
@@ -32,7 +42,7 @@ import com.vaadin.flow.router.Route;
 
 @Route("/register")
 @PageTitle("Register User")
-public class RegisterScreen extends VerticalLayout {
+public class RegisterScreen extends VerticalLayout implements HasUrlParameter<String> {
 
     // Services
     private UserService userService;
@@ -52,6 +62,8 @@ public class RegisterScreen extends VerticalLayout {
     // Button
     private Button btnSaveUser;
 
+    private List<String> emailList;
+
     public RegisterScreen(UserService userService, AccountService accountService,
             CompanyService companyService, DepartmentService departmentService, RoleService roleService,
             RoleMapService roleMapService) {
@@ -63,7 +75,41 @@ public class RegisterScreen extends VerticalLayout {
         this.roleService = roleService;
 
         setAlignItems(Alignment.CENTER);
-        add(initiateForm());
+    }
+
+    private void checkStatus() {
+        this.add(initiateForm());
+
+        if (this.emailList != null) {
+            String emailTemp = this.emailList.get(0);
+
+            if (userService.getByEmail(emailTemp).size() > 0) {
+                if (roleMapService.getByEmail(emailTemp).size() == 0) {
+                    RoleMap newRoleMap = new RoleMap();
+                    newRoleMap.setUser(userService.getByEmail(emailTemp).get(0));
+                    roleMapService.add(newRoleMap);
+
+                    User tempUser = userService.getByEmail(emailTemp).get(0);
+                    tempUser.setActivated(false);
+                    userService.editData(tempUser);
+                }
+                if (accountService.getByEmail(emailTemp).size() == 0) {
+                    emailInput.setValue(emailList.get(0));
+                    emailInput.setReadOnly(true);
+                    btnSaveUser.addClickListener(e -> {
+                        // TODO: Implement rollback scenario, if user failed to save data
+                        addInvitedUser(userService.getByEmail(emailTemp).get(0));
+                    });
+                } else {
+                    UI.getCurrent().getPage().setLocation("/login");
+                }
+            } else {
+                btnSaveUser.addClickListener(e -> {
+                    // TODO: Implement rollback scenario, if user failed to save data
+                    createNewUser();
+                });
+            }
+        }
     }
 
     private VerticalLayout initiateForm() {
@@ -76,55 +122,13 @@ public class RegisterScreen extends VerticalLayout {
         passInput.addValueChangeListener(valueChange -> {
             errorMessage.removeAll();
 
-            if (PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())
-                    && PasswordValidatorService.validatePassword(passInput.getValue())) {
-                btnSaveUser.setEnabled(true);
-            }else{
-                btnSaveUser.setEnabled(false);
-
-                if(!PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())) {
-                    errorMessage.add(new Span("Password Doesn't Match!"));
-                }
-                if(!PasswordValidatorService.haveLowercase(passInput.getValue())) {
-                    errorMessage.add(new Span("Must Contain Lowercase Letter"));
-                }
-                if(!PasswordValidatorService.haveUppercase(passInput.getValue())) {
-                    errorMessage.add(new Span("Must Contain Uppercase Letter"));
-                }
-                if(!PasswordValidatorService.haveNumeric(passInput.getValue())) {
-                    errorMessage.add(new Span("Must Contain Numeric Character"));
-                }
-                if(!PasswordValidatorService.haveSymbol(passInput.getValue())) {
-                    errorMessage.add(new Span("Must Contain Symbol"));
-                }
-            }
+            validatePasswordInput();
         });
         passInput.setValueChangeMode(ValueChangeMode.EAGER);
         rePassInput.addValueChangeListener(valueChange -> {
             errorMessage.removeAll();
-            
-            if (PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())
-                    && PasswordValidatorService.validatePassword(passInput.getValue())) {
-                btnSaveUser.setEnabled(true);
-            }else{
-                btnSaveUser.setEnabled(false);
 
-                if(!PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())) {
-                    errorMessage.add(new Span("Password Doesn't Match!"));
-                }
-                if(!PasswordValidatorService.haveLowercase(passInput.getValue())) {
-                    errorMessage.add(new Span("Must Contain Lowercase Letter"));
-                }
-                if(!PasswordValidatorService.haveUppercase(passInput.getValue())) {
-                    errorMessage.add(new Span("Must Contain Uppercase Letter"));
-                }
-                if(!PasswordValidatorService.haveNumeric(passInput.getValue())) {
-                    errorMessage.add(new Span("Must Contain Numeric Character"));
-                }
-                if(!PasswordValidatorService.haveSymbol(passInput.getValue())) {
-                    errorMessage.add(new Span("Must Contain Symbol"));
-                }
-            }
+            validatePasswordInput();
         });
         rePassInput.setValueChangeMode(ValueChangeMode.EAGER);
 
@@ -132,51 +136,120 @@ public class RegisterScreen extends VerticalLayout {
         btnSaveUser = new Button("Save");
         btnSaveUser.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         btnSaveUser.setEnabled(false);
-        btnSaveUser.addClickListener(e -> {
-            // TODO: Implement rollback scenario, if user failed to save data
-            CustomPasswordEncoder encoder = new CustomPasswordEncoder();
-            Account newAccount = new Account();
-
-            if (PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())
-                    && PasswordValidatorService.validatePassword(passInput.getValue())) {
-                newAccount.setEmailAddress(emailInput.getValue());
-                newAccount.setPassword(encoder.encode(passInput.getValue()));
-
-                ErrorService errorService = accountService.save(newAccount);
-                if (errorService.isErrorStatus()) {
-                    NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
-                            errorService.getErrorMessage());
-                } else {
-                    newAccount = accountService.getByEmail(newAccount.getEmailAddress()).get(0);
-                    User newUser = new User();
-                    newUser.setEmail(emailInput.getValue());
-                    newUser.setAccount(newAccount);
-                    newUser.setEnabled(true);
-                    newUser.setActivated(false);
-
-                    // TODO: Handle Error
-                    ErrorService userErrorService = userService.saveUser(newUser);
-                    if (userErrorService.isErrorStatus()) {
-                        NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
-                                userErrorService.getErrorMessage());
-                    } else {
-                        RoleMap roleMap = new RoleMap();
-                        roleMap.setUser(newUser);
-
-                        roleMapService.add(roleMap);
-
-                        NotificationService.showNotification(NotificationVariant.LUMO_SUCCESS, "Success");
-                        UI.getCurrent().getPage().setLocation("/login");
-                    }
-                }
-            } else {
-                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Password Doesn't Match!");
-            }
-
-        });
 
         errorMessage = new VerticalLayout();
 
         return new VerticalLayout(emailInput, passLayout, errorMessage, btnSaveUser);
+    }
+
+    private void createNewUser() {
+        CustomPasswordEncoder encoder = new CustomPasswordEncoder();
+        Account newAccount = new Account();
+
+        if (PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())
+                && PasswordValidatorService.validatePassword(passInput.getValue())) {
+            newAccount.setEmailAddress(emailInput.getValue());
+            newAccount.setPassword(encoder.encode(passInput.getValue()));
+
+            ErrorService errorService = accountService.save(newAccount);
+            if (errorService.isErrorStatus()) {
+                NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
+                        errorService.getErrorMessage());
+            } else {
+                newAccount = accountService.getByEmail(newAccount.getEmailAddress()).get(0);
+                User newUser = new User();
+                newUser.setEmail(emailInput.getValue());
+                newUser.setAccount(newAccount);
+                newUser.setEnabled(true);
+                newUser.setActivated(false);
+
+                // TODO: Handle Error
+                ErrorService userErrorService = userService.saveUser(newUser);
+                if (userErrorService.isErrorStatus()) {
+                    NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
+                            userErrorService.getErrorMessage());
+                } else {
+                    RoleMap roleMap = new RoleMap();
+                    roleMap.setUser(newUser);
+
+                    roleMapService.add(roleMap);
+
+                    NotificationService.showNotification(NotificationVariant.LUMO_SUCCESS, "Success");
+                    UI.getCurrent().getPage().setLocation("/login");
+                }
+            }
+        } else {
+            NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Password Doesn't Match!");
+        }
+    }
+
+    private void addInvitedUser(User user) {
+        CustomPasswordEncoder encoder = new CustomPasswordEncoder();
+        Account newAccount = new Account();
+
+        if (PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())
+                && PasswordValidatorService.validatePassword(passInput.getValue())) {
+            newAccount.setEmailAddress(emailInput.getValue());
+            newAccount.setPassword(encoder.encode(passInput.getValue()));
+
+            ErrorService errorService = accountService.save(newAccount);
+            if (errorService.isErrorStatus()) {
+                NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
+                        errorService.getErrorMessage());
+            } else {
+                user.setAccount(newAccount);
+
+                ErrorService userErrorService = userService.editData(user);
+                if (userErrorService.isErrorStatus()) {
+                    NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
+                            userErrorService.getErrorMessage());
+                } else {
+                    NotificationService.showNotification(NotificationVariant.LUMO_SUCCESS, "Success");
+                    UI.getCurrent().getPage().setLocation("/login");
+                }
+            }
+        } else {
+            NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Password Doesn't Match!");
+        }
+    }
+
+    private void validatePasswordInput() {
+        if (PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())
+                && PasswordValidatorService.validatePassword(passInput.getValue())) {
+            btnSaveUser.setEnabled(true);
+        } else {
+            btnSaveUser.setEnabled(false);
+
+            if (!PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())) {
+                errorMessage.add(new Span("Password Doesn't Match!"));
+            }
+            if (!PasswordValidatorService.haveLowercase(passInput.getValue())) {
+                errorMessage.add(new Span("Must Contain Lowercase Letter"));
+            }
+            if (!PasswordValidatorService.haveUppercase(passInput.getValue())) {
+                errorMessage.add(new Span("Must Contain Uppercase Letter"));
+            }
+            if (!PasswordValidatorService.haveNumeric(passInput.getValue())) {
+                errorMessage.add(new Span("Must Contain Numeric Character"));
+            }
+            if (!PasswordValidatorService.haveSymbol(passInput.getValue())) {
+                errorMessage.add(new Span("Must Contain Symbol"));
+            }
+        }
+    }
+
+    @Override
+    public void setParameter(BeforeEvent event,
+            @OptionalParameter String parameter) {
+
+        Location location = event.getLocation();
+        QueryParameters queryParameters = location
+                .getQueryParameters();
+
+        Map<String, List<String>> parametersMap = queryParameters.getParameters();
+        emailList = parametersMap.get("email");
+
+        checkStatus();
+        // add(initiateForm());
     }
 }
