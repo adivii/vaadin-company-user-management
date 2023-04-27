@@ -20,6 +20,7 @@ import com.adivii.companymanagement.data.service.AvatarService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
+import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.file_upload.ProfilePictureUpload;
@@ -41,6 +42,7 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.upload.SucceededEvent;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
@@ -180,10 +182,90 @@ class UserSettingMainLayout extends VerticalLayout {
 
         inputPhone.setValue(user.getPhoneNumber());
 
+        loadAvatar();
+
+        inputProfilePict.addSucceededListener(e -> {
+            processUploadedImage(e);
+        });
+
+        // Setting for button
+        btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        // TODO: Save button doen't do anything
+        btnSave.addClickListener(e -> {
+            Avatar newAvatar = saveAvatar();
+
+            saveUser(newAvatar);
+        });
+
+        btnChangePass.setEnabled(true);
+        btnChangePass.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        btnChangePass.addClickListener(e -> {
+            NewPasswordDialog passwordDialog = new NewPasswordDialog(this.accountService, user.getAccount());
+
+            passwordDialog.open();
+        });
+
+        inputProfilePict.getElement().setPropertyJson("files", Json.createArray());
+    }
+
+    private void saveUser(Avatar newAvatar) {
+        user.setFirstName(inputFirst.getValue());
+        user.setLastName(inputLast.getValue());
+        user.setAddress(inputAddress.getValue());
+        user.setPhoneNumber(inputPhone.getValue());
+        user.setAvatar(avatarService.searchByUri(newAvatar.getUri()));
+
+        ErrorService error = userService.editData(user);
+        if (error.isErrorStatus()) {
+            NotificationService.showNotification(NotificationVariant.LUMO_ERROR, error.getErrorMessage());
+        } else {
+            this.updateField();
+
+            NotificationService.showNotification(NotificationVariant.LUMO_SUCCESS, "Success");
+        }
+    }
+
+    private Avatar saveAvatar() {
+        ProfilePictureUpload.saveFile(inputProfileStream,
+                ProfilePictureUpload.generateProfilePictureTitle(user.getEmail()));
+        Avatar newAvatar;
+        if (user.getAvatar() == null) {
+            newAvatar = new Avatar();
+        } else {
+            newAvatar = user.getAvatar();
+        }
+
+        newAvatar.setUri(ProfilePictureUpload.getLink()
+                .concat(ProfilePictureUpload.generateProfilePictureTitle(user.getEmail())));
+
+        this.avatarService.saveAvatar(newAvatar);
+
+        return newAvatar;
+    }
+
+    private void processUploadedImage(SucceededEvent e) {
+        InputStream profileStream = fileBuffer.getInputStream();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        inputProfileStream = profileStream;
+
+        try {
+            ImageIO.write(ProfilePictureUpload.preprocessImage(ImageIO.read(profileStream)), "png", os);
+        } catch (IOException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+
+        Dialog dialog = new Dialog();
+        dialog.setHeight("600px");
+        dialog.setWidth("1050px");
+        dialog.setCloseOnOutsideClick(false);
+        this.addToDialog(os, dialog, e.getMIMEType());
+    }
+
+    private void loadAvatar() {
         // Setting for profile picture
         // TODO: Make sure user can select which part of image to upload
         if (user.getAvatar() != null) {
-            User temp = user;
             this.profilePicture.setAvatar(new Image(new StreamResource("profile", () -> {
                 InputStream profileStream;
                 try {
@@ -200,87 +282,6 @@ class UserSettingMainLayout extends VerticalLayout {
                 }
             }), null));
         }
-
-        inputProfilePict.addSucceededListener(e -> {
-            InputStream profileStream = fileBuffer.getInputStream();
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            inputProfileStream = profileStream;
-
-            try {
-                ImageIO.write(ProfilePictureUpload.preprocessImage(ImageIO.read(profileStream)), "png", os);
-            } catch (IOException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-
-            Dialog dialog = new Dialog();
-            dialog.setHeight("600px");
-            dialog.setWidth("1050px");
-            dialog.setCloseOnOutsideClick(false);
-            this.addToDialog(os, dialog, e.getMIMEType());
-        });
-
-        // Setting for button
-        btnSave.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        // TODO: Save button doen't do anything
-        btnSave.addClickListener(e -> {
-            ProfilePictureUpload.saveFile(inputProfileStream,
-                    ProfilePictureUpload.generateProfilePictureTitle(user.getEmail()));
-            Avatar newAvatar;
-            if (user.getAvatar() == null) {
-                newAvatar = new Avatar();
-            } else {
-                newAvatar = user.getAvatar();
-            }
-
-            newAvatar.setUri(ProfilePictureUpload.getLink()
-                    .concat(ProfilePictureUpload.generateProfilePictureTitle(user.getEmail())));
-
-            this.avatarService.saveAvatar(newAvatar);
-
-            user.setFirstName(inputFirst.getValue());
-            user.setLastName(inputLast.getValue());
-            user.setAddress(inputAddress.getValue());
-            user.setPhoneNumber(inputPhone.getValue());
-            user.setAvatar(avatarService.searchByUri(newAvatar.getUri()));
-
-            ErrorService error = userService.editData(user);
-            if (error.isErrorStatus()) {
-                Notification notification = new Notification();
-                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                Text notificationText = new Text(error.getErrorMessage());
-                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
-                closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-                HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
-
-                notification.setDuration(2000);
-                notification.add(notificationLayout);
-                notification.open();
-            } else {
-                this.updateField();
-
-                Notification notification = new Notification();
-                notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                Text notificationText = new Text("Success");
-                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
-                closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-                HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
-
-                notification.setDuration(2000);
-                notification.add(notificationLayout);
-                notification.open();
-            }
-        });
-
-        btnChangePass.setEnabled(true);
-        btnChangePass.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        btnChangePass.addClickListener(e -> {
-            NewPasswordDialog passwordDialog = new NewPasswordDialog(this.accountService, user.getAccount());
-
-            passwordDialog.open();
-        });
-
-        inputProfilePict.getElement().setPropertyJson("files", Json.createArray());
     }
 
     public VerticalLayout getLayout() {
