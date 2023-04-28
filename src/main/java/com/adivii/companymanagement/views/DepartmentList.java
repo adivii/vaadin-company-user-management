@@ -6,10 +6,13 @@ import javax.servlet.http.HttpSession;
 
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.Department;
+import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
+import com.adivii.companymanagement.data.service.NotificationService;
+import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.filter.DepartmentFilterService;
@@ -46,15 +49,17 @@ import com.vaadin.flow.router.Route;
 @PageTitle("Department List")
 public class DepartmentList extends HorizontalLayout implements BeforeEnterObserver {
     private User currentUser;
+    private RoleMap currentRole;
 
     private UserService userService;
     private DepartmentService departmentService;
     private CompanyService companyService;
     private Grid<Department> departmentTable;
+    private RoleMapService roleMapService;
     private HttpSession session;
     private DepartmentFilterService departmentFilterService;
 
-    public DepartmentList(UserService userService, DepartmentService departmentService, CompanyService companyService) {
+    public DepartmentList(UserService userService, DepartmentService departmentService, CompanyService companyService, RoleMapService rMapService) {
         this.userService = userService;
         this.departmentService = departmentService;
         this.companyService = companyService;
@@ -65,6 +70,10 @@ public class DepartmentList extends HorizontalLayout implements BeforeEnterObser
         if(this.session.getAttribute("userID") != null) {
             currentUser = userService.getUser((Integer) this.session.getAttribute("userID")).get();
         } 
+
+        if(this.session.getAttribute("currentRole") != null) {
+            currentRole = (RoleMap) session.getAttribute("currentRole");
+        }
 
         VerticalLayout sidebarLayout = new SidebarLayout(this.userService);
 
@@ -149,7 +158,7 @@ public class DepartmentList extends HorizontalLayout implements BeforeEnterObser
 
     public void updateTable() {
         // TODO: Show only department owned by this company for company admin
-        ListDataProvider<Department> dataProvider = new ListDataProvider<>(departmentService.getAllDepartment());
+        ListDataProvider<Department> dataProvider = new ListDataProvider<>(departmentService.getByCompany(currentRole.getCompany()));
 
         this.departmentTable.setDataProvider(dataProvider);
         this.departmentFilterService.setDataProvider(dataProvider);
@@ -217,16 +226,7 @@ public class DepartmentList extends HorizontalLayout implements BeforeEnterObser
                 addDepartmentDialog.close();
                 updateTable();
             } else {
-                Notification notification = new Notification();
-                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                Text notificationText = new Text(errorService.getErrorMessage());
-                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
-                closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-                HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
-
-                notification.setDuration(2000);
-                notification.add(notificationLayout);
-                notification.open();
+                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, errorService.getErrorMessage());
             }
         });
 
@@ -281,16 +281,7 @@ public class DepartmentList extends HorizontalLayout implements BeforeEnterObser
                 editDepartmentDialog.close();
                 updateTable();
             } else {
-                Notification notification = new Notification();
-                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                Text notificationText = new Text(errorService.getErrorMessage());
-                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
-                closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-                HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
-
-                notification.setDuration(2000);
-                notification.add(notificationLayout);
-                notification.open();
+                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, errorService.getErrorMessage());
             }
         });
 
@@ -319,16 +310,7 @@ public class DepartmentList extends HorizontalLayout implements BeforeEnterObser
                 confirmationDialog.close();
                 updateTable();
             } else {
-                Notification notification = new Notification();
-                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                Text notificationText = new Text("Can't Delete Record");
-                Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
-                closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
-                HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
-
-                notification.setDuration(2000);
-                notification.add(notificationLayout);
-                notification.open();
+                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Can't Delete Record");
 
                 confirmationDialog.close();
             }

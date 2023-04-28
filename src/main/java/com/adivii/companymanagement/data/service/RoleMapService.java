@@ -31,6 +31,10 @@ public class RoleMapService {
     public List<RoleMap> getByEmailAndRole(String email, Role role) {
         return this.roleMapRepository.findByUserEmailAndRole(email, role);
     }
+
+    public List<RoleMap> getByEmailAndCompanyAndDepartment(String email, Company company, Department department) {
+        return this.roleMapRepository.findByUserEmailAndCompanyAndDepartment(email, company, department);
+    }
     
     public List<RoleMap> getByEmailAndRoleAndCompanyAndDepartment(String email, Role role, Company company, Department department) {
         return this.roleMapRepository.findByUserEmailAndRoleAndCompanyAndDepartment(email, role, company, department);
@@ -38,6 +42,10 @@ public class RoleMapService {
 
     public List<RoleMap> getByEmailAndCompany(String email, Company company) {
         return this.roleMapRepository.findByUserEmailAndCompany(email, company);
+    }
+
+    public List<RoleMap> getByEmailAndCompanyAndRole(String email, Company company, Role role) {
+        return this.roleMapRepository.findByUserEmailAndCompanyAndRole(email, company, role);
     }
 
     public void add(RoleMap roleMap){

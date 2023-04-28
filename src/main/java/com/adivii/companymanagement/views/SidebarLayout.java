@@ -42,6 +42,7 @@ public class SidebarLayout extends VerticalLayout {
                 return compName.concat(" - ").concat(roleDesc);
             });
             companySelect.setAllowCustomValue(false);
+            companySelect.setValue((RoleMap) session.getAttribute("currentRole"));
             companySelect.addValueChangeListener(event -> {
                 session.setAttribute("currentRole", event.getValue());
                 if (event.getValue().getRole() != null) {
@@ -67,10 +68,9 @@ public class SidebarLayout extends VerticalLayout {
                         navDepartmentList.setVisible(false);
                         navUserList.setVisible(false);
                     }
-                } 
+                }
+                // UI.getCurrent().getPage().reload(); 
             });
-
-            companySelect.setValue((RoleMap) session.getAttribute("currentRole"));
 
             navDashboard.setVisible(true);
             navUserSetting.setVisible(true);

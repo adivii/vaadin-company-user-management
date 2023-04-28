@@ -13,7 +13,9 @@ public interface RoleMapRepository extends JpaRepository<RoleMap, Integer> {
     // Get By Email from Foreign Key User
     List<RoleMap> findByUserEmail(String email);
     List<RoleMap> findByUserEmailAndRole(String email, Role role);
+    List<RoleMap> findByUserEmailAndCompanyAndDepartment(String email, Company company, Department department);
     List<RoleMap> findByUserEmailAndRoleAndCompanyAndDepartment(String email, Role role, Company company, Department department);
     List<RoleMap> findByUserEmailAndCompany(String email, Company company);
+    List<RoleMap> findByUserEmailAndCompanyAndRole(String email, Company company, Role role);
     List<RoleMap> findByCompany(Company company);
 }

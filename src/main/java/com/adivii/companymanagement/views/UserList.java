@@ -191,6 +191,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                         UserDataDialog userDataDialog = new UserDataDialog(companyService, departmentService,
                                         userService, roleService, roleMapService, accountService, mailSender,
                                         UserDataDialog.METHOD_UPDATE);
+                        userDataDialog.setData(e.getItem());
 
                         userDataDialog.open();
 
@@ -252,13 +253,11 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 if (currentRole.getRole().getValue().equals("companyadmin")) {
                         if (currentRole.getCompany().getHoldingCompany() == null) {
-                                compList
-                                                .addAll(this.companyService.getByName(currentRole
-                                                                .getCompany().getCompanyName()));
-                                compList
-                                                .addAll(this.companyService
-                                                                .getChildCompany(currentRole
-                                                                                .getCompany()));
+                                compList.addAll(this.companyService.getByName(currentRole
+                                                .getCompany().getCompanyName()));
+                                compList.addAll(this.companyService
+                                                .getChildCompany(currentRole
+                                                .getCompany()));
                         } else {
                                 compList.addAll(this.companyService.getChildCompany(
                                                 currentRole.getCompany().getHoldingCompany()));
@@ -274,8 +273,13 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                         provider = new ListDataProvider<>(userList);
                 } else if (currentRole.getRole().getValue().equals("departmentadmin")) {
-                        provider = new ListDataProvider<>(
-                                        userService.getByDepartment(currentRole.getDepartment()));
+                        List<User> users = new ArrayList<>();
+                        for (User user : userService.getByDepartment(currentRole.getDepartment())) {
+                                if(!users.contains(user)){
+                                        users.add(user);
+                                }
+                        }
+                        provider = new ListDataProvider<>(users);
                 } else {
                         provider = new ListDataProvider<>(new ArrayList<>());
                 }
