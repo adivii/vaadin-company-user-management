@@ -191,6 +191,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                         UserDataDialog userDataDialog = new UserDataDialog(companyService, departmentService,
                                         userService, roleService, roleMapService, accountService, mailSender,
                                         UserDataDialog.METHOD_UPDATE);
+                        userDataDialog.setData(e.getItem());
 
                         userDataDialog.open();
 
@@ -252,13 +253,11 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 if (currentRole.getRole().getValue().equals("companyadmin")) {
                         if (currentRole.getCompany().getHoldingCompany() == null) {
-                                compList
-                                                .addAll(this.companyService.getByName(currentRole
-                                                                .getCompany().getCompanyName()));
-                                compList
-                                                .addAll(this.companyService
-                                                                .getChildCompany(currentRole
-                                                                                .getCompany()));
+                                compList.addAll(this.companyService.getByName(currentRole
+                                                .getCompany().getCompanyName()));
+                                compList.addAll(this.companyService
+                                                .getChildCompany(currentRole
+                                                .getCompany()));
                         } else {
                                 compList.addAll(this.companyService.getChildCompany(
                                                 currentRole.getCompany().getHoldingCompany()));

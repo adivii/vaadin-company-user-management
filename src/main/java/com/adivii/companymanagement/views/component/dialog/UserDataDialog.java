@@ -177,7 +177,7 @@ public class UserDataDialog extends Dialog {
         this.inputCompDept.setWidthFull();
 
         // Role
-        roleList = roleService.getAllRole();
+        roleList = getRoleList();
         this.inputRole = new CheckboxGroup<>();
         this.inputRole.setLabel("Role");
         this.inputRole.addThemeVariants(CheckboxGroupVariant.LUMO_VERTICAL);
@@ -195,6 +195,17 @@ public class UserDataDialog extends Dialog {
         this.inputDepartment.addValueChangeListener(e -> {
             setRole(this.inputEmail.getValue(), this.inputCompany.getValue(), this.inputDepartment.getValue());
         });
+
+        if (currentRole.getRole().getValue().equals("companyadmin")) {
+            this.inputCompany.setReadOnly(false);
+            this.inputDepartment.setReadOnly(false);
+        } else if (currentRole.getRole().getValue().equals("departmentadmin")) {
+            this.inputCompany.setReadOnly(true);
+            this.inputDepartment.setReadOnly(false);
+        } else {
+            this.inputCompany.setReadOnly(true);
+            this.inputDepartment.setReadOnly(true);
+        }
 
         this.scroller = new Scroller(
                 new Div(this.inputName, this.inputEmail, this.inputAddress, this.inputPhone, this.inputCompDept,
@@ -226,11 +237,28 @@ public class UserDataDialog extends Dialog {
         this.dialogLayout.setWidth("500px");
         this.dialogLayout.setHeight("500px");
 
-        if (method.equals(UserDataDialog.METHOD_UPDATE)) {
-            setData(currentUser);
+        this.add(this.dialogLayout);
+    }
+
+    private List<Role> getRoleList() {
+        List<Role> roleList = new ArrayList<>();
+
+        for (Role role : roleService.getAllRole()) {
+            if (role.getValue().equals("companyadmin")) {
+                if (currentRole.getRole().getValue().equals("companyadmin")) {
+                    roleList.add(role);
+                }
+            } else if (role.getValue().equals("departmentadmin")) {
+                if (currentRole.getRole().getValue().equals("departmentadmin")
+                        || currentRole.getRole().getValue().equals("companyadmin")) {
+                    roleList.add(role);
+                }
+            } else {
+                roleList.add(role);
+            }
         }
 
-        this.add(this.dialogLayout);
+        return roleList;
     }
 
     private void processInput(String method) {
@@ -244,11 +272,11 @@ public class UserDataDialog extends Dialog {
     }
 
     private void updateRoleMap(User newUser, String method) {
-        if (inputRole.getValue().size() < 1) {
+        if (inputRole.getValue().size() < 1) { // TODO: Fix logic here to check Role based on RoleMap table
             NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
                     "User Must Have At Least One Role");
         } else {
-            for (Role role : roleService.getAllRole()) {
+            for (Role role : roleList) {
                 RoleMap roleMap = new RoleMap();
 
                 if (role.getValue().equals("companyadmin")) {
@@ -260,13 +288,13 @@ public class UserDataDialog extends Dialog {
                                 .get(0);
 
                         if (new ArrayList<>(inputRole.getValue()).contains(role)) {
-                            saveRoleMap(roleMap.getId(), inputCompany.getValue(), null, role, newUser);
+                            saveRoleMap(roleMap.getId(), inputCompany.getValue(), inputDepartment.getValue(), role, newUser);
                         } else {
                             roleMapService.delete(roleMap);
                         }
                     } else {
                         if (new ArrayList<>(inputRole.getValue()).contains(role)) {
-                            saveRoleMap(null, inputCompany.getValue(), null, role, newUser);
+                            saveRoleMap(null, inputCompany.getValue(), inputDepartment.getValue(), role, newUser);
                         }
                     }
                 } else {
