@@ -2,12 +2,14 @@ package com.adivii.companymanagement.views;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.mail.javamail.JavaMailSender;
@@ -18,12 +20,14 @@ import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
+import com.adivii.companymanagement.data.service.MailSenderService;
 import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
 import com.adivii.companymanagement.data.service.SessionService;
 import com.adivii.companymanagement.data.service.UserService;
 import com.adivii.companymanagement.data.service.filter.UserFilterService;
+import com.adivii.companymanagement.data.service.security.CompanyNameEncoder;
 import com.adivii.companymanagement.views.component.CustomAvatar;
 import com.adivii.companymanagement.views.component.dialog.UserDataDialog;
 import com.vaadin.flow.component.Component;
@@ -37,6 +41,7 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -292,8 +297,9 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
         public VerticalLayout getLayout() {
                 VerticalLayout mainLayout = new VerticalLayout();
                 Button btnAdd = new Button("Add New User");
+                Button btnInvite = new Button("Invite User");
                 TextField searchBox = new TextField();
-                HorizontalLayout searchLayout = new HorizontalLayout(btnAdd, searchBox);
+                HorizontalLayout searchLayout = new HorizontalLayout(btnAdd, btnInvite, searchBox);
 
                 searchBox.setPlaceholder("Search");
                 searchBox.setValueChangeMode(ValueChangeMode.EAGER);
@@ -316,10 +322,49 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                         });
                 });
 
+                btnInvite.addClickListener(e -> {
+                        showInvitationDialog();
+                });
+
                 mainLayout.add(searchLayout, this.userTable);
                 mainLayout.setHeightFull();
 
                 return mainLayout;
+        }
+
+        private void showInvitationDialog() {
+                Dialog dialog = new Dialog();
+                VerticalLayout dialogLayout = new VerticalLayout();
+
+                TextField emailInput = new TextField("Email");
+                Button btnSend = new Button("Send");
+                Button btnCancel = new Button("Cancel");
+                HorizontalLayout buttonLayout = new HorizontalLayout(btnSend, btnCancel);
+
+                dialog.setCloseOnEsc(false);
+                dialog.setCloseOnOutsideClick(false);
+
+                btnSend.addClickListener(e -> {
+                        if(userService.getByEmail(emailInput.getValue()).size() == 0) {
+                                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Can't find user!");
+                        } else {
+                                try {
+                                        MailSenderService.sendEmail(mailSender, emailInput.getValue(), "Invitation", "http://localhost:8080/invite?email=".concat(emailInput.getValue()).concat("&comp=").concat(CompanyNameEncoder.encode(currentRole.getCompany())));
+                                        dialog.close();
+                                } catch (UnsupportedEncodingException e1) {
+                                        // TODO Auto-generated catch block
+                                        e1.printStackTrace();
+                                } catch (MessagingException e1) {
+                                        // TODO Auto-generated catch block
+                                        e1.printStackTrace();
+                                }
+                        }
+                });
+                btnCancel.addClickListener(e -> dialog.close());
+
+                dialogLayout.add(emailInput, buttonLayout);
+                dialog.add(dialogLayout);
+                dialog.open();
         }
 
         public Button getDeleteButton(User user) {

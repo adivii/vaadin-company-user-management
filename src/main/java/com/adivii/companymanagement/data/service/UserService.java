@@ -45,7 +45,18 @@ public class UserService {
         return this.userRepository.findByRoleIdCompanyCompanyId(company.getCompanyId());
     }
 
+    private User cleanData(User user) {
+        user.setAddress(user.getAddress().strip());
+        user.setEmail(user.getEmail().strip());
+        user.setFirstName(user.getFirstName().strip());
+        user.setLastName(user.getLastName().strip());
+        user.setPhoneNumber(user.getPhoneNumber().strip());
+
+        return user;
+    }
+
     public ErrorService saveUser(User user) {
+        user = cleanData(user);
         if (user != null && !user.checkEmpty()) {
             if(getByEmail(user.getEmail()).size() == 0){
                 user.setEnabled(true);
@@ -61,6 +72,7 @@ public class UserService {
     }
 
     public ErrorService editData(User user) {
+        user = cleanData(user);
         if(user != null && !user.checkEmpty()){
             Optional<User> currentData = this.userRepository.findById(user.getUserId());
             if(currentData.isPresent()) {

@@ -78,37 +78,40 @@ public class RegisterScreen extends VerticalLayout implements HasUrlParameter<St
     }
 
     private void checkStatus() {
+        String emailTemp;
         this.add(initiateForm());
 
         if (this.emailList != null) {
-            String emailTemp = this.emailList.get(0);
+            emailTemp = this.emailList.get(0);
+        } else {
+            emailTemp = "";
+        }
 
-            if (userService.getByEmail(emailTemp).size() > 0) {
-                if (roleMapService.getByEmail(emailTemp).size() == 0) {
-                    RoleMap newRoleMap = new RoleMap();
-                    newRoleMap.setUser(userService.getByEmail(emailTemp).get(0));
-                    roleMapService.add(newRoleMap);
+        if (userService.getByEmail(emailTemp).size() > 0) {
+            if (roleMapService.getByEmail(emailTemp).size() == 0) {
+                RoleMap newRoleMap = new RoleMap();
+                newRoleMap.setUser(userService.getByEmail(emailTemp).get(0));
+                roleMapService.add(newRoleMap);
 
-                    User tempUser = userService.getByEmail(emailTemp).get(0);
-                    tempUser.setActivated(false);
-                    userService.editData(tempUser);
-                }
-                if (accountService.getByEmail(emailTemp).size() == 0) {
-                    emailInput.setValue(emailList.get(0));
-                    emailInput.setReadOnly(true);
-                    btnSaveUser.addClickListener(e -> {
-                        // TODO: Implement rollback scenario, if user failed to save data
-                        addInvitedUser(userService.getByEmail(emailTemp).get(0));
-                    });
-                } else {
-                    UI.getCurrent().getPage().setLocation("/login");
-                }
-            } else {
+                User tempUser = userService.getByEmail(emailTemp).get(0);
+                tempUser.setActivated(false);
+                userService.editData(tempUser);
+            }
+            if (accountService.getByEmail(emailTemp).size() == 0) {
+                emailInput.setValue(emailList.get(0));
+                emailInput.setReadOnly(true);
                 btnSaveUser.addClickListener(e -> {
                     // TODO: Implement rollback scenario, if user failed to save data
-                    createNewUser();
+                    addInvitedUser(userService.getByEmail(emailTemp).get(0));
                 });
+            } else {
+                UI.getCurrent().getPage().setLocation("/login");
             }
+        } else {
+            btnSaveUser.addClickListener(e -> {
+                // TODO: Implement rollback scenario, if user failed to save data
+                createNewUser();
+            });
         }
     }
 

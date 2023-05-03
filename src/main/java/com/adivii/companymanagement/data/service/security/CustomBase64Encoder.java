@@ -10,6 +10,7 @@ package com.adivii.companymanagement.data.service.security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * CustomBase64Encoder
@@ -32,10 +33,10 @@ public class CustomBase64Encoder {
 
     public static String encode(CharSequence rawString) {
         String result = "";
-        List<String> binarySequence = splitSequence(getBinarySequence(rawString));
+        List<String> binarySequence = splitSequence(getBinarySequence(rawString, 8), 6);
 
         for (String sequence : binarySequence) {
-            result = result.concat(Character.toString(CHAR_CONVERSION_TABLE.get(Integer.parseInt(sequence, 2))));
+            result = result.concat(Character.toString(charAt(Integer.parseInt(sequence, 2))));
         }
 
         if(result.length() % 4 != 0) {
@@ -45,21 +46,53 @@ public class CustomBase64Encoder {
         return result;
     }
 
-    private static String getBinarySequence(CharSequence rawString) {
+    public static String decode(CharSequence encodedString) {
         String result = "";
 
-        for(int i = 0;i < rawString.length();i++) {
-            String temp = Integer.toBinaryString((int) rawString.charAt(i));
+        // Remove padding character (~)
+        String rawString = encodedString.toString();
+        Pattern pattern = Pattern.compile("=*");
+        rawString = pattern.matcher(rawString).replaceAll("");
 
-            result = result.concat("0".repeat(8-temp.length()).concat(temp));
+        List<String> binarySequence = splitSequence(getBinarySequenceDecode(rawString, 6), 8);
+
+        for (String sequence : binarySequence) {
+            if(Integer.parseInt(sequence, 2) == 0){
+                continue;
+            }
+            
+            result = result.concat(Character.toString((char) (Integer.parseInt(sequence, 2))));
         }
 
         return result;
     }
 
-    private static List<String> splitSequence(CharSequence binarySequence) {
+    private static String getBinarySequence(CharSequence rawString, int sequenceLength) {
+        String result = "";
+
+        for(int i = 0;i < rawString.length();i++) {
+            String temp = Integer.toBinaryString((int) rawString.charAt(i));
+
+            result = result.concat("0".repeat(sequenceLength-temp.length()).concat(temp));
+        }
+
+        return result;
+    }
+
+    private static String getBinarySequenceDecode(CharSequence rawString, int sequenceLength) {
+        String result = "";
+
+        for(int i = 0;i < rawString.length();i++) {
+            String temp = Integer.toBinaryString(indexOf(rawString.charAt(i)));
+
+            result = result.concat("0".repeat(sequenceLength-temp.length()).concat(temp));
+        }
+
+        return result;
+    }
+
+    private static List<String> splitSequence(CharSequence binarySequence, int sequenceLength) {
         List<String> chunks = new ArrayList<>();
-        final int sequenceLength = 6;
 
         String temp;
 
