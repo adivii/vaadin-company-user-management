@@ -42,6 +42,8 @@ public class CompanyService {
     }
 
     public ErrorService addCompany(Company company) {
+        company.setCompanyName(company.getCompanyName().strip());
+
         if(company != null && !company.checkEmpty()) {
             if(this.companyRepository.findByCompanyName(company.getCompanyName()).size() == 0) {
                 this.companyRepository.save(company);

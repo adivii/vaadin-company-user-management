@@ -95,6 +95,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // .antMatchers("/department").hasAnyAuthority("superadmin", "companyadmin")
                 // .antMatchers("/user").hasAnyAuthority("superadmin", "companyadmin", "departmentadmin", "useradmin")
                 .antMatchers("/register").permitAll()
+                .antMatchers("/invite").permitAll()
                 .antMatchers("/register/{[A-Za-z0-9.]+@[A-Za-z0-9.]+}").permitAll()
                 .anyRequest().authenticated()
                 // Configure login page
