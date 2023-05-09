@@ -1,8 +1,13 @@
 package com.adivii.companymanagement.views;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 
+import javax.mail.MessagingException;
+
+import org.springframework.mail.MailSender;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.adivii.companymanagement.data.entity.Account;
@@ -12,6 +17,7 @@ import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
+import com.adivii.companymanagement.data.service.MailSenderService;
 import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.PasswordValidatorService;
 import com.adivii.companymanagement.data.service.RoleMapService;
@@ -52,6 +58,8 @@ public class RegisterScreen extends VerticalLayout implements HasUrlParameter<St
     private RoleService roleService;
     private RoleMapService roleMapService;
 
+    private JavaMailSender mailSender;
+
     // Account (Email and Password)
     private EmailField emailInput;
     private PasswordField passInput;
@@ -66,13 +74,14 @@ public class RegisterScreen extends VerticalLayout implements HasUrlParameter<St
 
     public RegisterScreen(UserService userService, AccountService accountService,
             CompanyService companyService, DepartmentService departmentService, RoleService roleService,
-            RoleMapService roleMapService) {
+            RoleMapService roleMapService, JavaMailSender mailSender) {
         this.userService = userService;
         this.accountService = accountService;
         this.companyService = companyService;
         this.departmentService = departmentService;
         this.roleMapService = roleMapService;
         this.roleService = roleService;
+        this.mailSender = mailSender;
 
         setAlignItems(Alignment.CENTER);
     }
@@ -150,7 +159,8 @@ public class RegisterScreen extends VerticalLayout implements HasUrlParameter<St
         Account newAccount = new Account();
 
         if (PasswordValidatorService.matches(passInput.getValue(), rePassInput.getValue())
-                && PasswordValidatorService.validatePassword(passInput.getValue())) {
+                && PasswordValidatorService.validatePassword(passInput.getValue())
+                && userService.getByEmail(emailInput.getValue()).size() == 0) {
             newAccount.setEmailAddress(emailInput.getValue());
             newAccount.setPassword(encoder.encode(passInput.getValue()));
 
@@ -180,6 +190,16 @@ public class RegisterScreen extends VerticalLayout implements HasUrlParameter<St
                     NotificationService.showNotification(NotificationVariant.LUMO_SUCCESS, "Success");
                     UI.getCurrent().getPage().setLocation("/login");
                 }
+            }
+        } else if (userService.getByEmail(emailInput.getValue()).size() > 0) {
+            NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
+                    "Your email already invited to one of company registered in our system. If you feel that you haven't invited yet, please check your email for new invitation link we already sent",
+                    8);
+            try {
+                MailSenderService.sendEmail(mailSender, emailInput.getValue(), "Invitation", "http://localhost:8080/register?email=".concat(emailInput.getValue()));
+            } catch (UnsupportedEncodingException | MessagingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
         } else {
             NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Password Doesn't Match!");
