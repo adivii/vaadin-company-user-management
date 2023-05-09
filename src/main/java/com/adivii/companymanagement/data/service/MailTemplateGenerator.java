@@ -11,6 +11,6 @@ public class MailTemplateGenerator {
     }
 
     public static String getLinkTemplate(String email) {
-        return "http://localhost:8080/register?email=".concat(email);
+        return "http://localhost:8080/invite?inviteID=".concat(email);
     }
 }

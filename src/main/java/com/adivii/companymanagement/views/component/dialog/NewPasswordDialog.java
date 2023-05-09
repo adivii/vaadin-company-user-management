@@ -101,12 +101,10 @@ public class NewPasswordDialog extends Dialog {
         btnSave.addClickListener(e -> {
             Account newAccount = account;
 
-            if ((new CustomPasswordEncoder()).matches(inputOld.getValue(), account.getPassword())
-                    && PasswordValidatorService.validatePassword(inputPass.getValue())
-                    && PasswordValidatorService.matches(inputPass.getValue(), inputRePass.getValue())) {
+            if (newAccount.getId() == null) {
                 newAccount.setPassword((new CustomPasswordEncoder()).encode(inputPass.getValue()));
 
-                ErrorService errorService = accountService.update(newAccount);
+                ErrorService errorService = accountService.save(newAccount);
                 if (!errorService.isErrorStatus()) {
                     close();
                 } else {
@@ -114,12 +112,26 @@ public class NewPasswordDialog extends Dialog {
                             errorService.getErrorMessage());
                 }
             } else {
-                if (!(new CustomPasswordEncoder()).matches(inputOld.getValue(), account.getPassword())) {
-                    NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Invalid Old Password!");
-                } else if (!PasswordValidatorService.validatePassword(inputPass.getValue())) {
-                    NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Invalid New Password");
-                } else if (!PasswordValidatorService.matches(inputPass.getValue(), inputRePass.getValue())) {
-                    NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Password Doesn't Match");
+                if ((new CustomPasswordEncoder()).matches(inputOld.getValue(), account.getPassword())
+                        && PasswordValidatorService.validatePassword(inputPass.getValue())
+                        && PasswordValidatorService.matches(inputPass.getValue(), inputRePass.getValue())) {
+                    newAccount.setPassword((new CustomPasswordEncoder()).encode(inputPass.getValue()));
+
+                    ErrorService errorService = accountService.update(newAccount);
+                    if (!errorService.isErrorStatus()) {
+                        close();
+                    } else {
+                        NotificationService.showNotification(NotificationVariant.LUMO_ERROR,
+                                errorService.getErrorMessage());
+                    }
+                } else {
+                    if (!(new CustomPasswordEncoder()).matches(inputOld.getValue(), account.getPassword())) {
+                        NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Invalid Old Password!");
+                    } else if (!PasswordValidatorService.validatePassword(inputPass.getValue())) {
+                        NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Invalid New Password");
+                    } else if (!PasswordValidatorService.matches(inputPass.getValue(), inputRePass.getValue())) {
+                        NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Password Doesn't Match");
+                    }
                 }
             }
 
@@ -130,7 +142,10 @@ public class NewPasswordDialog extends Dialog {
         });
 
         dialogLayout.setWidth("300px");
-        dialogLayout.add(inputOld, inputPass, inputRePass, errorMessage, btnLayout);
+        if(account.getId() != null) {
+            dialogLayout.add(inputOld);
+        }
+        dialogLayout.add(inputPass, inputRePass, errorMessage, btnLayout);
 
         add(dialogLayout);
         setCloseOnEsc(false);

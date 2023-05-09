@@ -26,4 +26,17 @@ public class NotificationService {
         notification.add(notificationLayout);
         notification.open();
     }
+
+    public static void showNotification(NotificationVariant variant, String message, int duration) {
+        Notification notification = new Notification();
+        notification.addThemeVariants(variant);
+        Text notificationText = new Text(message);
+        Button closeButton = new Button(new Icon(VaadinIcon.CLOSE), i -> notification.close());
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE);
+        HorizontalLayout notificationLayout = new HorizontalLayout(notificationText, closeButton);
+
+        notification.setDuration(1000 * duration);
+        notification.add(notificationLayout);
+        notification.open();
+    }
 }
