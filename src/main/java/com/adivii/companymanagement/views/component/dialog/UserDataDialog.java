@@ -403,7 +403,7 @@ public class UserDataDialog extends Dialog {
     private void sendEmail(Invitation invite) {
         String messageTemplate = MailTemplateGenerator.getMailTemplate("Invitation",
                 "You have been registered at company ".concat(invite.getCompany().getCompanyName()),
-                MailTemplateGenerator.getLinkTemplate(invite.getEmail()));
+                MailTemplateGenerator.getLinkTemplate(invite.getInviteId()));
         try {
             MailSenderService.sendEmail(mailSender, invite.getEmail(), "Invitation", messageTemplate);
         } catch (UnsupportedEncodingException e1) {

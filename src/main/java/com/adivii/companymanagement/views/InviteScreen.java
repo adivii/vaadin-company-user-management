@@ -95,7 +95,7 @@ public class InviteScreen extends VerticalLayout implements HasUrlParameter<Stri
 
                         ErrorService userError = userService.saveUser(newUser);
                         if (userError.isErrorStatus()) {
-
+                            NotificationService.showNotification(NotificationVariant.LUMO_ERROR, userError.getErrorMessage());
                         } else {
                             RoleMap newRoleMap = new RoleMap();
                             newRoleMap.setUser(newUser);
@@ -104,6 +104,8 @@ public class InviteScreen extends VerticalLayout implements HasUrlParameter<Stri
                             newRoleMap.setDepartment(invitation.getDepartment());
 
                             roleMapService.add(newRoleMap);
+                            invitationService.deleteInvitation(invitation);
+                            UI.getCurrent().getPage().setLocation("/login");
                         }
 
                         confirmationDialog.close();

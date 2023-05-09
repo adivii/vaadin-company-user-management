@@ -20,10 +20,10 @@ public class User {
     private Integer userId;
     @NotNull
     private String email;
-    private String firstName = " ";
-    private String lastName = " ";
-    private String address = " ";
-    private String phoneNumber = " ";
+    private String firstName = "null";
+    private String lastName = "null";
+    private String address = "null";
+    private String phoneNumber = "0";
     private boolean enabled;
     private boolean activated;
 

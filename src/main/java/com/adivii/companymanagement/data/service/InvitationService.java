@@ -53,4 +53,8 @@ public class InvitationService {
         this.invitationRepository.save(invitation);
         return new ErrorService(false, null);
     }
+
+    public void deleteInvitation(Invitation invitation) {
+        this.invitationRepository.delete(invitation);
+    }
 }

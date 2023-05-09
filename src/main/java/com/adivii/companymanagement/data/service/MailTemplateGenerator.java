@@ -10,7 +10,7 @@ public class MailTemplateGenerator {
                 .concat(newLine).concat("<a href=\"").concat(link).concat("\">Click Here to Activate Your Account</a>");
     }
 
-    public static String getLinkTemplate(String email) {
-        return "http://localhost:8080/invite?inviteID=".concat(email);
+    public static String getLinkTemplate(String inviteId) {
+        return "http://localhost:8080/invite?inviteID=".concat(inviteId);
     }
 }
