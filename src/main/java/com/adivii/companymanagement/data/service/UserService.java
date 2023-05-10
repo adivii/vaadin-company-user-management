@@ -11,6 +11,7 @@ import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.Department;
 import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
+import com.adivii.companymanagement.data.repository.AccountRepository;
 import com.adivii.companymanagement.data.repository.RoleMapRepository;
 import com.adivii.companymanagement.data.repository.UserRepository;
 
@@ -19,8 +20,9 @@ import com.adivii.companymanagement.data.repository.UserRepository;
 public class UserService {
     private UserRepository userRepository;
     private RoleMapRepository roleMapRepository;
+    private AccountRepository accountRepository;
 
-    public UserService(UserRepository userRepository, RoleMapRepository roleMapRepository) {
+    public UserService(UserRepository userRepository, RoleMapRepository roleMapRepository, AccountRepository accountRepository) {
         this.userRepository = userRepository;
         this.roleMapRepository = roleMapRepository;
     }
@@ -95,7 +97,7 @@ public class UserService {
             this.roleMapRepository.delete(roleMap);
         }
 
-        if(roleMapRepository.findByUserEmail(user.getEmail()).size() == 0) {
+        if(accountRepository.findByEmailAddress(user.getEmail()).size() == 0) {
             this.userRepository.delete(user);
         }
     }

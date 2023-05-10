@@ -13,6 +13,7 @@ import org.vaadin.textfieldformatter.phone.PhoneI18nFieldFormatter;
 
 import com.adivii.companymanagement.data.entity.Company;
 import com.adivii.companymanagement.data.entity.Department;
+import com.adivii.companymanagement.data.entity.Invitation;
 import com.adivii.companymanagement.data.entity.Role;
 import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
@@ -20,6 +21,7 @@ import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
 import com.adivii.companymanagement.data.service.ErrorService;
+import com.adivii.companymanagement.data.service.InvitationService;
 import com.adivii.companymanagement.data.service.MailSenderService;
 import com.adivii.companymanagement.data.service.MailTemplateGenerator;
 import com.adivii.companymanagement.data.service.NotificationService;
@@ -56,6 +58,7 @@ public class UserDataDialog extends Dialog {
     private RoleService roleService;
     private RoleMapService roleMapService;
     private AccountService accountService;
+    private InvitationService invitationService;
     private HttpSession session;
 
     JavaMailSender mailSender;
@@ -95,12 +98,14 @@ public class UserDataDialog extends Dialog {
 
     public UserDataDialog(CompanyService companyService, DepartmentService departmentService,
             UserService userService, RoleService roleService, RoleMapService roleMapService,
-            AccountService accountService, JavaMailSender mailSender, String method) {
+            AccountService accountService, InvitationService invitationService, JavaMailSender mailSender,
+            String method) {
         this.companyService = companyService;
         this.departmentService = departmentService;
         this.userService = userService;
         this.roleService = roleService;
         this.roleMapService = roleMapService;
+        this.invitationService = invitationService;
         this.mailSender = mailSender;
 
         this.session = SessionService.getCurrentSession();
@@ -207,9 +212,15 @@ public class UserDataDialog extends Dialog {
             this.inputDepartment.setReadOnly(true);
         }
 
-        this.scroller = new Scroller(
-                new Div(this.inputName, this.inputEmail, this.inputAddress, this.inputPhone, this.inputCompDept,
-                        this.inputRole));
+        if (method.equals(METHOD_NEW)) {
+            this.scroller = new Scroller(
+                    new Div(this.inputEmail, this.inputCompDept,
+                            this.inputRole));
+        } else {
+            this.scroller = new Scroller(
+                    new Div(this.inputName, this.inputEmail, this.inputAddress, this.inputPhone, this.inputCompDept,
+                            this.inputRole));
+        }
         this.scroller.setHeightFull();
         this.scroller.setWidthFull();
         this.scroller.getStyle()
@@ -262,13 +273,58 @@ public class UserDataDialog extends Dialog {
     }
 
     private void processInput(String method) {
-        User newUser = saveUser(method);
 
-        // TODO: Handle Error to rollback changes if failed to save data
-        // TODO: Save only master entity, child entity should be updated (or use thread)
-        if (newUser != null) {
-            updateRoleMap(newUser, method);
+        if (method.equals(METHOD_UPDATE)) {
+            User newUser = saveUser(method);
+
+            // TODO: Handle Error to rollback changes if failed to save data
+            // TODO: Save only master entity, child entity should be updated (or use thread)
+            if (newUser != null) {
+                updateRoleMap(newUser, method);
+            }
+        } else {
+            createRequest();
         }
+    }
+
+    private void createRequest() {
+
+        List<String> errorList = new ArrayList<>();
+
+        for (Role role : inputRole.getValue()) {
+            Invitation newInvite = new Invitation();
+            newInvite.setEmail(inputEmail.getValue());
+            newInvite.setRole(role);
+            newInvite.setType(InvitationService.TYPE_NEW);
+            newInvite.setCompany(inputCompany.getValue());
+            newInvite.setDepartment(inputDepartment.getValue());
+
+            ErrorService errorService = invitationService.saveInvitation(newInvite);
+            if (errorService.isErrorStatus()) {
+                errorList.add(role.getName());
+            } else {
+                sendEmail(newInvite);
+            }
+        }
+
+        if (errorList.size() == 0) {
+            NotificationService.showNotification(NotificationVariant.LUMO_SUCCESS, "Success");
+        } else {
+            String message = "Error when adding role : ";
+
+            for (String roleName : errorList) {
+                message = message.concat(roleName).concat(", ");
+            }
+
+            NotificationService.showNotification(NotificationVariant.LUMO_ERROR, message);
+        }
+
+        if (errorList.size() != inputRole.getValue().size()) {
+            Invitation newInvite = invitationService.getByEmailAndCompanyAndDepartment(inputEmail.getValue(), inputCompany.getValue(), inputDepartment.getValue()).get(0);
+            sendEmail(newInvite);
+        }
+
+        this.close();
     }
 
     private void updateRoleMap(User newUser, String method) {
@@ -288,7 +344,8 @@ public class UserDataDialog extends Dialog {
                                 .get(0);
 
                         if (new ArrayList<>(inputRole.getValue()).contains(role)) {
-                            saveRoleMap(roleMap.getId(), inputCompany.getValue(), inputDepartment.getValue(), role, newUser);
+                            saveRoleMap(roleMap.getId(), inputCompany.getValue(), inputDepartment.getValue(), role,
+                                    newUser);
                         } else {
                             roleMapService.delete(roleMap);
                         }
@@ -325,8 +382,6 @@ public class UserDataDialog extends Dialog {
                 }
             }
 
-            sendEmail(newUser, method);
-
             this.close();
         }
     }
@@ -345,20 +400,18 @@ public class UserDataDialog extends Dialog {
         roleMapService.add(roleMap);
     }
 
-    private void sendEmail(User newUser, String method) {
-        if (method == UserDataDialog.METHOD_NEW) {
-            String messageTemplate = MailTemplateGenerator.getMailTemplate("Invitation",
-                    "You have been registered at company ".concat(inputCompany.getValue().getCompanyName()),
-                    MailTemplateGenerator.getLinkTemplate(newUser.getEmail()));
-            try {
-                MailSenderService.sendEmail(mailSender, newUser.getEmail(), "Invitation", messageTemplate);
-            } catch (UnsupportedEncodingException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            } catch (MessagingException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
+    private void sendEmail(Invitation invite) {
+        String messageTemplate = MailTemplateGenerator.getMailTemplate("Invitation",
+                "You have been registered at company ".concat(invite.getCompany().getCompanyName()),
+                MailTemplateGenerator.getLinkTemplate(invite.getInviteId()));
+        try {
+            MailSenderService.sendEmail(mailSender, invite.getEmail(), "Invitation", messageTemplate);
+        } catch (UnsupportedEncodingException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        } catch (MessagingException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
         }
     }
 

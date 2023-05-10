@@ -42,6 +42,9 @@ public class UserActivationForm extends VerticalLayout {
     private RoleService roleService;
     private RoleMapService roleMapService;
 
+    // Session
+    private HttpSession session;
+
     // User
     private User user;
 
@@ -58,7 +61,7 @@ public class UserActivationForm extends VerticalLayout {
         this.roleService = roleService;
         this.roleMapService = roleMapService;
 
-        HttpSession session = SessionService.getCurrentSession();
+        this.session = SessionService.getCurrentSession();
         this.user = this.userService.getUser((Integer) session.getAttribute("userID")).get();
 
         this.roleMap = this.roleMapService.getByEmail(this.user.getEmail()).get(0);
@@ -72,6 +75,8 @@ public class UserActivationForm extends VerticalLayout {
             user.setActivated(true);
             userService.editData(user);
 
+            session.setAttribute("currentRole", roleMapService.getByEmail(user.getEmail()).get(0));
+            
             UI.getCurrent().getPage().setLocation("/");
         }
     }

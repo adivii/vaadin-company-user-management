@@ -20,6 +20,7 @@ import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
+import com.adivii.companymanagement.data.service.InvitationService;
 import com.adivii.companymanagement.data.service.MailSenderService;
 import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.RoleMapService;
@@ -71,6 +72,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
         RoleService roleService;
         RoleMapService roleMapService;
         AccountService accountService;
+        InvitationService invitationService;
         HttpSession session;
 
         JavaMailSender mailSender;
@@ -79,7 +81,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
         public UserList(UserService userService, CompanyService companyService, DepartmentService departmentService,
                         RoleService roleServices, RoleMapService roleMapService, AccountService accountService,
-                        JavaMailSender mailSender) {
+                        InvitationService invitationService, JavaMailSender mailSender) {
                 this.userService = userService;
                 this.companyService = companyService;
                 this.departmentService = departmentService;
@@ -87,6 +89,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 this.userFilterService = new UserFilterService();
                 this.roleService = roleServices;
                 this.accountService = accountService;
+                this.invitationService = invitationService;
 
                 this.mailSender = mailSender;
 
@@ -194,7 +197,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 this.userTable.addItemDoubleClickListener(e -> {
                         UserDataDialog userDataDialog = new UserDataDialog(companyService, departmentService,
-                                        userService, roleService, roleMapService, accountService, mailSender,
+                                        userService, roleService, roleMapService, accountService, invitationService, mailSender,
                                         UserDataDialog.METHOD_UPDATE);
                         userDataDialog.setData(e.getItem());
 
@@ -314,7 +317,7 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                 btnAdd.addClickListener(e -> {
                         UserDataDialog userDialog = new UserDataDialog(this.companyService, this.departmentService,
                                         this.userService, roleService, roleMapService, accountService,
-                                        mailSender, UserDataDialog.METHOD_NEW);
+                                        invitationService, mailSender, UserDataDialog.METHOD_NEW);
                         userDialog.open();
 
                         userDialog.addOpenedChangeListener(actionListener -> {
@@ -378,6 +381,11 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
 
                 Text confirmationText = new Text("Are you sure?");
                 Button confirmationButton = new Button("Yes", e -> {
+                        if (user.equals(currentUser)) {
+                                NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "You can't delete yourself");
+                                return;
+                        }
+
                         userService.deleteUser(user, currentRole.getCompany());
                         confirmationDialog.close();
                         updateTable();

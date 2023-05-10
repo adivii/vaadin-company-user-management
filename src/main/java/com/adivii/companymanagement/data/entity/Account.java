@@ -19,6 +19,10 @@ public class Account {
     @OneToOne(mappedBy = "account")
     private User user;
 
+    public Integer getId() {
+        return this.id;
+    }
+
     public String getEmailAddress() {
         return emailAddress;
     }
