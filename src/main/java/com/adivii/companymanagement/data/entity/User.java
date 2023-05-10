@@ -132,7 +132,7 @@ public class User {
     }
 
     public boolean checkIncompleted() {
-        return (firstName.isBlank() || lastName.isBlank() || address.isBlank() || phoneNumber.isBlank());
+        return (firstName.strip().equals("null") || lastName.strip().equals("null") || address.strip().equals("null") || phoneNumber.strip().equals("0"));
     }
 
     @Override

@@ -38,6 +38,7 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -102,6 +103,7 @@ public class UserDataDialog extends Dialog {
             String method) {
         this.companyService = companyService;
         this.departmentService = departmentService;
+        this.accountService = accountService;
         this.userService = userService;
         this.roleService = roleService;
         this.roleMapService = roleMapService;
@@ -290,6 +292,11 @@ public class UserDataDialog extends Dialog {
     private void createRequest() {
 
         List<String> errorList = new ArrayList<>();
+
+        if (accountService.getByEmail(inputEmail.getValue()).size() > 0) {
+            NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Email already registered");
+            return;
+        }
 
         for (Role role : inputRole.getValue()) {
             Invitation newInvite = new Invitation();

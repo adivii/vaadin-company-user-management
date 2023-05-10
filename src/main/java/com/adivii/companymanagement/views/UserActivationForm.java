@@ -214,13 +214,13 @@ public class UserActivationForm extends VerticalLayout {
 
         // Name
         firstNameInput = new TextField("First Name");
-        firstNameInput.setValue(newUser.getFirstName() == null ? "" : newUser.getFirstName());
+        firstNameInput.setValue(newUser.getFirstName().strip().equals("null") ? "" : newUser.getFirstName());
         lastNameInput = new TextField("Last Name");
-        lastNameInput.setValue(newUser.getLastName() == null ? "" : newUser.getLastName());
+        lastNameInput.setValue(newUser.getLastName().strip().equals("null") ? "" : newUser.getLastName());
         nameLayout = new HorizontalLayout(firstNameInput, lastNameInput);
         // Phone Number
         phoneInput = new TextField("Phone Number");
-        phoneInput.setValue(newUser.getPhoneNumber() == null ? "" : newUser.getPhoneNumber());
+        phoneInput.setValue(newUser.getPhoneNumber().strip().equals("0") ? "" : newUser.getPhoneNumber());
         (new PhoneI18nFieldFormatter(PhoneI18nFieldFormatter.REGION_ID)).extend(phoneInput);
         // Address
         addressInput = new TextArea("Address");
@@ -230,7 +230,7 @@ public class UserActivationForm extends VerticalLayout {
         addressInput.addValueChangeListener(e -> {
             e.getSource().setHelperText(e.getValue().length() + "/255");
         });
-        addressInput.setValue(newUser.getAddress() == null ? "" : newUser.getAddress());
+        addressInput.setValue(newUser.getAddress().strip().equals("null") ? "" : newUser.getAddress());
         // Button
         btnSaveUser = new Button("Save");
         btnSaveUser.addThemeVariants(ButtonVariant.LUMO_PRIMARY);

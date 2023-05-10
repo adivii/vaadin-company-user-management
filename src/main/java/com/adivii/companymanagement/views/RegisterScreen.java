@@ -48,7 +48,7 @@ import com.vaadin.flow.router.Route;
 
 @Route("/register")
 @PageTitle("Register User")
-public class RegisterScreen extends VerticalLayout implements HasUrlParameter<String> {
+public class RegisterScreen extends VerticalLayout {
 
     // Services
     private UserService userService;
@@ -70,8 +70,6 @@ public class RegisterScreen extends VerticalLayout implements HasUrlParameter<St
     // Button
     private Button btnSaveUser;
 
-    private List<String> emailList;
-
     public RegisterScreen(UserService userService, AccountService accountService,
             CompanyService companyService, DepartmentService departmentService, RoleService roleService,
             RoleMapService roleMapService, JavaMailSender mailSender) {
@@ -84,45 +82,46 @@ public class RegisterScreen extends VerticalLayout implements HasUrlParameter<St
         this.mailSender = mailSender;
 
         setAlignItems(Alignment.CENTER);
-    }
-
-    private void checkStatus() {
-        String emailTemp;
         this.add(initiateForm());
-
-        if (this.emailList != null) {
-            emailTemp = this.emailList.get(0);
-        } else {
-            emailTemp = "";
-        }
-
-        if (userService.getByEmail(emailTemp).size() > 0) {
-            if (roleMapService.getByEmail(emailTemp).size() == 0) {
-                RoleMap newRoleMap = new RoleMap();
-                newRoleMap.setUser(userService.getByEmail(emailTemp).get(0));
-                roleMapService.add(newRoleMap);
-
-                User tempUser = userService.getByEmail(emailTemp).get(0);
-                tempUser.setActivated(false);
-                userService.editData(tempUser);
-            }
-            if (accountService.getByEmail(emailTemp).size() == 0) {
-                emailInput.setValue(emailList.get(0));
-                emailInput.setReadOnly(true);
-                btnSaveUser.addClickListener(e -> {
-                    // TODO: Implement rollback scenario, if user failed to save data
-                    addInvitedUser(userService.getByEmail(emailTemp).get(0));
-                });
-            } else {
-                UI.getCurrent().getPage().setLocation("/login");
-            }
-        } else {
-            btnSaveUser.addClickListener(e -> {
-                // TODO: Implement rollback scenario, if user failed to save data
-                createNewUser();
-            });
-        }
     }
+
+    // private void checkStatus() {
+    // String emailTemp;
+    // this.add(initiateForm());
+
+    // if (this.emailList != null) {
+    // emailTemp = this.emailList.get(0);
+    // } else {
+    // emailTemp = "";
+    // }
+
+    // if (userService.getByEmail(emailTemp).size() > 0) {
+    // if (roleMapService.getByEmail(emailTemp).size() == 0) {
+    // RoleMap newRoleMap = new RoleMap();
+    // newRoleMap.setUser(userService.getByEmail(emailTemp).get(0));
+    // roleMapService.add(newRoleMap);
+
+    // User tempUser = userService.getByEmail(emailTemp).get(0);
+    // tempUser.setActivated(false);
+    // userService.editData(tempUser);
+    // }
+    // if (accountService.getByEmail(emailTemp).size() == 0) {
+    // emailInput.setValue(emailList.get(0));
+    // emailInput.setReadOnly(true);
+    // btnSaveUser.addClickListener(e -> {
+    // // TODO: Implement rollback scenario, if user failed to save data
+    // addInvitedUser(userService.getByEmail(emailTemp).get(0));
+    // });
+    // } else {
+    // UI.getCurrent().getPage().setLocation("/login");
+    // }
+    // } else {
+    // btnSaveUser.addClickListener(e -> {
+    // // TODO: Implement rollback scenario, if user failed to save data
+    // createNewUser();
+    // });
+    // }
+    // }
 
     private VerticalLayout initiateForm() {
         // Account (Email and Password)
@@ -148,6 +147,10 @@ public class RegisterScreen extends VerticalLayout implements HasUrlParameter<St
         btnSaveUser = new Button("Save");
         btnSaveUser.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         btnSaveUser.setEnabled(false);
+        btnSaveUser.addClickListener(e -> {
+            // TODO: Implement rollback scenario, if user failed to save data
+            createNewUser();
+        });
 
         errorMessage = new VerticalLayout();
 
@@ -196,7 +199,8 @@ public class RegisterScreen extends VerticalLayout implements HasUrlParameter<St
                     "Your email already invited to one of company registered in our system. If you feel that you haven't invited yet, please check your email for new invitation link we already sent",
                     8);
             try {
-                MailSenderService.sendEmail(mailSender, emailInput.getValue(), "Invitation", "http://localhost:8080/register?email=".concat(emailInput.getValue()));
+                MailSenderService.sendEmail(mailSender, emailInput.getValue(), "Invitation",
+                        "http://localhost:8080/register?email=".concat(emailInput.getValue()));
             } catch (UnsupportedEncodingException | MessagingException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -259,20 +263,5 @@ public class RegisterScreen extends VerticalLayout implements HasUrlParameter<St
                 errorMessage.add(new Span("Must Contain Symbol"));
             }
         }
-    }
-
-    @Override
-    public void setParameter(BeforeEvent event,
-            @OptionalParameter String parameter) {
-
-        Location location = event.getLocation();
-        QueryParameters queryParameters = location
-                .getQueryParameters();
-
-        Map<String, List<String>> parametersMap = queryParameters.getParameters();
-        emailList = parametersMap.get("email");
-
-        checkStatus();
-        // add(initiateForm());
     }
 }
