@@ -15,13 +15,16 @@ import javax.servlet.http.HttpSession;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import com.adivii.companymanagement.data.entity.Company;
+import com.adivii.companymanagement.data.entity.Invitation;
 import com.adivii.companymanagement.data.entity.RoleMap;
 import com.adivii.companymanagement.data.entity.User;
 import com.adivii.companymanagement.data.service.AccountService;
 import com.adivii.companymanagement.data.service.CompanyService;
 import com.adivii.companymanagement.data.service.DepartmentService;
+import com.adivii.companymanagement.data.service.ErrorService;
 import com.adivii.companymanagement.data.service.InvitationService;
 import com.adivii.companymanagement.data.service.MailSenderService;
+import com.adivii.companymanagement.data.service.MailTemplateGenerator;
 import com.adivii.companymanagement.data.service.NotificationService;
 import com.adivii.companymanagement.data.service.RoleMapService;
 import com.adivii.companymanagement.data.service.RoleService;
@@ -351,15 +354,30 @@ public class UserList extends HorizontalLayout implements BeforeEnterObserver {
                         if(userService.getByEmail(emailInput.getValue()).size() == 0) {
                                 NotificationService.showNotification(NotificationVariant.LUMO_ERROR, "Can't find user!");
                         } else {
-                                try {
-                                        MailSenderService.sendEmail(mailSender, emailInput.getValue(), "Invitation", "http://localhost:8080/invite?email=".concat(emailInput.getValue()).concat("&comp=").concat(CompanyNameEncoder.encode(currentRole.getCompany())));
-                                        dialog.close();
-                                } catch (UnsupportedEncodingException e1) {
-                                        // TODO Auto-generated catch block
-                                        e1.printStackTrace();
-                                } catch (MessagingException e1) {
-                                        // TODO Auto-generated catch block
-                                        e1.printStackTrace();
+                                Invitation invite = new Invitation();
+                                invite.setEmail(emailInput.getValue());
+                                invite.setRole(roleService.getByValue("user").get(0));
+                                invite.setType(InvitationService.TYPE_EXISTING);
+                                invite.setCompany(currentRole.getCompany());
+                                invite.setDepartment(currentRole.getDepartment());
+
+                                ErrorService inviteError = invitationService.saveInvitation(invite);
+                                if(inviteError.isErrorStatus()) {
+                                        NotificationService.showNotification(NotificationVariant.LUMO_ERROR, inviteError.getErrorMessage());
+                                }else{
+                                        String content = MailTemplateGenerator.getMailTemplate("Invitation",
+                                        "You have been registered at company ".concat(invite.getCompany().getCompanyName()),
+                                        MailTemplateGenerator.getLinkTemplate(invite.getInviteId()));
+                                        try {
+                                                MailSenderService.sendEmail(mailSender, emailInput.getValue(), "Invitation", content);
+                                                dialog.close();
+                                        } catch (UnsupportedEncodingException e1) {
+                                                // TODO Auto-generated catch block
+                                                e1.printStackTrace();
+                                        } catch (MessagingException e1) {
+                                                // TODO Auto-generated catch block
+                                                e1.printStackTrace();
+                                        }
                                 }
                         }
                 });

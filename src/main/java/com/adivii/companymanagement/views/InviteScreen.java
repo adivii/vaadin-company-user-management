@@ -78,7 +78,6 @@ public class InviteScreen extends VerticalLayout implements HasUrlParameter<Stri
                 "You will be added to Company " + invitation.getCompany().getCompanyName() + " as "
                         + invitation.getRole().getName() + ".\nAre you sure?");
         Button confirmationButton = new Button("Yes", e -> {
-
             if (invitation.getType().equals(InvitationService.TYPE_NEW)) {
                 Account account = new Account();
                 account.setEmailAddress(invitation.getEmail());
@@ -88,8 +87,8 @@ public class InviteScreen extends VerticalLayout implements HasUrlParameter<Stri
                 passwordDialog.addOpenedChangeListener(closed -> {
                     if (accountService.getByEmail(invitation.getEmail()).size() > 0) {
                         Account newAccount = accountService.getByEmail(invitation.getEmail()).get(0);
-
                         User newUser = new User();
+
                         newUser.setEmail(invitation.getEmail());
                         newUser.setAccount(newAccount);
 
@@ -111,6 +110,19 @@ public class InviteScreen extends VerticalLayout implements HasUrlParameter<Stri
                         confirmationDialog.close();
                     }
                 });
+            } else if (invitation.getType().equals(InvitationService.TYPE_EXISTING)) {
+                User newUser = new User();
+                newUser = userService.getByEmail(invitation.getEmail()).get(0);
+
+                RoleMap newRoleMap = new RoleMap();
+                newRoleMap.setUser(newUser);
+                newRoleMap.setRole(invitation.getRole());
+                newRoleMap.setCompany(invitation.getCompany());
+                newRoleMap.setDepartment(invitation.getDepartment());
+
+                roleMapService.add(newRoleMap);
+                invitationService.deleteInvitation(invitation);
+                UI.getCurrent().getPage().setLocation("/login");
             }
 
             // RoleMap roleMap = new RoleMap();
